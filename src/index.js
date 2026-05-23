@@ -22,6 +22,7 @@ app.use("/uploads", express.static(uploadDir));
 const emptyStore = {
   inquiries: [],
   applications: [],
+  newsletters: [],
 };
 
 const readStore = async () => {
@@ -221,9 +222,25 @@ const requireAdmin = (req, res, next) => {
 const submissionMeta = (req) => ({
   id: createId(),
   createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  status: "new",
+  note: "",
   ip: req.ip,
   userAgent: req.get("user-agent") || "",
 });
+
+const getSubmissionList = (store, type) => {
+  if (type === "inquiry") return store.inquiries;
+  if (type === "application") return store.applications;
+  if (type === "newsletter") return store.newsletters;
+  return null;
+};
+
+const flattenSubmissions = (store) => [
+  ...store.inquiries.map((item) => ({ ...item, type: "inquiry" })),
+  ...store.applications.map((item) => ({ ...item, type: "application" })),
+  ...store.newsletters.map((item) => ({ ...item, type: "newsletter" })),
+].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "asb-backend" });
@@ -260,6 +277,40 @@ app.get("/api/admin/blogs", requireAdmin, async (_req, res, next) => {
   try {
     const blogs = await readBlogs();
     res.json(blogs);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/admin/submissions", requireAdmin, async (_req, res, next) => {
+  try {
+    const store = await readStore();
+    res.json(flattenSubmissions(store));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put("/api/admin/submissions/:type/:id", requireAdmin, async (req, res, next) => {
+  try {
+    const store = await readStore();
+    const list = getSubmissionList(store, req.params.type);
+    if (!list) return res.status(400).json({ error: "Invalid submission type." });
+
+    const index = list.findIndex((item) => item.id === req.params.id);
+    if (index === -1) return res.status(404).json({ error: "Submission not found." });
+
+    const current = list[index];
+    const updated = {
+      ...current,
+      status: text(req.body.status, 40) || current.status || "new",
+      note: text(req.body.note, 1000),
+      updatedAt: new Date().toISOString(),
+    };
+
+    list[index] = updated;
+    await writeStore(store);
+    res.json({ ok: true, submission: { ...updated, type: req.params.type } });
   } catch (error) {
     next(error);
   }
@@ -430,6 +481,27 @@ app.post("/api/applications", async (req, res, next) => {
     await writeStore(store);
 
     res.status(201).json({ ok: true, id: application.id });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/newsletters", async (req, res, next) => {
+  try {
+    const subscription = {
+      ...submissionMeta(req),
+      email: email(req.body.email),
+    };
+
+    if (!subscription.email) {
+      return res.status(400).json({ error: "Please enter a valid email." });
+    }
+
+    const store = await readStore();
+    store.newsletters.unshift(subscription);
+    await writeStore(store);
+
+    res.status(201).json({ ok: true, id: subscription.id });
   } catch (error) {
     next(error);
   }
