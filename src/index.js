@@ -16,7 +16,7 @@ const ADMIN_USER = process.env.ADMIN_USER || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "asb-admin-token";
 
-app.use(express.json({ limit: "8mb" }));
+app.use(express.json({ limit: "15mb" }));
 app.use("/uploads", express.static(uploadDir));
 
 const emptyStore = {
@@ -192,7 +192,7 @@ const sanitizeHtml = (value) =>
     .replace(/javascript:/gi, "");
 
 const saveImage = async (imageData, slug) => {
-  const data = text(imageData, 7000000);
+  const data = text(imageData, 14000000);
   if (!data) return "";
 
   const match = data.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,([a-zA-Z0-9+/=]+)$/);
@@ -200,8 +200,8 @@ const saveImage = async (imageData, slug) => {
 
   const ext = match[1] === "jpeg" ? "jpg" : match[1];
   const buffer = Buffer.from(match[2], "base64");
-  if (buffer.length > 5 * 1024 * 1024) {
-    throw new Error("Blog image must be smaller than 5 MB.");
+  if (buffer.length > 10 * 1024 * 1024) {
+    throw new Error("Blog image must be smaller than 10 MB.");
   }
 
   await mkdir(uploadDir, { recursive: true });
