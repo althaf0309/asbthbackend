@@ -242,6 +242,55 @@ const flattenSubmissions = (store) => [
   ...store.newsletters.map((item) => ({ ...item, type: "newsletter" })),
 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+const SITE_URL = "https://www.asbtraininghub.com";
+
+const staticSitemapRoutes = [
+  { loc: "/", priority: "1.0", changefreq: "weekly" },
+  { loc: "/about", priority: "0.8", changefreq: "monthly" },
+  { loc: "/courses", priority: "0.95", changefreq: "weekly" },
+  { loc: "/reviews", priority: "0.7", changefreq: "monthly" },
+  { loc: "/faq", priority: "0.8", changefreq: "monthly" },
+  { loc: "/blog", priority: "0.8", changefreq: "weekly" },
+  { loc: "/contact", priority: "0.85", changefreq: "monthly" },
+  { loc: "/apply", priority: "0.9", changefreq: "monthly" },
+  { loc: "/terms-and-conditions", priority: "0.5", changefreq: "yearly" },
+  ...["erp", "programming", "ai", "management", "internship"].map((c) => ({
+    loc: `/courses/${c}`, priority: "0.9", changefreq: "weekly",
+  })),
+];
+
+app.get("/sitemap.xml", async (_req, res, next) => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const blogs = await readBlogs();
+    const blogRoutes = blogs
+      .filter((b) => b.published !== false && b.slug)
+      .map((b) => ({
+        loc: `/blog/${b.slug}`,
+        priority: "0.65",
+        changefreq: "monthly",
+        lastmod: b.updatedAt ? b.updatedAt.slice(0, 10) : today,
+      }));
+
+    const allRoutes = [...staticSitemapRoutes, ...blogRoutes];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allRoutes
+  .map(
+    ({ loc, priority, changefreq, lastmod = today }) =>
+      `  <url>\n    <loc>${SITE_URL}${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`
+  )
+  .join("\n")}
+</urlset>`;
+
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.send(xml);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "asb-backend" });
 });
