@@ -259,10 +259,43 @@ const staticSitemapRoutes = [
   })),
 ];
 
+const escapeXml = (value) =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+
+const readCourseSitemapRoutes = async () => {
+  const candidatePaths = [
+    path.resolve(rootDir, "../asb-ascend/src/data/courses.ts"),
+    path.resolve(rootDir, "../frontend/src/data/courses.ts"),
+    path.resolve(rootDir, "../../frontend/src/data/courses.ts"),
+  ];
+
+  for (const filePath of candidatePaths) {
+    try {
+      const source = await readFile(filePath, "utf8");
+      const slugs = [...source.matchAll(/slug:\s*['"]([^'"]+)['"]/g)].map((match) => match[1]);
+      return [...new Set(slugs)].map((slug) => ({
+        loc: `/course/${slug}`,
+        priority: "0.85",
+        changefreq: "monthly",
+      }));
+    } catch (error) {
+      if (error.code !== "ENOENT") console.warn(`Unable to read course routes from ${filePath}:`, error.message);
+    }
+  }
+
+  return [];
+};
+
 app.get("/sitemap.xml", async (_req, res, next) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
     const blogs = await readBlogs();
+    const courseRoutes = await readCourseSitemapRoutes();
     const blogRoutes = blogs
       .filter((b) => b.published !== false && b.slug)
       .map((b) => ({
@@ -272,13 +305,13 @@ app.get("/sitemap.xml", async (_req, res, next) => {
         lastmod: b.updatedAt ? b.updatedAt.slice(0, 10) : today,
       }));
 
-    const allRoutes = [...staticSitemapRoutes, ...blogRoutes];
+    const allRoutes = [...staticSitemapRoutes, ...courseRoutes, ...blogRoutes];
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allRoutes
   .map(
     ({ loc, priority, changefreq, lastmod = today }) =>
-      `  <url>\n    <loc>${SITE_URL}${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`
+      `  <url>\n    <loc>${escapeXml(`${SITE_URL}${loc}`)}</loc>\n    <lastmod>${escapeXml(lastmod)}</lastmod>\n    <changefreq>${escapeXml(changefreq)}</changefreq>\n    <priority>${escapeXml(priority)}</priority>\n  </url>`
   )
   .join("\n")}
 </urlset>`;
