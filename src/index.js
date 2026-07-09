@@ -267,6 +267,103 @@ const escapeXml = (value) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 
+const escapeHtml = (value) =>
+  String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const stripHtml = (value) =>
+  String(value || "")
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const truncateText = (value, max = 160) => {
+  const cleaned = stripHtml(value);
+  if (cleaned.length <= max) return cleaned;
+  return `${cleaned.slice(0, max - 1).replace(/\s+\S*$/, "")}…`;
+};
+
+const absoluteAssetUrl = (value) => {
+  if (!value) return `${SITE_URL}/site-logo.png`;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `${SITE_URL}${value.startsWith("/") ? value : `/${value}`}`;
+};
+
+const readFrontendIndex = async () => {
+  const candidates = [
+    path.resolve(rootDir, "../frontend/dist/index.html"),
+    path.resolve(rootDir, "../asb-ascend/dist/index.html"),
+    path.resolve(rootDir, "../../frontend/dist/index.html"),
+    path.resolve(rootDir, "../../asb-ascend/dist/index.html"),
+  ];
+
+  for (const filePath of candidates) {
+    try {
+      return await readFile(filePath, "utf8");
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        console.warn(`Unable to read frontend index from ${filePath}:`, error.message);
+      }
+    }
+  }
+
+  throw new Error("Frontend index.html not found. Run the frontend build before enabling SEO fallback routes.");
+};
+
+const upsertHeadTag = (html, pattern, replacement) => {
+  if (pattern.test(html)) return html.replace(pattern, replacement);
+  return html.replace("</head>", `    ${replacement}\n  </head>`);
+};
+
+const renderSeoHtml = async ({
+  title,
+  description,
+  keywords,
+  canonicalPath,
+  image = "/site-logo.png",
+  type = "website",
+  jsonLd,
+}) => {
+  const canonical = `${SITE_URL}${canonicalPath}`;
+  const imageUrl = absoluteAssetUrl(image);
+  const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
+  const safeKeywords = escapeHtml(keywords || "");
+  const safeCanonical = escapeHtml(canonical);
+  const safeImage = escapeHtml(imageUrl);
+
+  let html = await readFrontendIndex();
+
+  html = upsertHeadTag(html, /<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
+  html = upsertHeadTag(html, /<meta\s+name=["']description["'][^>]*>/i, `<meta name="description" content="${safeDescription}">`);
+  html = upsertHeadTag(html, /<meta\s+name=["']keywords["'][^>]*>/i, `<meta name="keywords" content="${safeKeywords}">`);
+  html = upsertHeadTag(html, /<meta\s+name=["']robots["'][^>]*>/i, `<meta name="robots" content="index, follow">`);
+  html = upsertHeadTag(html, /<link\s+rel=["']canonical["'][^>]*>/i, `<link rel="canonical" href="${safeCanonical}" />`);
+  html = upsertHeadTag(html, /<meta\s+property=["']og:title["'][^>]*>/i, `<meta property="og:title" content="${safeTitle}">`);
+  html = upsertHeadTag(html, /<meta\s+property=["']og:description["'][^>]*>/i, `<meta property="og:description" content="${safeDescription}">`);
+  html = upsertHeadTag(html, /<meta\s+property=["']og:type["'][^>]*>/i, `<meta property="og:type" content="${escapeHtml(type)}" />`);
+  html = upsertHeadTag(html, /<meta\s+property=["']og:url["'][^>]*>/i, `<meta property="og:url" content="${safeCanonical}" />`);
+  html = upsertHeadTag(html, /<meta\s+property=["']og:image["'][^>]*>/i, `<meta property="og:image" content="${safeImage}">`);
+  html = upsertHeadTag(html, /<meta\s+name=["']twitter:title["'][^>]*>/i, `<meta name="twitter:title" content="${safeTitle}">`);
+  html = upsertHeadTag(html, /<meta\s+name=["']twitter:description["'][^>]*>/i, `<meta name="twitter:description" content="${safeDescription}">`);
+  html = upsertHeadTag(html, /<meta\s+name=["']twitter:image["'][^>]*>/i, `<meta name="twitter:image" content="${safeImage}">`);
+
+  if (jsonLd) {
+    html = html.replace(
+      "</head>",
+      `    <script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>\n  </head>`
+    );
+  }
+
+  return html;
+};
+
 const readCourseSitemapRoutes = async () => {
   const candidatePaths = [
     path.resolve(rootDir, "../asb-ascend/src/data/courses.ts"),
@@ -326,6 +423,92 @@ ${allRoutes
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "asb-backend" });
+});
+
+app.get("/blog", async (_req, res, next) => {
+  try {
+    const blogs = (await readBlogs()).filter((blog) => blog.published !== false);
+    const html = await renderSeoHtml({
+      title: "Blog | ASB Training Hub",
+      description: "Career insights, ERP, SAP, AI, programming, logistics, and internship resources from ASB Training Hub.",
+      keywords: "ASB Training Hub blog, SAP training Kerala, ERP courses Kerala, AI training Kerala, logistics courses Kerala, career training blog",
+      canonicalPath: "/blog",
+      type: "website",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        name: "ASB Training Hub Blog",
+        url: `${SITE_URL}/blog`,
+        publisher: {
+          "@type": "EducationalOrganization",
+          name: "ASB Training Hub",
+          url: SITE_URL,
+        },
+        blogPost: blogs.slice(0, 20).map((blog) => ({
+          "@type": "BlogPosting",
+          headline: blog.title,
+          url: `${SITE_URL}/blog/${blog.slug}`,
+          datePublished: blog.createdAt,
+          dateModified: blog.updatedAt || blog.createdAt,
+        })),
+      },
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/blog/:slug", async (req, res, next) => {
+  try {
+    const blogs = await readBlogs();
+    const blog = blogs.find((item) => item.slug === req.params.slug && item.published !== false);
+    if (!blog) return res.status(404).send("Blog not found.");
+
+    const description = blog.metaDescription || blog.excerpt || truncateText(blog.content, 155);
+    const image = blog.imageUrl || "/site-logo.png";
+    const canonicalPath = `/blog/${blog.slug}`;
+    const html = await renderSeoHtml({
+      title: blog.metaTitle || `${blog.title} | ASB Training Hub`,
+      description,
+      keywords: blog.keywords || `${blog.title}, ASB Training Hub, training courses Kerala`,
+      canonicalPath,
+      image,
+      type: "article",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: blog.title,
+        description,
+        image: absoluteAssetUrl(image),
+        author: {
+          "@type": "Organization",
+          name: blog.author || "ASB Training Hub",
+        },
+        publisher: {
+          "@type": "EducationalOrganization",
+          name: "ASB Training Hub",
+          url: SITE_URL,
+          logo: {
+            "@type": "ImageObject",
+            url: `${SITE_URL}/site-logo.png`,
+          },
+        },
+        datePublished: blog.createdAt,
+        dateModified: blog.updatedAt || blog.createdAt,
+        mainEntityOfPage: `${SITE_URL}${canonicalPath}`,
+      },
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.post("/api/admin/login", (req, res) => {
