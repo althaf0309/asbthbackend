@@ -1,23 +1,161 @@
 import express from "express";
+import helmet from "helmet";
+import rateLimit, { MemoryStore } from "express-rate-limit";
+import cookieParser from "cookie-parser";
+import sanitizeHtmlLib from "sanitize-html";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
-const dataDir = path.join(rootDir, "data");
+const dataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(rootDir, "data");
 const uploadDir = path.join(dataDir, "uploads");
 const submissionsFile = path.join(dataDir, "submissions.json");
 const blogsFile = path.join(dataDir, "blogs.json");
 
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
-const ADMIN_USER = process.env.ADMIN_USER || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "asb-admin-token";
 
-app.use(express.json({ limit: "15mb" }));
-app.use("/uploads", express.static(uploadDir));
+// Credentials come from the environment only. There is deliberately no fallback:
+// a shipped default is a published default.
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (!ADMIN_USER || !ADMIN_PASSWORD) {
+  throw new Error(
+    "ADMIN_USER and ADMIN_PASSWORD must be set. Refusing to start with default credentials.",
+  );
+}
+if (ADMIN_PASSWORD.length < 12) {
+  throw new Error("ADMIN_PASSWORD must be at least 12 characters.");
+}
+
+const SESSION_TTL_MS = Number(process.env.SESSION_TTL_MS || 8 * 60 * 60 * 1000);
+const SESSION_COOKIE = "asb_admin_session";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+// Behind nginx; without this every submission records the loopback address and
+// the rate limiters would bucket the whole internet into one key.
+app.set("trust proxy", 1);
+app.disable("x-powered-by");
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        // GTM/GA are loaded by index.html and inject inline config.
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
+        // Fonts are self-hosted now, so no third-party font origins are needed.
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        fontSrc: ["'self'", "data:"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "https://www.google-analytics.com", "https://api.web3forms.com"],
+        frameSrc: ["https://www.googletagmanager.com"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'self'"],
+        upgradeInsecureRequests: IS_PRODUCTION ? [] : null,
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    hsts: IS_PRODUCTION ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
+  }),
+);
+
+app.use(cookieParser());
+
+/* ------------------------------------------------------------------ *
+ * Rate limiting
+ * ------------------------------------------------------------------ */
+
+const limiterOptions = {
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please slow down and try again shortly." },
+};
+
+// Limits are env-tunable so a test run or a load test can raise them without
+// editing code. The defaults are the production values.
+const limitFrom = (name, fallback) => Number(process.env[name] || fallback);
+
+// Stores are held explicitly so every bucket can be cleared in one call.
+const limiterStores = [];
+
+const makeLimiter = (options) => {
+  const store = new MemoryStore();
+  limiterStores.push(store);
+  return rateLimit({ ...limiterOptions, ...options, store });
+};
+
+const loginLimiter = makeLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: limitFrom("RATE_LIMIT_LOGIN", 10),
+  skipSuccessfulRequests: true,
+  message: { error: "Too many login attempts. Please try again in 15 minutes." },
+});
+
+const submissionLimiter = makeLimiter({
+  windowMs: 10 * 60 * 1000,
+  limit: limitFrom("RATE_LIMIT_SUBMISSION", 15),
+  message: { error: "Too many submissions from this network. Please try again later." },
+});
+
+const apiLimiter = makeLimiter({
+  windowMs: 60 * 1000,
+  limit: limitFrom("RATE_LIMIT_API", 120),
+});
+
+app.use("/api/", apiLimiter);
+
+/** Clears every limiter bucket. Used by tests; harmless in production. */
+const resetRateLimits = () => {
+  for (const store of limiterStores) store.resetAll?.();
+};
+
+/* ------------------------------------------------------------------ *
+ * Body parsing
+ *
+ * A small default for everything; the large parser is mounted only on the two
+ * authenticated routes that carry a base64 image.
+ * ------------------------------------------------------------------ */
+
+const smallJson = express.json({ limit: "100kb" });
+const uploadJson = express.json({ limit: "15mb" });
+
+app.use((req, res, next) => {
+  const isBlogWrite =
+    req.path.startsWith("/api/admin/blogs") && (req.method === "POST" || req.method === "PUT");
+  return isBlogWrite ? uploadJson(req, res, next) : smallJson(req, res, next);
+});
+
+// body-parser throws for malformed JSON and oversized payloads; both are client
+// errors, not 500s.
+app.use((error, _req, res, next) => {
+  if (error?.type === "entity.too.large") {
+    return res.status(413).json({ error: "Request body is too large." });
+  }
+  if (error instanceof SyntaxError && "body" in error) {
+    return res.status(400).json({ error: "Malformed JSON in request body." });
+  }
+  return next(error);
+});
+
+app.use(
+  "/uploads",
+  express.static(uploadDir, {
+    dotfiles: "deny",
+    index: false,
+    setHeaders: (res) => {
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Cache-Control", "public, max-age=604800, immutable");
+    },
+  }),
+);
 
 const emptyStore = {
   inquiries: [],
@@ -25,12 +163,35 @@ const emptyStore = {
   newsletters: [],
 };
 
+/**
+ * Serialises read-modify-write cycles against a JSON file.
+ *
+ * Every mutation runs inside a queued critical section, so two concurrent
+ * submissions can no longer read the same snapshot and have the second write
+ * silently discard the first.
+ */
+const createFileLock = () => {
+  let tail = Promise.resolve();
+  return (work) => {
+    const run = tail.then(work, work);
+    // Keep the chain alive even when `work` rejects.
+    tail = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  };
+};
+
+const storeLock = createFileLock();
+const blogLock = createFileLock();
+
 const readStore = async () => {
   try {
     const raw = await readFile(submissionsFile, "utf8");
     return { ...emptyStore, ...JSON.parse(raw) };
   } catch (error) {
-    if (error.code === "ENOENT") return emptyStore;
+    if (error.code === "ENOENT") return { ...emptyStore, inquiries: [], applications: [], newsletters: [] };
     throw error;
   }
 };
@@ -39,6 +200,15 @@ const writeStore = async (store) => {
   await mkdir(dataDir, { recursive: true });
   await writeFile(submissionsFile, `${JSON.stringify(store, null, 2)}\n`, "utf8");
 };
+
+/** Reads the store, applies `mutate`, and writes it back atomically. */
+const updateStore = (mutate) =>
+  storeLock(async () => {
+    const store = await readStore();
+    const result = await mutate(store);
+    await writeStore(store);
+    return result;
+  });
 
 const seedBlogs = [
   {
@@ -51,7 +221,7 @@ const seedBlogs = [
     metaTitle: "Why a SAP Career Is Still One of the Best Choices in 2024 | ASB Training Hub",
     metaDescription: "Explore why SAP and ERP careers remain strong choices for students and working professionals in 2024.",
     keywords: "SAP career, ERP training, SAP courses, ASB Training Hub",
-    imageUrl: "/blog/why-sap-career-2024.png",
+    imageUrl: "/blog/why-sap-career-2024.webp",
     imageAlt: "SAP career training",
     content: "<p>SAP remains one of the strongest career paths for students and working professionals who want enterprise technology roles. Businesses still need skilled consultants for finance, procurement, sales, production, HR, and analytics workflows.</p><p>At ASB Training Hub, our SAP-oriented ERP courses focus on practical configuration, business process understanding, and interview preparation.</p>",
     createdAt: "2024-03-15T00:00:00.000Z",
@@ -68,7 +238,7 @@ const seedBlogs = [
     metaTitle: "Python vs Java: Which Should You Learn First? | ASB Training Hub",
     metaDescription: "Compare Python and Java for beginners and choose the right programming language for your career goals.",
     keywords: "Python course, Java course, programming training, coding courses",
-    imageUrl: "/blog/python-vs-java.png",
+    imageUrl: "/blog/python-vs-java.webp",
     imageAlt: "Python and Java programming",
     content: "<p>Python is beginner-friendly and popular in AI, data science, automation, and backend development. Java is widely used in enterprise applications, Android ecosystems, and large-scale backend systems.</p><p>Your first language should match your goal. Choose Python for fast entry into AI and scripting. Choose Java for enterprise software and strongly typed backend work.</p>",
     createdAt: "2024-03-10T00:00:00.000Z",
@@ -85,9 +255,9 @@ const seedBlogs = [
     metaTitle: "Top AI Job Opportunities in Kerala's Tech Industry | ASB Training Hub",
     metaDescription: "Learn about AI job opportunities across Kerala's growing technology ecosystem.",
     keywords: "AI jobs Kerala, AI training Trivandrum, machine learning jobs",
-    imageUrl: "/blog/ai-jobs-kerala.png",
+    imageUrl: "/blog/ai-jobs-kerala.webp",
     imageAlt: "AI career opportunities",
-    content: "<p>Kerala's technology ecosystem is seeing strong interest in AI, machine learning, automation, and data analytics. Students who can build real projects, explain model choices, and deploy applications have a clear advantage.</p>",
+    content: "<p>Kerala's technology ecosystem is seeing strong interest in AI, machine learning, automation, and data analytics. Students who can build real projects, explain model choices, and deploy applications have a clear advantage over candidates who only hold a certificate.</p><h2>Where the AI roles are</h2><p>Technopark in Trivandrum and Infopark in Kochi host the largest concentration of AI-adjacent hiring in the state, spanning product companies, IT services firms, and a growing startup layer. Typical entry titles include data analyst, machine learning engineer, AI application developer, and automation engineer. Services companies also recruit for data annotation, model evaluation, and MLOps support roles that are realistic first jobs for a fresher.</p><h2>What employers actually screen for</h2><p>Interview panels in Kerala consistently ask for three things: working Python, a clear explanation of one end-to-end project you built, and evidence that you understand where a model fails. Candidates who can describe how they cleaned their data, why they chose a particular algorithm, and what the error analysis showed are preferred over candidates who can only name frameworks.</p><h2>How to prepare</h2><p>Build two or three projects that solve a problem you can describe in a sentence, deploy at least one so it has a live URL, and keep the code on GitHub with a readable README. Add fundamentals in statistics and SQL, because analytics interviews test both. At ASB Training Hub, our AI and machine learning tracks are structured around exactly this portfolio-first approach, with internship placements that put students on real datasets before they graduate.</p>",
     createdAt: "2024-03-05T00:00:00.000Z",
     updatedAt: "2024-03-05T00:00:00.000Z",
     published: true,
@@ -102,9 +272,9 @@ const seedBlogs = [
     metaTitle: "10 Tips to Make the Most of Your Internship | ASB Training Hub",
     metaDescription: "Practical internship tips for students who want to learn faster and improve placement chances.",
     keywords: "internship tips, career training, student internship",
-    imageUrl: "/blog/internship-tips.png",
+    imageUrl: "/blog/internship-tips.webp",
     imageAlt: "Internship preparation",
-    content: "<p>A good internship is about consistency. Ask questions, document your work, request feedback, and build a small portfolio of what you contributed.</p>",
+    content: "<p>A good internship is about consistency, not brilliance. The interns who convert into full-time offers are rarely the most technically advanced ones. They are the ones who show up prepared, finish what they start, and make their manager's job easier.</p><h2>In your first week</h2><p>Learn the tools before you need them, read whatever documentation exists, and write down every acronym you hear. Ask your manager what a successful internship looks like to them, and write that answer down too. It becomes the standard you measure yourself against.</p><h2>Through the internship</h2><p>Keep a running log of what you shipped, what broke, and what you learned. Ask for feedback every two weeks rather than waiting for a final review. When you are stuck, timebox it: try for an hour, then ask, and explain what you already tried. Volunteer for the unglamorous tasks nobody has claimed, because that is usually where trust is earned.</p><h2>Building the portfolio</h2><p>Document your contributions as you go, with before-and-after detail and any numbers you are allowed to share. Screenshots, short write-ups, and a clear statement of what you personally did will carry more weight in your next interview than the company name on your resume.</p><h2>Before you leave</h2><p>Ask directly about full-time openings, request a written recommendation while your work is fresh in everyone's memory, and stay in touch with the people you worked closely with. ASB Training Hub internship programs include structured mentoring and review checkpoints built around this progression.</p>",
     createdAt: "2024-02-28T00:00:00.000Z",
     updatedAt: "2024-02-28T00:00:00.000Z",
     published: true,
@@ -119,9 +289,9 @@ const seedBlogs = [
     metaTitle: "Understanding ERP Implementation: A Beginner's Guide | ASB Training Hub",
     metaDescription: "A beginner-friendly guide to ERP implementation phases, roles, and consultant skills.",
     keywords: "ERP implementation, ERP training, SAP implementation",
-    imageUrl: "/blog/erp-implementation.png",
+    imageUrl: "/blog/erp-implementation.webp",
     imageAlt: "ERP implementation guide",
-    content: "<p>ERP implementation connects business requirements with system configuration. A consultant must understand process mapping, master data, testing, user training, and go-live support.</p>",
+    content: "<p>ERP implementation connects business requirements with system configuration. A consultant must understand process mapping, master data, testing, user training, and go-live support. The technology is rarely the hard part; aligning a business on how it wants to work is.</p><h2>The standard phases</h2><p>Most implementations follow a recognisable sequence: preparation and scoping, business blueprint, realisation and configuration, final preparation and testing, then go-live and hypercare support. Each phase has its own deliverables, and skipping documentation in an early phase reliably causes rework in a later one.</p><h2>Where projects go wrong</h2><p>The two most common failure points are master data and change management. Dirty or incomplete master data will surface during testing and delay go-live. Insufficient user training means a technically correct system that nobody uses correctly, which looks identical to a failed implementation from the business side.</p><h2>What a consultant is expected to do</h2><p>A functional consultant maps existing business processes, configures the system to support them, writes the functional specifications that developers build against, prepares test scripts, runs user acceptance testing, and supports users through the first weeks after go-live. Strong communication matters as much as configuration knowledge.</p><h2>Getting started</h2><p>Learn one module deeply before broadening out, understand the underlying business process rather than just the transaction codes, and get hands-on with a sandbox system. ASB Training Hub ERP courses are built around configuration practice and process understanding, with project work that mirrors a real implementation cycle.</p>",
     createdAt: "2024-02-20T00:00:00.000Z",
     updatedAt: "2024-02-20T00:00:00.000Z",
     published: true,
@@ -136,9 +306,9 @@ const seedBlogs = [
     metaTitle: "How Generative AI Is Reshaping Every Industry | ASB Training Hub",
     metaDescription: "Understand how generative AI is changing business workflows and what skills learners need.",
     keywords: "generative AI, GenAI training, AI courses",
-    imageUrl: "/blog/generative-ai-future.png",
+    imageUrl: "/blog/generative-ai-future.webp",
     imageAlt: "Generative AI future",
-    content: "<p>Generative AI is changing how teams create content, automate support, analyze documents, and build software. The best learners combine prompt skills with real application development.</p>",
+    content: "<p>Generative AI is changing how teams create content, automate support, analyse documents, and build software. The best learners combine prompt skills with real application development, because prompting alone is not a job.</p><h2>Where it is actually being used</h2><p>In customer support, generative models draft replies that a human reviews before sending. In finance and legal work, they summarise long documents and extract structured fields. In software teams, they accelerate boilerplate, tests, and documentation. In marketing, they produce first drafts at volume. The pattern is consistent: the model produces a draft, a person owns the outcome.</p><h2>The skills that transfer</h2><p>Understanding how to structure a prompt matters, but the durable skills are retrieval-augmented generation, evaluating output quality systematically, handling failure modes like hallucination, and wiring a model into an existing application through its API. Knowing when not to use a generative model is equally valuable.</p><h2>What to build</h2><p>Build something that touches real data: a document question-answering tool over your own files, a support assistant grounded in a real knowledge base, or a workflow that classifies and routes incoming requests. These demonstrate the full loop from data to deployed application.</p><h2>How ASB approaches it</h2><p>Our generative AI and agentic AI tracks focus on application development rather than theory, so students finish with deployed projects, an understanding of evaluation, and the vocabulary to discuss trade-offs in an interview.</p>",
     createdAt: "2024-02-15T00:00:00.000Z",
     updatedAt: "2024-02-15T00:00:00.000Z",
     published: true,
@@ -174,6 +344,18 @@ const email = (value) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleaned) ? cleaned : "";
 };
 
+/**
+ * Accepts the shapes people actually type - `+91 87147 73304`, `087147-73304`,
+ * `(0471) 2345678` - and rejects anything that is not a plausible phone number.
+ */
+const phone = (value) => {
+  const cleaned = text(value, 30);
+  if (!cleaned) return "";
+  if (!/^\+?[\d\s()-]+$/.test(cleaned)) return "";
+  const digits = cleaned.replace(/\D/g, "");
+  return digits.length >= 7 && digits.length <= 15 ? cleaned : "";
+};
+
 const createId = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
@@ -184,12 +366,55 @@ const slugify = (value) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || createId();
 
-const sanitizeHtml = (value) =>
-  text(value, 20000)
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-    .replace(/\son\w+="[^"]*"/gi, "")
-    .replace(/\son\w+='[^']*'/gi, "")
-    .replace(/javascript:/gi, "");
+/**
+ * Allowlist sanitiser for blog body HTML.
+ *
+ * A denylist cannot be made correct by adding rules - anything not named here
+ * is dropped, including every tag that can execute, navigate, or frame.
+ */
+const BLOG_HTML_POLICY = {
+  allowedTags: [
+    "p", "br", "hr",
+    "h2", "h3", "h4", "h5", "h6",
+    "strong", "b", "em", "i", "u", "s", "sup", "sub", "mark",
+    "ul", "ol", "li",
+    "blockquote", "pre", "code",
+    "a", "img", "figure", "figcaption",
+    "table", "thead", "tbody", "tfoot", "tr", "th", "td", "caption",
+    "span", "div",
+  ],
+  allowedAttributes: {
+    a: ["href", "title"],
+    img: ["src", "alt", "title", "width", "height", "loading"],
+    th: ["colspan", "rowspan", "scope"],
+    td: ["colspan", "rowspan"],
+    "*": ["class"],
+  },
+  // Only these URL schemes survive; `javascript:` and `data:` in an href do not.
+  allowedSchemes: ["http", "https", "mailto", "tel"],
+  allowedSchemesByTag: { img: ["http", "https", "data"] },
+  allowProtocolRelative: false,
+  // Anything with a body that could execute is removed content-and-all.
+  nonTextTags: ["style", "script", "textarea", "option", "noscript"],
+  transformTags: {
+    a: (tagName, attribs) => {
+      const href = attribs.href || "";
+      const isExternal = /^https?:\/\//i.test(href);
+      return {
+        tagName: "a",
+        attribs: isExternal
+          ? { ...attribs, target: "_blank", rel: "noopener noreferrer nofollow" }
+          : attribs,
+      };
+    },
+    img: (tagName, attribs) => ({
+      tagName: "img",
+      attribs: { ...attribs, loading: "lazy" },
+    }),
+  },
+};
+
+const sanitizeHtml = (value) => sanitizeHtmlLib(text(value, 20000), BLOG_HTML_POLICY);
 
 const saveImage = async (imageData, slug) => {
   const data = text(imageData, 14000000);
@@ -210,12 +435,75 @@ const saveImage = async (imageData, slug) => {
   return `/uploads/${fileName}`;
 };
 
-const requireAdmin = (req, res, next) => {
+/* ------------------------------------------------------------------ *
+ * Sessions
+ *
+ * Each login mints a random token with a server-side expiry. Nothing is a
+ * shared secret, and revoking a session is a delete rather than a redeploy.
+ * ------------------------------------------------------------------ */
+
+const sessions = new Map();
+
+const pruneSessions = () => {
+  const now = Date.now();
+  for (const [token, session] of sessions) {
+    if (session.expiresAt <= now) sessions.delete(token);
+  }
+};
+
+const createSession = (username) => {
+  pruneSessions();
+  const token = randomBytes(32).toString("base64url");
+  sessions.set(token, { username, expiresAt: Date.now() + SESSION_TTL_MS });
+  return token;
+};
+
+const resolveSession = (token) => {
+  if (!token) return null;
+  const session = sessions.get(token);
+  if (!session) return null;
+  if (session.expiresAt <= Date.now()) {
+    sessions.delete(token);
+    return null;
+  }
+  return session;
+};
+
+/** Constant-time string comparison that does not leak length through timing. */
+const safeEqual = (a, b) => {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) {
+    // Still burn a comparison so the failure cost does not depend on length.
+    timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return timingSafeEqual(bufA, bufB);
+};
+
+const sessionCookieOptions = () => ({
+  httpOnly: true,
+  secure: IS_PRODUCTION,
+  sameSite: "strict",
+  path: "/",
+  maxAge: SESSION_TTL_MS,
+});
+
+/** Reads the session token from the HttpOnly cookie, falling back to Bearer. */
+const readToken = (req) => {
+  const cookieToken = req.cookies?.[SESSION_COOKIE];
+  if (cookieToken) return cookieToken;
   const auth = req.get("authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (token !== ADMIN_TOKEN) {
+  return auth.startsWith("Bearer ") ? auth.slice(7) : "";
+};
+
+const requireAdmin = (req, res, next) => {
+  const session = resolveSession(readToken(req));
+  if (!session) {
     return res.status(401).json({ error: "Admin authentication required." });
   }
+  req.adminUser = session.username;
   next();
 };
 
@@ -228,6 +516,48 @@ const submissionMeta = (req) => ({
   ip: req.ip,
   userAgent: req.get("user-agent") || "",
 });
+
+/* ------------------------------------------------------------------ *
+ * Inbox notification
+ *
+ * The browser used to POST straight to Web3Forms with the access key in the
+ * bundle, so anyone could flood the inbox and bypass every check above. The
+ * call now happens here, keyed from the environment and gated by the same rate
+ * limiter as the endpoint itself.
+ * ------------------------------------------------------------------ */
+
+const WEB3FORMS_KEY = process.env.WEB3FORMS_ACCESS_KEY || "";
+const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
+
+const forwardToInbox = async (formType, submission) => {
+  if (!WEB3FORMS_KEY) return;
+
+  const { id, ip, userAgent, status, note, createdAt, updatedAt, ...fields } = submission;
+
+  try {
+    const response = await fetch(WEB3FORMS_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        from_name: "ASB Training Hub Website",
+        subject: `New ${formType} - ASB Training Hub`,
+        form_type: formType,
+        reference_id: id,
+        ...fields,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!response.ok) {
+      console.warn(`Inbox notification failed for ${id}: HTTP ${response.status}`);
+    }
+  } catch (error) {
+    // The submission is already stored; a notification failure must not turn
+    // into a failed form for the visitor.
+    console.warn(`Inbox notification failed for ${id}:`, error.message);
+  }
+};
 
 const getSubmissionList = (store, type) => {
   if (type === "inquiry") return store.inquiries;
@@ -295,6 +625,18 @@ const absoluteAssetUrl = (value) => {
   return `${SITE_URL}${value.startsWith("/") ? value : `/${value}`}`;
 };
 
+/** BreadcrumbList so answer engines can place a page inside the site. */
+const breadcrumbList = (trail) => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: trail.map((crumb, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: crumb.name,
+    item: `${SITE_URL}${crumb.path}`,
+  })),
+});
+
 const readFrontendIndex = async () => {
   const candidates = [
     path.resolve(rootDir, "../frontend/dist/index.html"),
@@ -354,10 +696,11 @@ const renderSeoHtml = async ({
   html = upsertHeadTag(html, /<meta\s+name=["']twitter:description["'][^>]*>/i, `<meta name="twitter:description" content="${safeDescription}">`);
   html = upsertHeadTag(html, /<meta\s+name=["']twitter:image["'][^>]*>/i, `<meta name="twitter:image" content="${safeImage}">`);
 
-  if (jsonLd) {
+  // Accepts one block or several, so a page can ship an entity plus breadcrumbs.
+  for (const block of [].concat(jsonLd || [])) {
     html = html.replace(
       "</head>",
-      `    <script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>\n  </head>`
+      `    <script type="application/ld+json">${JSON.stringify(block).replace(/</g, "\\u003c")}</script>\n  </head>`
     );
   }
 
@@ -434,7 +777,12 @@ app.get("/blog", async (_req, res, next) => {
       keywords: "ASB Training Hub blog, SAP training Kerala, ERP courses Kerala, AI training Kerala, logistics courses Kerala, career training blog",
       canonicalPath: "/blog",
       type: "website",
-      jsonLd: {
+      jsonLd: [
+        breadcrumbList([
+          { name: "Home", path: "/" },
+          { name: "Blog", path: "/blog" },
+        ]),
+        {
         "@context": "https://schema.org",
         "@type": "Blog",
         name: "ASB Training Hub Blog",
@@ -451,7 +799,8 @@ app.get("/blog", async (_req, res, next) => {
           datePublished: blog.createdAt,
           dateModified: blog.updatedAt || blog.createdAt,
         })),
-      },
+        },
+      ],
     });
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -478,7 +827,13 @@ app.get("/blog/:slug", async (req, res, next) => {
       canonicalPath,
       image,
       type: "article",
-      jsonLd: {
+      jsonLd: [
+        breadcrumbList([
+          { name: "Home", path: "/" },
+          { name: "Blog", path: "/blog" },
+          { name: blog.title, path: canonicalPath },
+        ]),
+        {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         headline: blog.title,
@@ -500,7 +855,11 @@ app.get("/blog/:slug", async (req, res, next) => {
         datePublished: blog.createdAt,
         dateModified: blog.updatedAt || blog.createdAt,
         mainEntityOfPage: `${SITE_URL}${canonicalPath}`,
-      },
+        wordCount: stripHtml(blog.content).split(/\s+/).filter(Boolean).length,
+        articleSection: blog.category,
+        keywords: blog.keywords || undefined,
+        },
+      ],
     });
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -511,11 +870,30 @@ app.get("/blog/:slug", async (req, res, next) => {
   }
 });
 
-app.post("/api/admin/login", (req, res) => {
-  if (req.body.username === ADMIN_USER && req.body.password === ADMIN_PASSWORD) {
-    return res.json({ ok: true, token: ADMIN_TOKEN });
+app.post("/api/admin/login", loginLimiter, (req, res) => {
+  // Compare both fields unconditionally so a wrong username and a wrong
+  // password cost the same, and reject non-string input outright.
+  const userOk = safeEqual(req.body?.username, ADMIN_USER);
+  const passOk = safeEqual(req.body?.password, ADMIN_PASSWORD);
+
+  if (!userOk || !passOk) {
+    return res.status(401).json({ error: "Invalid username or password." });
   }
-  res.status(401).json({ error: "Invalid username or password." });
+
+  const token = createSession(ADMIN_USER);
+  res.cookie(SESSION_COOKIE, token, sessionCookieOptions());
+  res.json({ ok: true, token, expiresIn: SESSION_TTL_MS });
+});
+
+app.post("/api/admin/logout", (req, res) => {
+  const token = readToken(req);
+  if (token) sessions.delete(token);
+  res.clearCookie(SESSION_COOKIE, { ...sessionCookieOptions(), maxAge: undefined });
+  res.json({ ok: true });
+});
+
+app.get("/api/admin/session", requireAdmin, (req, res) => {
+  res.json({ ok: true, username: req.adminUser });
 });
 
 app.get("/api/blogs", async (_req, res, next) => {
@@ -558,24 +936,33 @@ app.get("/api/admin/submissions", requireAdmin, async (_req, res, next) => {
 
 app.put("/api/admin/submissions/:type/:id", requireAdmin, async (req, res, next) => {
   try {
-    const store = await readStore();
-    const list = getSubmissionList(store, req.params.type);
-    if (!list) return res.status(400).json({ error: "Invalid submission type." });
+    const outcome = await updateStore((store) => {
+      const list = getSubmissionList(store, req.params.type);
+      if (!list) return { error: "type" };
 
-    const index = list.findIndex((item) => item.id === req.params.id);
-    if (index === -1) return res.status(404).json({ error: "Submission not found." });
+      const index = list.findIndex((item) => item.id === req.params.id);
+      if (index === -1) return { error: "missing" };
 
-    const current = list[index];
-    const updated = {
-      ...current,
-      status: text(req.body.status, 40) || current.status || "new",
-      note: text(req.body.note, 1000),
-      updatedAt: new Date().toISOString(),
-    };
+      const current = list[index];
+      const updated = {
+        ...current,
+        status: text(req.body.status, 40) || current.status || "new",
+        note: text(req.body.note, 1000),
+        updatedAt: new Date().toISOString(),
+      };
 
-    list[index] = updated;
-    await writeStore(store);
-    res.json({ ok: true, submission: { ...updated, type: req.params.type } });
+      list[index] = updated;
+      return { updated };
+    });
+
+    if (outcome.error === "type") {
+      return res.status(400).json({ error: "Invalid submission type." });
+    }
+    if (outcome.error === "missing") {
+      return res.status(404).json({ error: "Submission not found." });
+    }
+
+    res.json({ ok: true, submission: { ...outcome.updated, type: req.params.type } });
   } catch (error) {
     next(error);
   }
@@ -590,6 +977,7 @@ app.post("/api/admin/blogs", requireAdmin, async (req, res, next) => {
       return res.status(400).json({ error: "Title and content are required." });
     }
 
+    const blog = await blogLock(async () => {
     const blogs = await readBlogs();
     const baseSlug = slugify(req.body.slug || title);
     let slug = baseSlug;
@@ -601,7 +989,7 @@ app.post("/api/admin/blogs", requireAdmin, async (req, res, next) => {
 
     const now = new Date().toISOString();
     const imageUrl = await saveImage(req.body.imageData, slug);
-    const blog = {
+    const created = {
       slug,
       title,
       excerpt: text(req.body.excerpt, 300),
@@ -619,8 +1007,11 @@ app.post("/api/admin/blogs", requireAdmin, async (req, res, next) => {
       published: req.body.published !== false,
     };
 
-    blogs.unshift(blog);
-    await writeBlogs(blogs);
+      blogs.unshift(created);
+      await writeBlogs(blogs);
+      return created;
+    });
+
     res.status(201).json({ ok: true, blog });
   } catch (error) {
     next(error);
@@ -629,15 +1020,16 @@ app.post("/api/admin/blogs", requireAdmin, async (req, res, next) => {
 
 app.put("/api/admin/blogs/:slug", requireAdmin, async (req, res, next) => {
   try {
-    const blogs = await readBlogs();
-    const index = blogs.findIndex((blog) => blog.slug === req.params.slug);
-    if (index === -1) return res.status(404).json({ error: "Blog not found." });
-
     const title = text(req.body.title, 180);
     const content = sanitizeHtml(req.body.content);
     if (!title || !content) {
       return res.status(400).json({ error: "Title and content are required." });
     }
+
+    const updated = await blogLock(async () => {
+    const blogs = await readBlogs();
+    const index = blogs.findIndex((blog) => blog.slug === req.params.slug);
+    if (index === -1) return null;
 
     const current = blogs[index];
     const requestedSlug = slugify(req.body.slug || current.slug || title);
@@ -652,7 +1044,7 @@ app.put("/api/admin/blogs/:slug", requireAdmin, async (req, res, next) => {
       ? ""
       : await saveImage(req.body.imageData, slug) || current.imageUrl || "";
 
-    const updated = {
+    const next = {
       ...current,
       slug,
       title,
@@ -670,8 +1062,12 @@ app.put("/api/admin/blogs/:slug", requireAdmin, async (req, res, next) => {
       published: req.body.published !== false,
     };
 
-    blogs[index] = updated;
-    await writeBlogs(blogs);
+      blogs[index] = next;
+      await writeBlogs(blogs);
+      return next;
+    });
+
+    if (!updated) return res.status(404).json({ error: "Blog not found." });
     res.json({ ok: true, blog: updated });
   } catch (error) {
     next(error);
@@ -680,41 +1076,46 @@ app.put("/api/admin/blogs/:slug", requireAdmin, async (req, res, next) => {
 
 app.delete("/api/admin/blogs/:slug", requireAdmin, async (req, res, next) => {
   try {
-    const blogs = await readBlogs();
-    const nextBlogs = blogs.filter((blog) => blog.slug !== req.params.slug);
-    if (nextBlogs.length === blogs.length) {
-      return res.status(404).json({ error: "Blog not found." });
-    }
+    const removed = await blogLock(async () => {
+      const blogs = await readBlogs();
+      const nextBlogs = blogs.filter((blog) => blog.slug !== req.params.slug);
+      if (nextBlogs.length === blogs.length) return false;
+      await writeBlogs(nextBlogs);
+      return true;
+    });
 
-    await writeBlogs(nextBlogs);
+    if (!removed) return res.status(404).json({ error: "Blog not found." });
     res.json({ ok: true });
   } catch (error) {
     next(error);
   }
 });
 
-app.post("/api/inquiries", async (req, res, next) => {
+app.post("/api/inquiries", submissionLimiter, async (req, res, next) => {
   try {
     const inquiry = {
       ...submissionMeta(req),
       name: text(req.body.name, 120),
       email: email(req.body.email),
-      phone: text(req.body.phone, 30),
+      phone: phone(req.body.phone),
       course: text(req.body.course, 120),
       message: text(req.body.message, 1000),
     };
 
-    if (!inquiry.name || !inquiry.phone) {
-      return res.status(400).json({ error: "Name and phone are required." });
+    if (!inquiry.name) {
+      return res.status(400).json({ error: "Name is required." });
+    }
+
+    if (!inquiry.phone) {
+      return res.status(400).json({ error: "Please enter a valid phone number." });
     }
 
     if (req.body.email && !inquiry.email) {
       return res.status(400).json({ error: "Please enter a valid email." });
     }
 
-    const store = await readStore();
-    store.inquiries.unshift(inquiry);
-    await writeStore(store);
+    await updateStore((store) => store.inquiries.unshift(inquiry));
+    await forwardToInbox("Course Inquiry", inquiry);
 
     res.status(201).json({ ok: true, id: inquiry.id });
   } catch (error) {
@@ -722,13 +1123,13 @@ app.post("/api/inquiries", async (req, res, next) => {
   }
 });
 
-app.post("/api/applications", async (req, res, next) => {
+app.post("/api/applications", submissionLimiter, async (req, res, next) => {
   try {
     const application = {
       ...submissionMeta(req),
       name: text(req.body.name, 120),
       email: email(req.body.email),
-      phone: text(req.body.phone, 30),
+      phone: phone(req.body.phone),
       course: text(req.body.course, 120),
       qualification: text(req.body.qualification, 160),
       experience: text(req.body.experience, 160),
@@ -741,9 +1142,8 @@ app.post("/api/applications", async (req, res, next) => {
       return res.status(400).json({ error: "Name, email, phone, and course are required." });
     }
 
-    const store = await readStore();
-    store.applications.unshift(application);
-    await writeStore(store);
+    await updateStore((store) => store.applications.unshift(application));
+    await forwardToInbox("Course Application", application);
 
     res.status(201).json({ ok: true, id: application.id });
   } catch (error) {
@@ -751,7 +1151,7 @@ app.post("/api/applications", async (req, res, next) => {
   }
 });
 
-app.post("/api/newsletters", async (req, res, next) => {
+app.post("/api/newsletters", submissionLimiter, async (req, res, next) => {
   try {
     const subscription = {
       ...submissionMeta(req),
@@ -762,9 +1162,8 @@ app.post("/api/newsletters", async (req, res, next) => {
       return res.status(400).json({ error: "Please enter a valid email." });
     }
 
-    const store = await readStore();
-    store.newsletters.unshift(subscription);
-    await writeStore(store);
+    await updateStore((store) => store.newsletters.unshift(subscription));
+    await forwardToInbox("Newsletter Subscription", subscription);
 
     res.status(201).json({ ok: true, id: subscription.id });
   } catch (error) {
@@ -777,6 +1176,15 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ error: "Something went wrong. Please try again." });
 });
 
-app.listen(PORT, () => {
-  console.log(`ASB backend running at http://localhost:${PORT}`);
-});
+export { app, resetRateLimits };
+
+// Only bind a port when this file is the process entrypoint, so tests can
+// import the app and drive it on an ephemeral port.
+const isEntrypoint =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isEntrypoint) {
+  app.listen(PORT, () => {
+    console.log(`ASB backend running at http://localhost:${PORT}`);
+  });
+}
