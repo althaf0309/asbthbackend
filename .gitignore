@@ -4,3 +4,4 @@ node_modules
 data/submissions.json
 data/uploads/*
 !data/uploads/.gitkeep
+logs
