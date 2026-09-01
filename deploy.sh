@@ -34,11 +34,20 @@ if [ ! -f "$BACKEND/.env" ]; then
      chmod 600 $BACKEND/.env"
 fi
 
-if grep -qiE '^(ADMIN_USER|ADMIN_PASSWORD)=(change-me|changeme|admin|admin123|password)' "$BACKEND/.env"; then
+# A line starting with # is a comment, so `# ADMIN_USER=x` sets nothing and the
+# app dies on the credential check. Require real, uncommented assignments.
+for key in ADMIN_USER ADMIN_PASSWORD; do
+  grep -qE "^[[:space:]]*$key=[^[:space:]]" "$BACKEND/.env" || die     "$BACKEND/.env has no active $key line.
+     A leading # makes it a comment. The file needs, with no # in front:
+       ADMIN_USER=<username>
+       ADMIN_PASSWORD=<12+ characters>"
+done
+
+if grep -qiE '^[[:space:]]*(ADMIN_USER|ADMIN_PASSWORD)=(change-me|changeme|admin|admin123|password)' "$BACKEND/.env"; then
   die "$BACKEND/.env still holds placeholder credentials from .env.example.
      Those values are public in the repository. Edit the file and set real ones."
 fi
-ok ".env present with non-placeholder credentials"
+ok ".env present with active, non-placeholder credentials"
 
 # ---------------------------------------------------------------------------
 # Backend first: it renders blog pages from the frontend's built index.html.
