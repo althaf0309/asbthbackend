@@ -1,4 +1,4 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
 import rateLimit, { MemoryStore } from "express-rate-limit";
@@ -11,6 +11,11 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
+
+// Resolve .env against the backend directory, not process.cwd(). Under pm2 the
+// working directory is whatever the process was started from, so a cwd-relative
+// lookup silently finds nothing and the app dies on the credential check below.
+dotenv.config({ path: path.join(rootDir, ".env"), quiet: true });
 const dataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(rootDir, "data");
 const uploadDir = path.join(dataDir, "uploads");
 const submissionsFile = path.join(dataDir, "submissions.json");
@@ -35,6 +40,26 @@ if (!ADMIN_USER || !ADMIN_PASSWORD) {
 }
 if (ADMIN_PASSWORD.length < 12) {
   throw new Error("ADMIN_PASSWORD must be at least 12 characters.");
+}
+
+// .env.example is committed, so its placeholders are public. An interrupted
+// edit that leaves them in place must not boot.
+const PLACEHOLDERS = new Set([
+  "change-me",
+  "change-me-at-least-12-chars",
+  "admin",
+  "admin123",
+  "password",
+  "changeme",
+]);
+
+if (PLACEHOLDERS.has(ADMIN_USER.toLowerCase()) || PLACEHOLDERS.has(ADMIN_PASSWORD.toLowerCase())) {
+  throw new Error(
+    [
+      "ADMIN_USER / ADMIN_PASSWORD still hold the placeholder values from .env.example.",
+      "These are public in the repository. Edit backend/.env and set real credentials.",
+    ].join("\n"),
+  );
 }
 
 const SESSION_TTL_MS = Number(process.env.SESSION_TTL_MS || 8 * 60 * 60 * 1000);
