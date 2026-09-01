@@ -55,6 +55,9 @@ ok ".env present with active, non-placeholder credentials"
 bold "Backend"
 cd "$BACKEND"
 
+# Clear accumulated logs so anything printed below is from this deploy only.
+pm2 flush "$PM2_APP" >/dev/null 2>&1 || true
+
 git fetch origin main --quiet
 # The server is a deploy target, not a workspace - discard local drift rather
 # than letting a stray file abort the pull and leave stale code running.
@@ -64,19 +67,54 @@ ok "at $(git rev-parse --short HEAD)"
 npm ci --omit=dev --silent
 ok "dependencies installed"
 
-pm2 restart "$PM2_APP" --update-env >/dev/null
-ok "pm2 restart issued"
+# pm2 was configured to run `npm start`, which puts an npm wrapper between pm2
+# and node. On restart pm2 signals npm, npm does not always forward it, and the
+# orphaned node keeps port 5000 - so the replacement dies with EADDRINUSE and
+# pm2 loops. Run node directly, with an explicit cwd, so there is nothing in
+# between.
+PORT_LOCAL="${BACKEND_PORT:-5000}"
+
+if pm2 describe "$PM2_APP" 2>/dev/null | grep -qE 'script path.*npm|exec interpreter.*none'; then
+  warn "pm2 runs this app through npm; re-registering it to run node directly"
+  pm2 delete "$PM2_APP" >/dev/null 2>&1 || true
+  pm2 start src/index.js --name "$PM2_APP" --cwd "$BACKEND" >/dev/null
+  pm2 save >/dev/null 2>&1 || true
+  ok "pm2 re-registered on src/index.js"
+else
+  pm2 restart "$PM2_APP" --update-env >/dev/null
+  ok "pm2 restart issued"
+fi
+
+# Anything still holding the port after that is an orphan from a previous run.
+sleep 1
+ORPHANS="$(pgrep -f 'node .*asbtraininghub/backend/src/index.js' | tr '
+' ' ' || true)"
+if [ -n "${ORPHANS// /}" ] && ! curl -fsS "http://127.0.0.1:$PORT_LOCAL/api/health" >/dev/null 2>&1; then
+  warn "port $PORT_LOCAL busy but not answering - killing orphans: $ORPHANS"
+  # shellcheck disable=SC2086
+  kill $ORPHANS 2>/dev/null || true
+  sleep 1
+  pm2 restart "$PM2_APP" --update-env >/dev/null
+fi
 
 # pm2 reports "online" between crashes, so poll the health endpoint instead.
-PORT_LOCAL="${BACKEND_PORT:-5000}"
 for i in $(seq 1 15); do
   if curl -fsS "http://127.0.0.1:$PORT_LOCAL/api/health" >/dev/null 2>&1; then
     ok "health check passed"
     break
   fi
   [ "$i" = 15 ] && {
-    pm2 logs "$PM2_APP" --lines 20 --nostream || true
-    die "backend did not come up - see the log above"
+    warn "still down after 15s - diagnostics follow"
+    echo "--- .env keys (values hidden) ---"
+    sed 's/=.*/=<set>/' "$BACKEND/.env" 2>/dev/null || echo "  cannot read .env"
+    ls -la "$BACKEND/.env" 2>/dev/null || true
+    echo "--- what pm2 is executing ---"
+    pm2 describe "$PM2_APP" 2>/dev/null | grep -iE 'script path|exec cwd|interpreter|status|restarts' || true
+    echo "--- port $PORT_LOCAL ---"
+    (ss -ltnp 2>/dev/null || netstat -ltnp 2>/dev/null) | grep ":$PORT_LOCAL" || echo "  nothing listening"
+    echo "--- fresh log ---"
+    pm2 logs "$PM2_APP" --lines 25 --nostream || true
+    die "backend did not come up - see diagnostics above"
   }
   sleep 1
 done
