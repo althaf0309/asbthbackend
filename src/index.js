@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
 import rateLimit, { MemoryStore } from "express-rate-limit";
@@ -25,7 +26,11 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 if (!ADMIN_USER || !ADMIN_PASSWORD) {
   throw new Error(
-    "ADMIN_USER and ADMIN_PASSWORD must be set. Refusing to start with default credentials.",
+    [
+      "ADMIN_USER and ADMIN_PASSWORD must be set - refusing to start with default credentials.",
+      "Create backend/.env from .env.example (it is loaded automatically), or export them",
+      "in the process environment. See DEPLOY.md.",
+    ].join("\n"),
   );
 }
 if (ADMIN_PASSWORD.length < 12) {
