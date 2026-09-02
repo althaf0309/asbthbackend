@@ -1,7 +1,12 @@
 node_modules
 *.log
 .env
+# Live content and submissions. These are DATA, written by the running app -
+# they must never be tracked, or a `git reset --hard` on deploy silently
+# replaces production content with whatever was committed.
+data/blogs.json
 data/submissions.json
 data/uploads/*
 !data/uploads/.gitkeep
 logs
+data-backups
