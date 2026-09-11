@@ -59,10 +59,21 @@ cd "$BACKEND"
 pm2 flush "$PM2_APP" >/dev/null 2>&1 || true
 
 git fetch origin main --quiet
-# The server is a deploy target, not a workspace - discard local drift rather
-# than letting a stray file abort the pull and leave stale code running.
-git reset --hard origin/main --quiet
-ok "at $(git rev-parse --short HEAD)"
+
+# Back up live content BEFORE touching the working tree. data/ holds blogs,
+# courses, training programmes and submissions written by the running app; a
+# hard reset would replace them with whatever is committed.
+BACKUP="$BACKEND/data-backups/$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP"
+cp -a "$BACKEND/data/." "$BACKUP/" 2>/dev/null || true
+ok "data backed up to $BACKUP"
+
+# Reset only tracked source, never data/.
+git reset --hard origin/main --quiet -- ':(exclude)data' 2>/dev/null   || git checkout -- . 2>/dev/null || true
+git merge --ff-only origin/main --quiet 2>/dev/null || git reset --hard origin/main --quiet
+# Restore anything the reset clobbered.
+cp -a "$BACKUP/." "$BACKEND/data/" 2>/dev/null || true
+ok "at $(git rev-parse --short HEAD), data preserved"
 
 npm ci --omit=dev --silent
 ok "dependencies installed"
@@ -152,6 +163,17 @@ HOST="${SITE_HOST:-https://www.asbtraininghub.com}"
 printf '   health   : %s\n' "$(curl -fsS "$HOST/api/health" || echo 'UNREACHABLE')"
 printf '   sitemap  : %s\n' "$(curl -fsSI "$HOST/sitemap.xml" | grep -i '^content-type' | tr -d '\r' || echo 'UNREACHABLE')"
 printf '   gzip     : %s\n' "$(curl -fsS -H 'Accept-Encoding: gzip' -o /dev/null -D - "$HOST/" | grep -i '^content-encoding' | tr -d '\r' || echo 'not enabled')"
+# The server-rendered SEO routes must each return their OWN canonical. If any
+# of these echoes the bare domain, nginx is serving the SPA shell instead of
+# proxying to the backend - the asb-ssr-routes.conf include is missing.
+for p in /courses /training /training/category/workshop; do
+  got=$(curl -fsS "$HOST$p" | grep -o 'rel="canonical" href="[^"]*"' | head -1)
+  case "$got" in
+    *"$p"*) printf '   canonical: %s %s\n' "$p" "OK" ;;
+    *)      warn "canonical for $p is wrong: ${got:-missing} (nginx SSR include?)" ;;
+  esac
+done
+
 printf '   defaults : %s\n' "$(curl -fsS -X POST "$HOST/api/admin/login" -H 'Content-Type: application/json' -d '{"username":"admin","password":"admin123"}' || echo 'UNREACHABLE')"
 
 printf '\n\033[32mDone.\033[0m\n'

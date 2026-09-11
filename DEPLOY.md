@@ -73,6 +73,33 @@ context; since `sites-enabled/*` is included from inside `http{}`, they work
 where they are. If nginx complains about a duplicate zone, another site file
 already declares one with the same name.
 
+#### If you have a hand-tuned nginx config
+
+Do not overwrite it. The reference conf above is a clean-slate copy; your live
+config has months of incremental fixes in it. Add only the missing pieces:
+
+```bash
+sudo mkdir -p /etc/nginx/snippets
+sudo cp /var/www/asbtraininghub/deploy-nginx-ssr-routes.conf \
+        /etc/nginx/snippets/asb-ssr-routes.conf
+```
+
+Then, inside the `server { ... }` block for `www.asbtraininghub.com`, add this
+line ABOVE the `location / { try_files ... /index.html; }` fallback:
+
+```nginx
+include /etc/nginx/snippets/asb-ssr-routes.conf;
+```
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+This is what makes `/courses`, `/course/<slug>` and `/training/...` reach the
+backend. Without it nginx answers those URLs from the SPA shell, and every one
+of them reports the homepage canonical to Google — the pages get crawled, but
+they all look like duplicates of `/`.
+
 ---
 
 ## Every deploy
@@ -108,6 +135,20 @@ you want after 34 dependencies were removed. `npm install` would leave orphans.
 ```bash
 # Backend is up and not crash-looping
 curl -s https://www.asbtraininghub.com/api/health
+
+# Server-rendered SEO routes: each must return its OWN canonical, not "/".
+for p in /courses /course/python-full-stack /training \
+         /training/category/workshop /training/weekend-agentic-ai-workshop; do
+  printf "%-45s " "$p"
+  curl -s "https://www.asbtraininghub.com$p" \
+    | grep -o 'rel="canonical" href="[^"]*"' | head -1
+done
+# Every line must echo the path you asked for. A line showing the bare domain
+# means nginx served the SPA shell instead of proxying to the backend - the
+# include from the nginx step is missing.
+
+# Training programmes are in the sitemap
+curl -s https://www.asbtraininghub.com/sitemap.xml | grep -c "/training/"
 # -> {"ok":true,"service":"asb-backend"}
 
 # Real sitemap, not the SPA fallback

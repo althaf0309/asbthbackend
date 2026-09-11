@@ -5,6 +5,8 @@ node_modules
 # they must never be tracked, or a `git reset --hard` on deploy silently
 # replaces production content with whatever was committed.
 data/blogs.json
+data/courses.json
+data/training.json
 data/submissions.json
 data/uploads/*
 !data/uploads/.gitkeep

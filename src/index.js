@@ -20,6 +20,16 @@ const dataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path
 const uploadDir = path.join(dataDir, "uploads");
 const submissionsFile = path.join(dataDir, "submissions.json");
 const blogsFile = path.join(dataDir, "blogs.json");
+const coursesFile = path.join(dataDir, "courses.json");
+// Committed seed. courses.json (the live, editable store) is gitignored and
+// created from this on first run, mirroring how blogs are seeded.
+//
+// Resolved against the source tree, not DATA_DIR: the seed ships with the code,
+// whereas DATA_DIR is the writable location and may be a fresh temp directory
+// (as it is under test).
+const coursesSeedFile = path.join(rootDir, "data", "courses.seed.json");
+const trainingFile = path.join(dataDir, "training.json");
+const trainingSeedFile = path.join(rootDir, "data", "training.seed.json");
 
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
@@ -158,9 +168,12 @@ const smallJson = express.json({ limit: "100kb" });
 const uploadJson = express.json({ limit: "15mb" });
 
 app.use((req, res, next) => {
-  const isBlogWrite =
-    req.path.startsWith("/api/admin/blogs") && (req.method === "POST" || req.method === "PUT");
-  return isBlogWrite ? uploadJson(req, res, next) : smallJson(req, res, next);
+  const isContentWrite =
+    (req.path.startsWith("/api/admin/blogs") ||
+      req.path.startsWith("/api/admin/courses") ||
+      req.path.startsWith("/api/admin/training")) &&
+    (req.method === "POST" || req.method === "PUT");
+  return isContentWrite ? uploadJson(req, res, next) : smallJson(req, res, next);
 });
 
 // body-parser throws for malformed JSON and oversized payloads; both are client
@@ -215,6 +228,8 @@ const createFileLock = () => {
 
 const storeLock = createFileLock();
 const blogLock = createFileLock();
+const courseLock = createFileLock();
+const trainingLock = createFileLock();
 
 const readStore = async () => {
   try {
@@ -602,6 +617,44 @@ const flattenSubmissions = (store) => [
   ...store.newsletters.map((item) => ({ ...item, type: "newsletter" })),
 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+/* ------------------------------------------------------------------ *
+ * Courses
+ *
+ * Same shape as the static catalogue they replaced, so the public pages
+ * render identically - plus an editable HTML body, two images and SEO
+ * fields the admin controls.
+ * ------------------------------------------------------------------ */
+
+const COURSE_CATEGORIES = ["erp", "programming", "ai", "management", "internship"];
+
+// Training programmes are a second catalogue of the same shape - short courses,
+// workshops and corporate sessions - kept separate from the main course list so
+// each has its own URLs, admin screen and sitemap entries.
+const TRAINING_CATEGORIES = ["corporate", "workshop", "certification", "bootcamp", "online"];
+
+// Declared here; the collections themselves are built once createCollection is
+// defined, further down.
+let coursesCollection;
+let trainingCollection;
+
+const readCourses = async () => coursesCollection.read();
+const readTraining = async () => trainingCollection.read();
+
+/** Trims a list field to clean, non-empty strings. */
+const list = (value, maxItems = 40, maxLen = 300) => {
+  if (!Array.isArray(value)) return [];
+  return value.map((v) => text(v, maxLen)).filter(Boolean).slice(0, maxItems);
+};
+
+/** Question/answer pairs, both required. */
+const faqList = (value) => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((f) => ({ q: text(f?.q, 300), a: text(f?.a, 1500) }))
+    .filter((f) => f.q && f.a)
+    .slice(0, 30);
+};
+
 const SITE_URL = "https://www.asbtraininghub.com";
 
 const staticSitemapRoutes = [
@@ -616,6 +669,10 @@ const staticSitemapRoutes = [
   { loc: "/terms-and-conditions", priority: "0.5", changefreq: "yearly" },
   ...["erp", "programming", "ai", "management", "internship"].map((c) => ({
     loc: `/courses/${c}`, priority: "0.9", changefreq: "weekly",
+  })),
+  { loc: "/training", priority: "0.9", changefreq: "weekly" },
+  ...["corporate", "workshop", "certification", "bootcamp", "online"].map((c) => ({
+    loc: `/training/category/${c}`, priority: "0.8", changefreq: "weekly",
   })),
 ];
 
@@ -737,28 +794,21 @@ const renderSeoHtml = async ({
   return html;
 };
 
+/** Catalogue URLs for the sitemap, straight from the live stores. */
 const readCourseSitemapRoutes = async () => {
-  const candidatePaths = [
-    path.resolve(rootDir, "../asb-ascend/src/data/courses.ts"),
-    path.resolve(rootDir, "../frontend/src/data/courses.ts"),
-    path.resolve(rootDir, "../../frontend/src/data/courses.ts"),
-  ];
+  const entry = (prefix, priority) => (c) => ({
+    loc: `${prefix}/${c.slug}`,
+    priority,
+    changefreq: "monthly",
+    lastmod: c.updatedAt ? c.updatedAt.slice(0, 10) : undefined,
+  });
 
-  for (const filePath of candidatePaths) {
-    try {
-      const source = await readFile(filePath, "utf8");
-      const slugs = [...source.matchAll(/slug:\s*['"]([^'"]+)['"]/g)].map((match) => match[1]);
-      return [...new Set(slugs)].map((slug) => ({
-        loc: `/course/${slug}`,
-        priority: "0.85",
-        changefreq: "monthly",
-      }));
-    } catch (error) {
-      if (error.code !== "ENOENT") console.warn(`Unable to read course routes from ${filePath}:`, error.message);
-    }
-  }
+  const published = (items) => items.filter((c) => c.published !== false && c.slug);
 
-  return [];
+  const courses = published(await readCourses()).map(entry("/course", "0.85"));
+  const training = published(await readTraining()).map(entry("/training", "0.8"));
+
+  return [...courses, ...training];
 };
 
 app.get("/sitemap.xml", async (_req, res, next) => {
@@ -780,8 +830,8 @@ app.get("/sitemap.xml", async (_req, res, next) => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allRoutes
   .map(
-    ({ loc, priority, changefreq, lastmod = today }) =>
-      `  <url>\n    <loc>${escapeXml(`${SITE_URL}${loc}`)}</loc>\n    <lastmod>${escapeXml(lastmod)}</lastmod>\n    <changefreq>${escapeXml(changefreq)}</changefreq>\n    <priority>${escapeXml(priority)}</priority>\n  </url>`
+    ({ loc, priority, changefreq, lastmod }) =>
+      `  <url>\n    <loc>${escapeXml(`${SITE_URL}${loc}`)}</loc>\n    <lastmod>${escapeXml(lastmod || today)}</lastmod>\n    <changefreq>${escapeXml(changefreq)}</changefreq>\n    <priority>${escapeXml(priority)}</priority>\n  </url>`
   )
   .join("\n")}
 </urlset>`;
@@ -900,6 +950,418 @@ app.get("/blog/:slug", async (req, res, next) => {
   }
 });
 
+/* ------------------------------------------------------------------ *
+ * Courses - server-rendered SEO
+ *
+ * Crawlers that do not run JavaScript would otherwise see the homepage
+ * canonical on every course URL. These routes inject per-page metadata and
+ * schema.org markup into the built index.html, exactly as /blog does.
+ * ------------------------------------------------------------------ */
+
+const COURSE_CATEGORY_SEO = {
+  erp: {
+    title: "ERP & SAP Courses in Trivandrum | ASB Training Hub",
+    description:
+      "Practical ERP and SAP-style training in finance, materials, sales, production, HR, quality and ABAP, with internship and placement support.",
+  },
+  programming: {
+    title: "Programming Courses in Trivandrum | ASB Training Hub",
+    description:
+      "Learn Python full stack, Java, JavaScript, C, C++, PHP and more with hands-on projects and placement support in Trivandrum, Kerala.",
+  },
+  ai: {
+    title: "AI & Machine Learning Courses in Kerala | ASB Training Hub",
+    description:
+      "Job-ready AI training in machine learning, deep learning, generative AI, agentic AI, NLP and data science, with real project work.",
+  },
+  management: {
+    title: "Management Courses in Trivandrum | ASB Training Hub",
+    description:
+      "Professional diploma courses in logistics, supply chain, warehouse, hospitality, finance, HR and IT management at ASB Training Hub.",
+  },
+  internship: {
+    title: "Internship Programs in Trivandrum | ASB Training Hub",
+    description:
+      "Job-oriented training with internship placements in ERP, accounting, HR, Python full stack, AI, ML and data science.",
+  },
+};
+
+app.get("/courses", async (_req, res, next) => {
+  try {
+    const courses = (await readCourses()).filter((c) => c.published !== false);
+    const html = await renderSeoHtml({
+      title: "Courses | ASB Training Hub ERP, AI, Programming & Management",
+      description: `Browse ${courses.length}+ job-oriented courses at ASB Training Hub including ERP/SAP, programming, AI, management and internship programs in Trivandrum.`,
+      keywords:
+        "ASB Training Hub courses, courses in Trivandrum, ERP courses, SAP training, AI courses, programming courses, management courses, internship programs",
+      canonicalPath: "/courses",
+      jsonLd: [
+        breadcrumbList([
+          { name: "Home", path: "/" },
+          { name: "Courses", path: "/courses" },
+        ]),
+        {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "ASB Training Hub course catalogue",
+          numberOfItems: courses.length,
+          itemListElement: courses.slice(0, 100).map((c, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: c.title,
+            url: `${SITE_URL}/course/${c.slug}`,
+          })),
+        },
+      ],
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/courses/:category", async (req, res, next) => {
+  try {
+    const { category } = req.params;
+    if (!COURSE_CATEGORIES.includes(category)) return next();
+
+    const courses = (await readCourses()).filter(
+      (c) => c.published !== false && c.category === category,
+    );
+    const seo = COURSE_CATEGORY_SEO[category];
+
+    const html = await renderSeoHtml({
+      title: seo.title,
+      description: seo.description,
+      keywords: `${category} courses Trivandrum, ${category} training Kerala, ASB Training Hub`,
+      canonicalPath: `/courses/${category}`,
+      jsonLd: [
+        breadcrumbList([
+          { name: "Home", path: "/" },
+          { name: "Courses", path: "/courses" },
+          { name: courses[0]?.categoryLabel || category, path: `/courses/${category}` },
+        ]),
+        {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: seo.title,
+          numberOfItems: courses.length,
+          itemListElement: courses.map((c, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: c.title,
+            url: `${SITE_URL}/course/${c.slug}`,
+          })),
+        },
+      ],
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/course/:slug", async (req, res, next) => {
+  try {
+    const course = (await readCourses()).find(
+      (c) => c.slug === req.params.slug && c.published !== false,
+    );
+    if (!course) return res.status(404).send("Course not found.");
+
+    const description =
+      course.metaDescription || truncateText(course.description || course.overview, 155);
+    const canonicalPath = `/course/${course.slug}`;
+    const image = course.imageUrl || "/site-logo.png";
+
+    const jsonLd = [
+      breadcrumbList([
+        { name: "Home", path: "/" },
+        { name: "Courses", path: "/courses" },
+        { name: course.categoryLabel || course.category, path: `/courses/${course.category}` },
+        { name: course.title, path: canonicalPath },
+      ]),
+      {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        name: course.title,
+        description: course.overview || course.description,
+        url: `${SITE_URL}${canonicalPath}`,
+        image: absoluteAssetUrl(image),
+        inLanguage: "en",
+        educationalCredentialAwarded: course.certificate || undefined,
+        teaches: course.learningOutcomes?.length ? course.learningOutcomes : undefined,
+        coursePrerequisites: course.prerequisites?.length ? course.prerequisites : undefined,
+        provider: {
+          "@type": "EducationalOrganization",
+          "@id": `${SITE_URL}/#organization`,
+          name: "ASB Training Hub",
+          url: SITE_URL,
+        },
+        // Google requires an instance with a mode and workload for course rich results.
+        hasCourseInstance: [
+          {
+            "@type": "CourseInstance",
+            courseMode: /online/i.test(course.mode || "") ? "blended" : "onsite",
+            courseWorkload: course.duration,
+            location: {
+              "@type": "Place",
+              name: "ASB Training Hub",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "105-2, The Atomic, Near Technopark Phase 1, Kazhakootam",
+                addressLocality: "Trivandrum",
+                addressRegion: "Kerala",
+                postalCode: "695581",
+                addressCountry: "IN",
+              },
+            },
+          },
+        ],
+      },
+    ];
+
+    if (course.faqs?.length) {
+      jsonLd.push({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: course.faqs.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      });
+    }
+
+    const html = await renderSeoHtml({
+      title: course.metaTitle || `${course.title} | ASB Training Hub`,
+      description,
+      keywords: course.keywords || `${course.title}, ${course.categoryLabel}, ASB Training Hub`,
+      canonicalPath,
+      image,
+      jsonLd,
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/* ------------------------------------------------------------------ *
+ * Training - server-rendered SEO
+ * ------------------------------------------------------------------ */
+
+const TRAINING_CATEGORY_SEO = {
+  corporate: {
+    title: "Corporate Training in Kerala | ASB Training Hub",
+    description:
+      "In-house corporate training delivered on-site or online across Kerala, built around your team's own workflows and finishing with working tools.",
+  },
+  workshop: {
+    title: "Weekend Workshops in Trivandrum | ASB Training Hub",
+    description:
+      "Short, hands-on weekend workshops in AI, ERP and programming. Build and deploy something real in two days.",
+  },
+  certification: {
+    title: "Certification Tracks | ASB Training Hub",
+    description:
+      "Structured certification preparation for working professionals, with sandbox access, mock exams and evening or weekend batches.",
+  },
+  bootcamp: {
+    title: "Intensive Bootcamps in Kerala | ASB Training Hub",
+    description:
+      "Full-time intensive bootcamps that take you from fundamentals to a deployed portfolio in weeks rather than months.",
+  },
+  online: {
+    title: "Live Online Training | ASB Training Hub",
+    description:
+      "Live, instructor-led online training with the same trainers and project work as our classroom batches.",
+  },
+};
+
+app.get("/training", async (_req, res, next) => {
+  try {
+    const programmes = (await readTraining()).filter((t) => t.published !== false);
+    const html = await renderSeoHtml({
+      title: "Training Programmes | ASB Training Hub Kerala",
+      description:
+        "Corporate training, weekend workshops, certification tracks and bootcamps from ASB Training Hub, Trivandrum. On-site, online and hybrid delivery.",
+      keywords:
+        "corporate training Kerala, workshops Trivandrum, certification training, bootcamp Kerala, ASB Training Hub",
+      canonicalPath: "/training",
+      jsonLd: [
+        breadcrumbList([
+          { name: "Home", path: "/" },
+          { name: "Training", path: "/training" },
+        ]),
+        {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "ASB Training Hub training programmes",
+          numberOfItems: programmes.length,
+          itemListElement: programmes.slice(0, 100).map((t, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: t.title,
+            url: `${SITE_URL}/training/${t.slug}`,
+          })),
+        },
+      ],
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Category pages sit under /training/category/:id so they cannot collide with a
+// programme slug at /training/:slug.
+app.get("/training/category/:category", async (req, res, next) => {
+  try {
+    const { category } = req.params;
+    if (!TRAINING_CATEGORIES.includes(category)) return next();
+
+    const programmes = (await readTraining()).filter(
+      (t) => t.published !== false && t.category === category,
+    );
+    const seo = TRAINING_CATEGORY_SEO[category];
+
+    const html = await renderSeoHtml({
+      title: seo.title,
+      description: seo.description,
+      keywords: `${category} training Kerala, ${category} programme Trivandrum, ASB Training Hub`,
+      canonicalPath: `/training/category/${category}`,
+      jsonLd: [
+        breadcrumbList([
+          { name: "Home", path: "/" },
+          { name: "Training", path: "/training" },
+          { name: programmes[0]?.categoryLabel || category, path: `/training/category/${category}` },
+        ]),
+        {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: seo.title,
+          numberOfItems: programmes.length,
+          itemListElement: programmes.map((t, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: t.title,
+            url: `${SITE_URL}/training/${t.slug}`,
+          })),
+        },
+      ],
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/training/:slug", async (req, res, next) => {
+  try {
+    const programme = (await readTraining()).find(
+      (t) => t.slug === req.params.slug && t.published !== false,
+    );
+    if (!programme) return res.status(404).send("Training programme not found.");
+
+    const description =
+      programme.metaDescription || truncateText(programme.description || programme.overview, 155);
+    const canonicalPath = `/training/${programme.slug}`;
+    const image = programme.imageUrl || "/site-logo.png";
+
+    const jsonLd = [
+      breadcrumbList([
+        { name: "Home", path: "/" },
+        { name: "Training", path: "/training" },
+        {
+          name: programme.categoryLabel || programme.category,
+          path: `/training/category/${programme.category}`,
+        },
+        { name: programme.title, path: canonicalPath },
+      ]),
+      {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        name: programme.title,
+        description: programme.overview || programme.description,
+        url: `${SITE_URL}${canonicalPath}`,
+        image: absoluteAssetUrl(image),
+        inLanguage: "en",
+        educationalCredentialAwarded: programme.certificate || undefined,
+        teaches: programme.learningOutcomes?.length ? programme.learningOutcomes : undefined,
+        coursePrerequisites: programme.prerequisites?.length ? programme.prerequisites : undefined,
+        provider: {
+          "@type": "EducationalOrganization",
+          "@id": `${SITE_URL}/#organization`,
+          name: "ASB Training Hub",
+          url: SITE_URL,
+        },
+        hasCourseInstance: [
+          {
+            "@type": "CourseInstance",
+            courseMode: /online/i.test(programme.mode || "") ? "blended" : "onsite",
+            courseWorkload: programme.duration,
+            location: {
+              "@type": "Place",
+              name: "ASB Training Hub",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "105-2, The Atomic, Near Technopark Phase 1, Kazhakootam",
+                addressLocality: "Trivandrum",
+                addressRegion: "Kerala",
+                postalCode: "695581",
+                addressCountry: "IN",
+              },
+            },
+          },
+        ],
+      },
+    ];
+
+    if (programme.faqs?.length) {
+      jsonLd.push({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: programme.faqs.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      });
+    }
+
+    const html = await renderSeoHtml({
+      title: programme.metaTitle || `${programme.title} | ASB Training Hub`,
+      description,
+      keywords:
+        programme.keywords || `${programme.title}, ${programme.categoryLabel}, ASB Training Hub`,
+      canonicalPath,
+      image,
+      jsonLd,
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post("/api/admin/login", loginLimiter, (req, res) => {
   // Compare both fields unconditionally so a wrong username and a wrong
   // password cost the same, and reject non-string input outright.
@@ -946,9 +1408,32 @@ app.get("/api/blogs/:slug", async (req, res, next) => {
   }
 });
 
-app.get("/api/admin/blogs", requireAdmin, async (_req, res, next) => {
+/** Shared pagination for the admin lists. `?page=` is 1-based. */
+const paginate = (items, query) => {
+  const perPage = Math.min(Math.max(Number(query.perPage) || 20, 1), 100);
+  const total = items.length;
+  const pages = Math.max(Math.ceil(total / perPage), 1);
+  const page = Math.min(Math.max(Number(query.page) || 1, 1), pages);
+  const start = (page - 1) * perPage;
+  return { items: items.slice(start, start + perPage), page, perPage, total, pages };
+};
+
+app.get("/api/admin/blogs", requireAdmin, async (req, res, next) => {
   try {
-    const blogs = await readBlogs();
+    let blogs = await readBlogs();
+
+    const search = text(req.query.search, 120).toLowerCase();
+    if (search) {
+      blogs = blogs.filter((b) =>
+        [b.title, b.slug, b.category].some((f) => String(f || "").toLowerCase().includes(search)),
+      );
+    }
+
+    // `?page=` opts into the paginated envelope; without it the response stays
+    // a plain array so existing callers keep working.
+    if (req.query.page || req.query.perPage || search) {
+      return res.json(paginate(blogs, req.query));
+    }
     res.json(blogs);
   } catch (error) {
     next(error);
@@ -1120,6 +1605,335 @@ app.delete("/api/admin/blogs/:slug", requireAdmin, async (req, res, next) => {
     next(error);
   }
 });
+/* ------------------------------------------------------------------ *
+ * Content collections
+ *
+ * Courses and training programmes are the same shape - a catalogue entry with
+ * structured detail, an editable body, two images and SEO fields - so both are
+ * served by one set of route handlers registered twice. Adding another
+ * catalogue is a config object, not another 250 lines.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Builds a read/write pair over a JSON file, seeding from a committed seed on
+ * first run. `seedFile` is optional: a collection with no seed starts empty.
+ */
+const createCollection = ({ file, seedFile, lock }) => {
+  const write = async (items) => {
+    await mkdir(dataDir, { recursive: true });
+    await writeFile(file, `${JSON.stringify(items, null, 2)}\n`, "utf8");
+  };
+
+  const read = async () => {
+    try {
+      return JSON.parse(await readFile(file, "utf8"));
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+      if (!seedFile) return [];
+      try {
+        const seed = JSON.parse(await readFile(seedFile, "utf8"));
+        await write(seed);
+        return seed;
+      } catch (seedError) {
+        if (seedError.code !== "ENOENT") throw seedError;
+        return [];
+      }
+    }
+  };
+
+  return { read, write, lock };
+};
+
+coursesCollection = createCollection({
+  file: coursesFile,
+  seedFile: coursesSeedFile,
+  lock: courseLock,
+});
+
+trainingCollection = createCollection({
+  file: trainingFile,
+  seedFile: trainingSeedFile,
+  lock: trainingLock,
+});
+
+/**
+ * Normalises a catalogue entry from a request body. `base` supplies fallbacks so
+ * an edit that omits a field keeps the stored value rather than clearing it.
+ */
+const entryFromBody = (body, base = {}, { categories, defaultCategory }) => {
+  const title = text(body.title, 180);
+  const category = categories.includes(body.category)
+    ? body.category
+    : base.category || defaultCategory;
+  const description = text(body.description, 400);
+
+  return {
+    title,
+    category,
+    categoryLabel: text(body.categoryLabel, 80) || base.categoryLabel || "",
+    icon: text(body.icon, 60) || base.icon || "GraduationCap",
+
+    description,
+    overview: text(body.overview, 2000) || base.overview || "",
+    duration: text(body.duration, 60) || base.duration || "3-6 Months",
+    mode: text(body.mode, 80) || base.mode || "Online & Offline",
+    internship: body.internship !== undefined ? Boolean(body.internship) : Boolean(base.internship),
+
+    syllabus: body.syllabus !== undefined ? list(body.syllabus) : base.syllabus || [],
+    tools: body.tools !== undefined ? list(body.tools) : base.tools || [],
+    careers: body.careers !== undefined ? list(body.careers) : base.careers || [],
+    whoShouldJoin: body.whoShouldJoin !== undefined ? list(body.whoShouldJoin) : base.whoShouldJoin || [],
+    learningOutcomes:
+      body.learningOutcomes !== undefined ? list(body.learningOutcomes) : base.learningOutcomes || [],
+    prerequisites: body.prerequisites !== undefined ? list(body.prerequisites) : base.prerequisites || [],
+    projects: body.projects !== undefined ? list(body.projects) : base.projects || [],
+    certificate: text(body.certificate, 500) || base.certificate || "",
+    faqs: body.faqs !== undefined ? faqList(body.faqs) : base.faqs || [],
+
+    content: body.content !== undefined ? sanitizeHtml(body.content) : base.content || "",
+
+    imageAlt: text(body.imageAlt, 160) || base.imageAlt || title,
+    secondaryImageAlt: text(body.secondaryImageAlt, 160) || base.secondaryImageAlt || title,
+
+    metaTitle: text(body.metaTitle, 180) || base.metaTitle || `${title} | ASB Training Hub`,
+    metaDescription: text(body.metaDescription, 300) || base.metaDescription || description,
+    keywords: text(body.keywords, 300) || base.keywords || "",
+
+    published: body.published !== undefined ? body.published !== false : base.published !== false,
+  };
+};
+
+/** Card fields only - a listing page has no use for syllabus or FAQ text. */
+const toSummary = ({
+  id, slug, title, category, categoryLabel, description,
+  duration, mode, internship, icon, imageUrl, imageAlt,
+}) => ({
+  id, slug, title, category, categoryLabel, description,
+  duration, mode, internship, icon, imageUrl, imageAlt,
+});
+
+/**
+ * Registers the public and admin routes for one catalogue.
+ *
+ * @param apiPath   URL segment, e.g. "courses" -> /api/courses
+ * @param collection  created by createCollection()
+ * @param categories  allowed category ids
+ */
+const registerCollectionRoutes = ({
+  apiPath,
+  collection,
+  categories,
+  defaultCategory,
+  // Named explicitly rather than derived, so an established URL is not silently
+  // renamed by a refactor.
+  categoriesPath = `${apiPath}-categories`,
+}) => {
+  const { read, write, lock } = collection;
+  const inCategory = (query) => {
+    const category = text(query.category, 40);
+    return categories.includes(category) ? category : "";
+  };
+
+  /* ---- public ---- */
+
+  app.get(`/api/${apiPath}`, async (req, res, next) => {
+    try {
+      let items = (await read()).filter((c) => c.published !== false);
+
+      const category = inCategory(req.query);
+      if (category) items = items.filter((c) => c.category === category);
+
+      if (req.query.summary === "1") return res.json(items.map(toSummary));
+      res.json(items);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get(`/api/${apiPath}/:slug`, async (req, res, next) => {
+    try {
+      const item = (await read()).find((c) => c.slug === req.params.slug && c.published !== false);
+      if (!item) return res.status(404).json({ error: "Not found." });
+      res.json(item);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get(`/api/${categoriesPath}`, async (_req, res, next) => {
+    try {
+      const items = (await read()).filter((c) => c.published !== false);
+      res.json(
+        categories.map((id) => {
+          const inIt = items.filter((c) => c.category === id);
+          return { id, label: inIt[0]?.categoryLabel || id, count: inIt.length };
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  /* ---- admin ---- */
+
+  app.get(`/api/admin/${apiPath}`, requireAdmin, async (req, res, next) => {
+    try {
+      let items = await read();
+
+      const search = text(req.query.search, 120).toLowerCase();
+      if (search) {
+        items = items.filter((c) =>
+          [c.title, c.slug, c.categoryLabel].some((f) =>
+            String(f || "").toLowerCase().includes(search),
+          ),
+        );
+      }
+
+      const category = inCategory(req.query);
+      if (category) items = items.filter((c) => c.category === category);
+
+      res.json(paginate(items, req.query));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get(`/api/admin/${apiPath}/:slug`, requireAdmin, async (req, res, next) => {
+    try {
+      const item = (await read()).find((c) => c.slug === req.params.slug);
+      if (!item) return res.status(404).json({ error: "Not found." });
+      res.json(item);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post(`/api/admin/${apiPath}`, requireAdmin, async (req, res, next) => {
+    try {
+      const title = text(req.body.title, 180);
+      const description = text(req.body.description, 400);
+      if (!title || !description) {
+        return res.status(400).json({ error: "Title and description are required." });
+      }
+
+      const created = await lock(async () => {
+        const items = await read();
+
+        const baseSlug = slugify(req.body.slug || title);
+        let slug = baseSlug;
+        let suffix = 2;
+        while (items.some((c) => c.slug === slug)) {
+          slug = `${baseSlug}-${suffix}`;
+          suffix += 1;
+        }
+
+        const now = new Date().toISOString();
+        const item = {
+          id: text(req.body.id, 80) || slug,
+          slug,
+          ...entryFromBody(req.body, {}, { categories, defaultCategory }),
+          imageUrl: await saveImage(req.body.imageData, slug),
+          secondaryImageUrl: await saveImage(req.body.secondaryImageData, `${slug}-secondary`),
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        items.unshift(item);
+        await write(items);
+        return item;
+      });
+
+      res.status(201).json({ ok: true, item: created, course: created, training: created });
+    } catch (error) {
+      if (/image/i.test(error.message)) return res.status(400).json({ error: error.message });
+      next(error);
+    }
+  });
+
+  app.put(`/api/admin/${apiPath}/:slug`, requireAdmin, async (req, res, next) => {
+    try {
+      const title = text(req.body.title, 180);
+      const description = text(req.body.description, 400);
+      if (!title || !description) {
+        return res.status(400).json({ error: "Title and description are required." });
+      }
+
+      const updated = await lock(async () => {
+        const items = await read();
+        const index = items.findIndex((c) => c.slug === req.params.slug);
+        if (index === -1) return null;
+
+        const current = items[index];
+
+        const requestedSlug = slugify(req.body.slug || current.slug || title);
+        let slug = requestedSlug;
+        let suffix = 2;
+        while (items.some((c, i) => i !== index && c.slug === slug)) {
+          slug = `${requestedSlug}-${suffix}`;
+          suffix += 1;
+        }
+
+        const next = {
+          ...current,
+          slug,
+          ...entryFromBody(req.body, current, { categories, defaultCategory }),
+          imageUrl: req.body.removeImage
+            ? ""
+            : (await saveImage(req.body.imageData, slug)) || current.imageUrl || "",
+          secondaryImageUrl: req.body.removeSecondaryImage
+            ? ""
+            : (await saveImage(req.body.secondaryImageData, `${slug}-secondary`)) ||
+              current.secondaryImageUrl ||
+              "",
+          updatedAt: new Date().toISOString(),
+        };
+
+        items[index] = next;
+        await write(items);
+        return next;
+      });
+
+      if (!updated) return res.status(404).json({ error: "Not found." });
+      res.json({ ok: true, item: updated, course: updated, training: updated });
+    } catch (error) {
+      if (/image/i.test(error.message)) return res.status(400).json({ error: error.message });
+      next(error);
+    }
+  });
+
+  app.delete(`/api/admin/${apiPath}/:slug`, requireAdmin, async (req, res, next) => {
+    try {
+      const removed = await lock(async () => {
+        const items = await read();
+        const next = items.filter((c) => c.slug !== req.params.slug);
+        if (next.length === items.length) return false;
+        await write(next);
+        return true;
+      });
+
+      if (!removed) return res.status(404).json({ error: "Not found." });
+      res.json({ ok: true });
+    } catch (error) {
+      next(error);
+    }
+  });
+};
+
+registerCollectionRoutes({
+  apiPath: "courses",
+  collection: coursesCollection,
+  categories: COURSE_CATEGORIES,
+  defaultCategory: "erp",
+  categoriesPath: "course-categories",
+});
+
+registerCollectionRoutes({
+  apiPath: "training",
+  collection: trainingCollection,
+  categories: TRAINING_CATEGORIES,
+  defaultCategory: "corporate",
+});
+
 
 app.post("/api/inquiries", submissionLimiter, async (req, res, next) => {
   try {

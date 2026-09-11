@@ -8,7 +8,9 @@
     "start": "node src/index.js",
     "test": "node --test test/",
     "test:security": "node --test test/security.test.mjs",
-    "test:seo": "node --test test/seo-server.test.mjs"
+    "test:seo": "node --test test/seo-server.test.mjs",
+    "test:courses": "node --test test/courses.test.mjs",
+    "migrate:courses": "node scripts/migrate-courses.mjs"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
