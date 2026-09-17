@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+﻿import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
 import rateLimit, { MemoryStore } from "express-rate-limit";
@@ -815,11 +815,37 @@ const faqList = (value) => {
 };
 
 const SITE_URL = "https://www.asbtraininghub.com";
+const LOCATION_PAGES = [
+  { slug: "trivandrum", name: "Trivandrum", title: "AI Courses in Trivandrum", delivery: "Classroom, hybrid and live online", description: "Join practical Generative AI, Agentic AI, programming, ERP and career courses at ASB Training Hub near Technopark in Trivandrum.", keywords: "Generative AI Course in Trivandrum, AI Course in Trivandrum, Agentic AI Course in Trivandrum, Best AI Institute in Trivandrum" },
+  { slug: "kazhakootam-technopark", name: "Kazhakootam & Technopark", title: "AI Courses near Technopark, Kazhakootam", delivery: "Classroom near Technopark, hybrid and live online", description: "Explore AI, Agentic AI, Generative AI, programming and ERP training near Technopark Phase 1 in Kazhakootam, Trivandrum.", keywords: "AI Course in Kazhakootam, AI Training near Technopark, Generative AI Course near Technopark, Agentic AI Training Kazhakootam" },
+  { slug: "kochi-ernakulam", name: "Kochi & Ernakulam", title: "AI Courses in Kochi and Ernakulam", delivery: "Live online", description: "Live online Generative AI and Agentic AI training for learners in Kochi and Ernakulam, with practical projects and career support.", keywords: "Generative AI Course in Kochi, AI Course in Kochi, AI Classes in Kochi, Agentic AI Course in Kochi, AI Course in Ernakulam" },
+  { slug: "kozhikode-calicut", name: "Kozhikode & Calicut", title: "AI Courses in Kozhikode and Calicut", delivery: "Live online", description: "Join live online Generative AI, Agentic AI and job-oriented AI courses from Kozhikode and Calicut.", keywords: "Generative AI Course in Kozhikode, AI Course in Calicut, Agentic AI Course in Kozhikode" },
+  { slug: "thrissur", name: "Thrissur", title: "AI Courses in Thrissur", delivery: "Live online", description: "Practical live online Generative AI and Agentic AI courses for students and professionals in Thrissur.", keywords: "AI Course in Thrissur, Agentic AI Course in Thrissur, Generative AI Training Thrissur" },
+  { slug: "kollam", name: "Kollam", title: "AI Courses in Kollam", delivery: "Live online", description: "Learn Generative AI, Agentic AI and AI automation through live online courses for learners in Kollam.", keywords: "AI Course in Kollam, Agentic AI Course in Kollam, Generative AI Training Kollam" },
+  { slug: "kottayam", name: "Kottayam", title: "AI Courses in Kottayam", delivery: "Live online", description: "Instructor-led online AI, Generative AI and Agentic AI training for students and working professionals in Kottayam.", keywords: "AI Course in Kottayam, Agentic AI Course in Kottayam, Generative AI Training Kottayam" },
+  { slug: "kannur", name: "Kannur", title: "AI Courses in Kannur", delivery: "Live online", description: "Join practical live online Generative AI, Agentic AI and AI automation training from Kannur.", keywords: "AI Course in Kannur, Agentic AI Course in Kannur, Generative AI Training Kannur" },
+  { slug: "alappuzha", name: "Alappuzha", title: "Agentic AI Courses in Alappuzha", delivery: "Live online", description: "Live online Agentic AI and Generative AI programmes with practical projects for learners in Alappuzha.", keywords: "Agentic AI Course in Alappuzha, AI Course in Alappuzha, Generative AI Training Alappuzha" },
+  { slug: "palakkad", name: "Palakkad", title: "Agentic AI Courses in Palakkad", delivery: "Live online", description: "Study Agentic AI, Generative AI and AI automation through instructor-led online training from Palakkad.", keywords: "Agentic AI Course in Palakkad, AI Course in Palakkad, Generative AI Training Palakkad" },
+  { slug: "malappuram", name: "Malappuram", title: "Agentic AI Courses in Malappuram", delivery: "Live online", description: "Career-focused online Agentic AI and Generative AI courses for students and professionals in Malappuram.", keywords: "Agentic AI Course in Malappuram, AI Course in Malappuram, Generative AI Training Malappuram" },
+];
+const LOCATION_TOPICS = [
+  { slug: "generative-ai-course", name: "Generative AI Course", shortName: "Generative AI", category: "ai", summary: "Learn prompt engineering, large language models, RAG, AI application development and responsible use through guided practical projects.", outcomes: ["Prompt engineering for real tasks", "LLM and RAG application fundamentals", "Generative AI workflow projects", "Portfolio and career preparation"] },
+  { slug: "agentic-ai-course", name: "Agentic AI Course", shortName: "Agentic AI", category: "ai", summary: "Build AI agents, tool-using workflows and multi-agent systems with practical automation projects and instructor guidance.", outcomes: ["AI agent architecture and planning", "Tool use and workflow automation", "Multi-agent application projects", "Deployment and career preparation"] },
+  { slug: "ai-course", name: "Artificial Intelligence Course", shortName: "AI", category: "ai", summary: "Develop practical foundations in artificial intelligence, Python, machine learning, automation and applied AI projects.", outcomes: ["Python and AI foundations", "Machine learning concepts", "Applied AI and automation projects", "Certification and career guidance"] },
+  { slug: "erp-sap-courses", name: "ERP and SAP Courses", shortName: "ERP and SAP", category: "erp", summary: "Build practical ERP skills across finance, materials, sales, production, HR, quality and technical modules through process-based training.", outcomes: ["Business process and ERP foundations", "Module-focused practical exercises", "Configuration and implementation concepts", "ERP career preparation"] },
+  { slug: "programming-courses", name: "Programming Courses", shortName: "Programming", category: "programming", summary: "Learn programming through guided coding practice, application development and portfolio projects across popular languages and full-stack paths.", outcomes: ["Programming and problem-solving foundations", "Frontend and backend development", "Database and application projects", "Developer career preparation"] },
+  { slug: "management-courses", name: "Management Courses", shortName: "Management", category: "management", summary: "Develop industry-focused skills in logistics, supply chain, warehouse, HR, finance, hospitality and IT management.", outcomes: ["Industry process fundamentals", "Operational and management tools", "Case studies and practical assignments", "Professional career preparation"] },
+  { slug: "internship-programs", name: "Internship Programs", shortName: "Internship", category: "internship", summary: "Combine structured technical training with practical assignments, project experience and internship-oriented career preparation.", outcomes: ["Job-oriented technical training", "Guided practical projects", "Portfolio and interview preparation", "Internship and career support"] },
+];
+const locationDistrictPath = (location) => `/locations/kerala/${location.slug}`;
+const locationTopicPath = (location, topic) => `${locationDistrictPath(location)}/${topic.slug}`;
+const localizedCoursePath = (location, course) => `${locationDistrictPath(location)}/course/${course.slug}`;
 
 const staticSitemapRoutes = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
   { loc: "/about", priority: "0.8", changefreq: "monthly" },
   { loc: "/courses", priority: "0.95", changefreq: "weekly" },
+  { loc: "/locations/kerala", priority: "0.9", changefreq: "monthly" },
   { loc: "/reviews", priority: "0.7", changefreq: "monthly" },
   { loc: "/faq", priority: "0.8", changefreq: "monthly" },
   { loc: "/blog", priority: "0.8", changefreq: "weekly" },
@@ -830,6 +856,10 @@ const staticSitemapRoutes = [
     loc: `/courses/${c}`, priority: "0.9", changefreq: "weekly",
   })),
   { loc: "/training", priority: "0.9", changefreq: "weekly" },
+  ...LOCATION_PAGES.flatMap((location) => [
+    { loc: locationDistrictPath(location), priority: "0.85", changefreq: "monthly" },
+    ...LOCATION_TOPICS.map((topic) => ({ loc: locationTopicPath(location, topic), priority: "0.8", changefreq: "monthly" })),
+  ]),
 ];
 
 const escapeXml = (value) =>
@@ -859,7 +889,7 @@ const stripHtml = (value) =>
 const truncateText = (value, max = 160) => {
   const cleaned = stripHtml(value);
   if (cleaned.length <= max) return cleaned;
-  return `${cleaned.slice(0, max - 1).replace(/\s+\S*$/, "")}…`;
+  return `${cleaned.slice(0, max - 1).replace(/\s+\S*$/, "")}â€¦`;
 };
 
 const absoluteAssetUrl = (value) => {
@@ -979,7 +1009,7 @@ const catalogueShell = ({ heading, intro, items, prefix }) =>
     intro,
     body: `<section aria-label="${escapeHtml(heading)}"><ul>${items
       .map(
-        (item) => `<li><article><h2><a href="${prefix}/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description || item.excerpt || item.overview || "")}</p>${item.duration ? `<p>${escapeHtml(item.duration)} · ${escapeHtml(item.mode || "")}</p>` : ""}</article></li>`,
+        (item) => `<li><article><h2><a href="${prefix}/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description || item.excerpt || item.overview || "")}</p>${item.duration ? `<p>${escapeHtml(item.duration)} Â· ${escapeHtml(item.mode || "")}</p>` : ""}</article></li>`,
       )
       .join("")}</ul></section>`,
   });
@@ -1016,7 +1046,14 @@ const readCourseSitemapRoutes = async () => {
 
   const published = (items) => items.filter((c) => c.published !== false && c.slug);
 
-  const courses = published(await readCourses()).map(entry("/course", "0.85"));
+  const publishedCourses = published(await readCourses());
+  const courses = publishedCourses.map(entry("/course", "0.85"));
+  const localizedCourses = LOCATION_PAGES.flatMap((location) => publishedCourses.map((course) => ({
+    loc: localizedCoursePath(location, course),
+    priority: "0.75",
+    changefreq: "monthly",
+    lastmod: course.updatedAt ? course.updatedAt.slice(0, 10) : undefined,
+  })));
   const publishedTraining = published(await readTraining());
   const training = publishedTraining.map(entry("/training", "0.8"));
   const trainingCategories = [...new Set(publishedTraining.map((item) => item.category))]
@@ -1027,7 +1064,7 @@ const readCourseSitemapRoutes = async () => {
       changefreq: "weekly",
     }));
 
-  return [...courses, ...trainingCategories, ...training];
+  return [...courses, ...localizedCourses, ...trainingCategories, ...training];
 };
 
 app.get("/sitemap.xml", async (_req, res, next) => {
@@ -1072,13 +1109,13 @@ app.get("/llms.txt", async (_req, res, next) => {
       const items = courses.filter((item) => item.category === category);
       if (!items.length) return "";
       const label = items[0].categoryLabel || category;
-      return `### ${label}\n\n${items.map((item) => `- ${item.title} — ${item.duration}, ${item.mode}: ${SITE_URL}/course/${item.slug}`).join("\n")}`;
+      return `### ${label}\n\n${items.map((item) => `- ${item.title} â€” ${item.duration}, ${item.mode}: ${SITE_URL}/course/${item.slug}`).join("\n")}`;
     }).filter(Boolean).join("\n\n");
     const trainingSections = TRAINING_CATEGORIES.map((category) => {
       const items = training.filter((item) => item.category === category);
       if (!items.length) return "";
       const label = items[0].categoryLabel || category;
-      return `### ${label}\n\n${items.map((item) => `- ${item.title} — ${item.duration}, ${item.mode}: ${SITE_URL}/training/${item.slug}`).join("\n")}`;
+      return `### ${label}\n\n${items.map((item) => `- ${item.title} â€” ${item.duration}, ${item.mode}: ${SITE_URL}/training/${item.slug}`).join("\n")}`;
     }).filter(Boolean).join("\n\n");
     const recentPosts = blogs
       .sort((a, b) => String(b.updatedAt || b.createdAt || "").localeCompare(String(a.updatedAt || a.createdAt || "")))
@@ -1106,6 +1143,10 @@ ${courseSections}
 ## Training programmes (${training.length})
 
 ${trainingSections}
+
+## Course locations (${LOCATION_PAGES.length})
+
+${LOCATION_PAGES.map((location) => `- ${location.title} â€” ${location.delivery}: ${SITE_URL}${locationDistrictPath(location)}\n${LOCATION_TOPICS.map((topic) => `  - ${topic.name}: ${SITE_URL}${locationTopicPath(location, topic)}`).join("\n")}`).join("\n")}
 
 ## Recent articles
 
@@ -1179,6 +1220,23 @@ const STATIC_PAGES = {
     description: "Learn about ASB Training Hub, a career-focused institute near Technopark offering practical ERP, programming, AI, management and internship programmes.",
     heading: "About ASB Training Hub",
     intro: "ASB Training Hub connects practical, industry-focused learning with career preparation in Trivandrum, Kerala.",
+  },
+  "/locations/kerala": {
+    title: "AI Course Locations in Kerala | ASB Training Hub",
+    description: "Find Generative AI, Agentic AI and job-oriented technology training for Trivandrum, Kochi, Kozhikode, Thrissur and other Kerala locations.",
+    heading: "AI course locations in Kerala",
+    intro: "Classroom training near Technopark in Trivandrum and instructor-led online programmes for learners across Kerala.",
+    links: LOCATION_PAGES.map((location) => ({ href: locationDistrictPath(location), label: location.title })),
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "ASB Training Hub course locations",
+      numberOfItems: LOCATION_PAGES.length,
+      itemListElement: LOCATION_PAGES.map((location, index) => ({
+        "@type": "ListItem", position: index + 1, name: location.title,
+        url: `${SITE_URL}${locationDistrictPath(location)}`,
+      })),
+    },
   },
   "/reviews": {
     title: "Student Reviews | ASB Training Hub Success Stories",
@@ -1259,6 +1317,160 @@ app.get(Object.keys(STATIC_PAGES), async (req, res, next) => {
     });
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/locations", (_req, res) => res.redirect(301, "/locations/kerala"));
+app.get("/location/:slug", (req, res, next) => {
+  const location = LOCATION_PAGES.find((item) => item.slug === req.params.slug);
+  if (!location) return next();
+  return res.redirect(301, locationDistrictPath(location));
+});
+
+app.get("/locations/kerala/:district", async (req, res, next) => {
+  try {
+    const location = LOCATION_PAGES.find((item) => item.slug === req.params.district);
+    if (!location) return next();
+    const canonicalPath = locationDistrictPath(location);
+    const related = LOCATION_PAGES.filter((item) => item.slug !== location.slug).slice(0, 5);
+    const availableCourses = (await readCourses()).filter((course) => course.published !== false && course.slug);
+    const html = await renderSeoHtml({
+      title: `${location.title} | ASB Training Hub`,
+      description: location.description,
+      keywords: location.keywords,
+      canonicalPath,
+      image: `/images/locations/${location.slug}.webp`,
+      visibleHtml: pageShell({
+        heading: location.title,
+        intro: `${location.description} Available through ${location.delivery.toLowerCase()}.`,
+        body: `<section><h2>Courses available for learners in ${escapeHtml(location.name)}</h2><p>Build practical skills through guided lessons, assignments and portfolio-ready projects in AI, programming, ERP, management and internship programmes.</p></section>`,
+        links: [
+          ...LOCATION_TOPICS.map((topic) => ({ href: locationTopicPath(location, topic), label: `${topic.name} in ${location.name}` })),
+          ...availableCourses.map((course) => ({ href: localizedCoursePath(location, course), label: `${course.title} in ${location.name}` })),
+          { href: "/courses/programming", label: "Programming courses" },
+          { href: "/contact", label: "Request course counselling" },
+          ...related.map((item) => ({ href: locationDistrictPath(item), label: `Courses in ${item.name}` })),
+        ],
+      }),
+      jsonLd: [
+        breadcrumbList([
+          { name: "Home", path: "/" },
+          { name: "Kerala locations", path: "/locations/kerala" },
+          { name: location.name, path: canonicalPath },
+        ]),
+        {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: location.title,
+          description: location.description,
+          url: `${SITE_URL}${canonicalPath}`,
+          about: location.keywords.split(", ").map((name) => ({ "@type": "Thing", name })),
+          provider: { "@type": "EducationalOrganization", "@id": `${SITE_URL}/#organization`, name: "ASB Training Hub" },
+        },
+      ],
+    });
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/locations/kerala/:district/course/:slug", async (req, res, next) => {
+  try {
+    const location = LOCATION_PAGES.find((item) => item.slug === req.params.district);
+    if (!location) return next();
+    const course = (await readCourses()).find((item) => item.slug === req.params.slug && item.published !== false);
+    if (!course) return next();
+    const canonicalPath = localizedCoursePath(location, course);
+    const local = location.slug === "trivandrum" || location.slug === "kazhakootam-technopark";
+    const title = `${course.title} Course in ${location.name}`;
+    const description = `${course.title} for learners in ${location.name}. ${local ? "Classroom, hybrid and live online options" : "Live instructor-led online training"}, practical projects and career support.`;
+    const topic = LOCATION_TOPICS.find((item) => item.category === course.category);
+    const image = `/images/locations/${location.slug}.webp`;
+    const html = await renderSeoHtml({
+      title: `${title} | ASB Training Hub`, description,
+      keywords: `${course.title} course in ${location.name}, ${course.title} training ${location.name}, ${course.categoryLabel || course.category} courses ${location.name}`,
+      canonicalPath, image,
+      visibleHtml: detailShell({
+        heading: title,
+        intro: `${course.description || description} ${local ? "Ask about classroom, hybrid or live online batches near Technopark." : `Join live online from ${escapeHtml(location.name)} with instructor guidance and project reviews.`}`,
+        content: `<h2>Course overview</h2><p>${escapeHtml(course.overview || course.description)}</p><h2>Learning option for ${escapeHtml(location.name)}</h2><p>${local ? "Classroom, hybrid and live online learning options are available from our centre near Technopark Phase 1." : `Learners in ${escapeHtml(location.name)} attend scheduled live online sessions supported by assignments, feedback and doubt clearing.`}</p>`,
+        sections: [
+          { title: "What you will learn", items: course.learningOutcomes || [] },
+          { title: "Syllabus", items: course.syllabus || [] },
+          { title: "Tools and software", items: course.tools || [] },
+          { title: "Career opportunities", items: course.careers || [] },
+        ],
+        links: [
+          { href: locationDistrictPath(location), label: `All courses in ${location.name}` },
+          ...(topic ? [{ href: locationTopicPath(location, topic), label: `${topic.name} in ${location.name}` }] : []),
+          { href: `/course/${course.slug}`, label: "Main course overview" },
+          { href: "/contact", label: "Request course details" },
+        ],
+      }),
+      jsonLd: [
+        breadcrumbList([{ name: "Home", path: "/" }, { name: "Kerala locations", path: "/locations/kerala" }, { name: location.name, path: locationDistrictPath(location) }, { name: course.title, path: canonicalPath }]),
+        { "@context": "https://schema.org", "@type": "Course", name: title, description, url: `${SITE_URL}${canonicalPath}`, image: `${SITE_URL}${image}`, teaches: course.learningOutcomes || [], educationalCredentialAwarded: course.certificate, coursePrerequisites: course.prerequisites || [], provider: { "@type": "EducationalOrganization", "@id": `${SITE_URL}/#organization`, name: "ASB Training Hub" }, hasCourseInstance: [{ "@type": "CourseInstance", courseMode: local ? "blended" : "online", courseWorkload: course.duration }] },
+        ...(course.faqs?.length ? [{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: course.faqs.map((faq) => ({ "@type": "Question", name: faq.q, acceptedAnswer: { "@type": "Answer", text: faq.a } })) }] : []),
+      ],
+    });
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/locations/kerala/:district/:topic", async (req, res, next) => {
+  try {
+    const location = LOCATION_PAGES.find((item) => item.slug === req.params.district);
+    const topic = LOCATION_TOPICS.find((item) => item.slug === req.params.topic);
+    if (!location || !topic) return next();
+    const canonicalPath = locationTopicPath(location, topic);
+    const title = `${topic.name} in ${location.name}`;
+    const description = `${topic.summary} Join from ${location.name} through ${location.delivery.toLowerCase()}.`;
+    const localKeywords = location.keywords.split(", ").filter((keyword) => {
+      const value = keyword.toLowerCase();
+      if (topic.slug === "generative-ai-course") return value.includes("generative") || value.includes("gen ai");
+      if (topic.slug === "agentic-ai-course") return value.includes("agentic");
+      if (topic.slug === "ai-course") return value.includes("ai course") || value.includes("ai training") || value.includes("ai classes") || value.includes("ai institute");
+      return value.includes(topic.shortName.toLowerCase());
+    });
+    const keywords = [...new Set([...localKeywords, `${topic.name} in ${location.name}`, `Best ${topic.name} in ${location.name}`, `${topic.shortName} Training in ${location.name}`, `${topic.shortName} Certification in ${location.name}`, `Online ${topic.name} in ${location.name}`, `${topic.name} with Placement Support in ${location.name}`])];
+    const categoryCourses = (await readCourses()).filter((course) => course.published !== false && course.category === topic.category);
+    const focusedCourses = topic.slug === "generative-ai-course"
+      ? categoryCourses.filter((course) => /generative|gen\s*ai/i.test(course.title))
+      : topic.slug === "agentic-ai-course"
+        ? categoryCourses.filter((course) => /agentic|ai agent/i.test(course.title))
+        : categoryCourses;
+    const listedCourses = focusedCourses.length ? focusedCourses : categoryCourses;
+    const html = await renderSeoHtml({
+      title: `${title} | ASB Training Hub`, description, keywords: keywords.join(", "),
+      canonicalPath, image: `/images/locations/${location.slug}.webp`,
+      visibleHtml: detailShell({
+        heading: title, intro: description,
+        content: `<h2>Practical ${escapeHtml(topic.shortName)} training for ${escapeHtml(location.name)}</h2><p>This programme combines trainer-led lessons, guided assignments and applied projects. Learners receive support to connect each concept with practical workflows and career goals.</p><h2>Learning from ${escapeHtml(location.name)}</h2><p>${location.slug === "trivandrum" || location.slug === "kazhakootam-technopark" ? "Choose classroom, hybrid or live online learning from our centre near Technopark Phase 1." : `Join live instructor-led online sessions from ${escapeHtml(location.name)}, with project reviews and doubt-clearing support.`}</p>`,
+        sections: [{ title: "What you will learn", items: topic.outcomes }, { title: "Popular searches", items: keywords }],
+        links: [
+          { href: locationDistrictPath(location), label: `All courses in ${location.name}` },
+          ...LOCATION_TOPICS.filter((item) => item.slug !== topic.slug).map((item) => ({ href: locationTopicPath(location, item), label: `${item.name} in ${location.name}` })),
+          ...listedCourses.map((course) => ({ href: localizedCoursePath(location, course), label: course.title })),
+          { href: "/contact", label: "Request course details" },
+        ],
+      }),
+      jsonLd: [
+        breadcrumbList([{ name: "Home", path: "/" }, { name: "Kerala locations", path: "/locations/kerala" }, { name: location.name, path: locationDistrictPath(location) }, { name: topic.name, path: canonicalPath }]),
+        { "@context": "https://schema.org", "@type": "Course", name: title, description, url: `${SITE_URL}${canonicalPath}`, teaches: topic.outcomes, provider: { "@type": "EducationalOrganization", "@id": `${SITE_URL}/#organization`, name: "ASB Training Hub" }, hasCourseInstance: [{ "@type": "CourseInstance", courseMode: location.slug === "trivandrum" || location.slug === "kazhakootam-technopark" ? "blended" : "online" }] },
+      ],
+    });
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
     res.send(html);
   } catch (error) {
     next(error);

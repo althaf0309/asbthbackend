@@ -145,6 +145,46 @@ describe("SEO: sitemap.xml", () => {
   });
 });
 
+describe("SEO: location landing pages", () => {
+  it("publishes the location index and every canonical location URL", async () => {
+    const index = await api.get("/locations/kerala");
+    assert.equal(index.status, 200);
+    assert.match(String(index.body), /AI course locations in Kerala/i);
+
+    const found = locs();
+    for (const slug of ["trivandrum", "kazhakootam-technopark", "kochi-ernakulam", "kozhikode-calicut", "thrissur", "kollam", "kottayam", "kannur", "alappuzha", "palakkad", "malappuram"]) {
+      assert.ok(found.includes(`${SITE_URL}/locations/kerala/${slug}`), `sitemap is missing location ${slug}`);
+      for (const topic of ["generative-ai-course", "agentic-ai-course", "ai-course", "erp-sap-courses", "programming-courses", "management-courses", "internship-programs"]) {
+        assert.ok(found.includes(`${SITE_URL}/locations/kerala/${slug}/${topic}`), `sitemap is missing ${topic} for ${slug}`);
+      }
+    }
+  });
+
+  it("renders a location with its own canonical, visible content and schema", async () => {
+    const res = await api.get("/locations/kerala/kochi-ernakulam/agentic-ai-course");
+    assert.equal(res.status, 200);
+    const html = String(res.body);
+    assert.match(html, /<h1>Agentic AI Course in Kochi &amp; Ernakulam<\/h1>/i);
+    assert.match(html, /canonical" href="https:\/\/www\.asbtraininghub\.com\/locations\/kerala\/kochi-ernakulam\/agentic-ai-course/i);
+    assert.match(html, /"@type":"Course"/);
+    assert.match(html, /Live online/i);
+  });
+
+  it("renders localized copies of courses and lists them in the sitemap", async () => {
+    const path = "/locations/kerala/trivandrum/course/python-full-stack";
+    const res = await api.get(path);
+    assert.equal(res.status, 200);
+    const html = String(res.body);
+    assert.match(html, /Python Full Stack Course in Trivandrum/i);
+    assert.match(html, new RegExp(`canonical" href="${SITE_URL}${path}`));
+    assert.match(html, /"@type":"Course"/);
+    assert.ok(locs().includes(`${SITE_URL}${path}`), "localized course missing from sitemap");
+
+    const original = await api.get("/course/python-full-stack");
+    assert.equal(original.status, 200, "the original course URL must remain available");
+  });
+});
+
 /* ------------------------------------------------------------------ *
  * SEO - server-rendered blog HTML
  * ------------------------------------------------------------------ */
