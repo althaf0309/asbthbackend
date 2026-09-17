@@ -2630,7 +2630,8 @@ export { app, resetRateLimits };
 // Only bind a port when this file is the process entrypoint, so tests can
 // import the app and drive it on an ephemeral port.
 const isEntrypoint =
-  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+  (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) ||
+  process.env.pm_id !== undefined;
 
 if (isEntrypoint) {
   app.listen(PORT, "127.0.0.1", () => {
