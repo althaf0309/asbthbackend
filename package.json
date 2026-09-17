@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node src/index.js",
     "start": "node src/index.js",
-    "test": "node --test test/",
+    "test": "node --test test/api.test.mjs test/courses.test.mjs test/training.test.mjs test/security.test.mjs test/seo-server.test.mjs",
     "test:security": "node --test test/security.test.mjs",
     "test:seo": "node --test test/seo-server.test.mjs",
     "test:courses": "node --test test/courses.test.mjs",

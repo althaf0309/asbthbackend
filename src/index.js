@@ -4,7 +4,7 @@ import helmet from "helmet";
 import rateLimit, { MemoryStore } from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import sanitizeHtmlLib from "sanitize-html";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -87,13 +87,27 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         // GTM/GA are loaded by index.html and inject inline config.
-        scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://www.googletagmanager.com",
+          "https://challenges.cloudflare.com",
+        ],
         // Fonts are self-hosted now, so no third-party font origins are needed.
         styleSrc: ["'self'", "'unsafe-inline'"],
         fontSrc: ["'self'", "data:"],
         imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "https://www.google-analytics.com", "https://api.web3forms.com"],
-        frameSrc: ["https://www.googletagmanager.com"],
+        connectSrc: [
+          "'self'",
+          "https://www.google-analytics.com",
+          "https://api.web3forms.com",
+          "https://challenges.cloudflare.com",
+        ],
+        frameSrc: [
+          "https://www.googletagmanager.com",
+          "https://www.google.com",
+          "https://challenges.cloudflare.com",
+        ],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
         formAction: ["'self'"],
@@ -108,6 +122,14 @@ app.use(
 );
 
 app.use(cookieParser());
+
+// Authenticated responses contain private submissions and unpublished content.
+// Explicitly prevent browsers, reverse proxies and shared caches from retaining them.
+app.use("/api/admin", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Pragma", "no-cache");
+  next();
+});
 
 /* ------------------------------------------------------------------ *
  * Rate limiting
@@ -173,7 +195,12 @@ app.use((req, res, next) => {
       req.path.startsWith("/api/admin/courses") ||
       req.path.startsWith("/api/admin/training")) &&
     (req.method === "POST" || req.method === "PUT");
-  return isContentWrite ? uploadJson(req, res, next) : smallJson(req, res, next);
+  // Check the cookie/header before spending memory parsing a 15 MB body. The
+  // route performs the same authorization check again after parsing.
+  if (isContentWrite) {
+    return requireAdmin(req, res, () => uploadJson(req, res, next));
+  }
+  return smallJson(req, res, next);
 });
 
 // body-parser throws for malformed JSON and oversized payloads; both are client
@@ -204,6 +231,19 @@ const emptyStore = {
   inquiries: [],
   applications: [],
   newsletters: [],
+};
+
+/** Writes JSON through a sibling temp file so readers never observe half a write. */
+const writeJsonAtomic = async (filePath, value) => {
+  await mkdir(path.dirname(filePath), { recursive: true });
+  const tempPath = `${filePath}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
+  try {
+    await writeFile(tempPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+    await rename(tempPath, filePath);
+  } catch (error) {
+    await unlink(tempPath).catch(() => undefined);
+    throw error;
+  }
 };
 
 /**
@@ -242,8 +282,7 @@ const readStore = async () => {
 };
 
 const writeStore = async (store) => {
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(submissionsFile, `${JSON.stringify(store, null, 2)}\n`, "utf8");
+  await writeJsonAtomic(submissionsFile, store);
 };
 
 /** Reads the store, applies `mutate`, and writes it back atomically. */
@@ -374,8 +413,7 @@ const readBlogs = async () => {
 };
 
 const writeBlogs = async (blogs) => {
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(blogsFile, `${JSON.stringify(blogs, null, 2)}\n`, "utf8");
+  await writeJsonAtomic(blogsFile, blogs);
 };
 
 const text = (value, max = 500) => {
@@ -401,8 +439,7 @@ const phone = (value) => {
   return digits.length >= 7 && digits.length <= 15 ? cleaned : "";
 };
 
-const createId = () =>
-  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+const createId = () => `${Date.now().toString(36)}-${randomBytes(6).toString("base64url")}`;
 
 const slugify = (value) =>
   text(value, 120)
@@ -552,15 +589,122 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-const submissionMeta = (req) => ({
+const submissionMeta = (req, verification = "screened") => ({
   id: createId(),
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   status: "new",
   note: "",
+  verification,
   ip: req.ip,
   userAgent: req.get("user-agent") || "",
 });
+
+/* ------------------------------------------------------------------ *
+ * Public-form abuse screening
+ *
+ * The honeypot and timing checks stop basic form fillers; the conservative
+ * pattern score catches the dotted-Gmail/random-token campaign seen in the
+ * admin inbox. Turnstile is enforced server-side whenever its secret is set.
+ * Rejected bots receive a normal success response so they do not adapt their
+ * payload and retry. Nothing rejected is stored or forwarded by email.
+ * ------------------------------------------------------------------ */
+
+const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || "";
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+const canonicalEmail = (value) => {
+  const cleaned = email(value).toLowerCase();
+  if (!cleaned) return "";
+  const [local, domain] = cleaned.split("@");
+  if (domain === "gmail.com" || domain === "googlemail.com") {
+    return `${local.split("+")[0].replace(/\./g, "")}@gmail.com`;
+  }
+  return `${local.split("+")[0]}@${domain}`;
+};
+
+const hasSuspiciousEmailShape = (value) => {
+  const cleaned = email(value).toLowerCase();
+  if (!cleaned) return false;
+  const [local, domain] = cleaned.split("@");
+  const pieces = local.split(".");
+  return (
+    (domain === "gmail.com" || domain === "googlemail.com") &&
+    pieces.length >= 5 &&
+    pieces.filter((piece) => piece.length <= 2).length >= 3
+  );
+};
+
+const looksMachineGenerated = (value) => {
+  const cleaned = text(value, 1000);
+  if (cleaned.length < 14 || cleaned.length > 80 || /\s/.test(cleaned)) return false;
+  const letters = cleaned.replace(/[^a-z]/gi, "");
+  const caseTransitions = (cleaned.match(/[a-z][A-Z]|[A-Z][a-z]/g) || []).length;
+  return (
+    letters.length / cleaned.length > 0.8 &&
+    /[a-z]/.test(cleaned) &&
+    /[A-Z]/.test(cleaned) &&
+    caseTransitions >= 4 &&
+    new Set(letters.toLowerCase()).size >= 10 &&
+    !/[.!?,]/.test(cleaned)
+  );
+};
+
+const hasSuspiciousNameShape = (value) => {
+  const words = text(value, 120).toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length < 2) return false;
+  const letters = words.join("").replace(/[^a-z]/g, "");
+  if (letters.length < 8) return false;
+  const vowelRatio = (letters.match(/[aeiou]/g) || []).length / letters.length;
+  return vowelRatio < 0.22 || words.some((word) => /[^aeiou\W]{5,}/i.test(word));
+};
+
+const verifyTurnstile = async (req) => {
+  if (!TURNSTILE_SECRET_KEY) return { ok: true, verification: "screened" };
+  const responseToken = text(req.body?.turnstileToken, 3000);
+  if (!responseToken) return { ok: false, reason: "missing-turnstile" };
+
+  try {
+    const body = new URLSearchParams({
+      secret: TURNSTILE_SECRET_KEY,
+      response: responseToken,
+      remoteip: req.ip,
+    });
+    const response = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+      signal: AbortSignal.timeout(5000),
+    });
+    const result = await response.json().catch(() => ({}));
+    return result.success
+      ? { ok: true, verification: "turnstile" }
+      : { ok: false, reason: "invalid-turnstile" };
+  } catch (error) {
+    console.warn("Turnstile verification unavailable:", error.message);
+    // Fail closed. A challenge outage should not reopen the spam path.
+    return { ok: false, reason: "turnstile-unavailable" };
+  }
+};
+
+const screenSubmission = async (req, fields) => {
+  if (text(req.body?.website, 200)) return { ok: false, reason: "honeypot" };
+
+  let score = 0;
+  const startedAt = Number(req.body?.formStartedAt);
+  if (Number.isFinite(startedAt) && startedAt > 0 && Date.now() - startedAt < 1500) score += 3;
+  if (hasSuspiciousEmailShape(fields.email)) score += 2;
+  if (looksMachineGenerated(fields.message)) score += 2;
+  if (hasSuspiciousNameShape(fields.name)) score += 1;
+  if (score >= 2) return { ok: false, reason: "automated-pattern" };
+
+  return verifyTurnstile(req);
+};
+
+const silentlyRejectSubmission = (req, res, reason) => {
+  console.warn(`Public form rejected (${reason}) from ${req.ip}`);
+  return res.status(201).json({ ok: true });
+};
 
 /* ------------------------------------------------------------------ *
  * Inbox notification
@@ -617,6 +761,23 @@ const flattenSubmissions = (store) => [
   ...store.newsletters.map((item) => ({ ...item, type: "newsletter" })),
 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+const storeIfNew = async (type, submission) =>
+  updateStore((store) => {
+    const target = getSubmissionList(store, type);
+    const submittedAt = new Date(submission.createdAt).getTime();
+    const identity = canonicalEmail(submission.email) || phone(submission.phone);
+    const content = `${submission.course || ""}|${submission.message || ""}`.toLowerCase();
+    const duplicate = target.find((item) => {
+      const itemIdentity = canonicalEmail(item.email) || phone(item.phone);
+      const itemContent = `${item.course || ""}|${item.message || ""}`.toLowerCase();
+      const age = submittedAt - new Date(item.createdAt).getTime();
+      return identity && itemIdentity === identity && itemContent === content && age < 24 * 60 * 60 * 1000;
+    });
+    if (duplicate) return { duplicate: true, id: duplicate.id };
+    target.unshift(submission);
+    return { duplicate: false, id: submission.id };
+  });
+
 /* ------------------------------------------------------------------ *
  * Courses
  *
@@ -671,9 +832,6 @@ const staticSitemapRoutes = [
     loc: `/courses/${c}`, priority: "0.9", changefreq: "weekly",
   })),
   { loc: "/training", priority: "0.9", changefreq: "weekly" },
-  ...["corporate", "workshop", "certification", "bootcamp", "online"].map((c) => ({
-    loc: `/training/category/${c}`, priority: "0.8", changefreq: "weekly",
-  })),
 ];
 
 const escapeXml = (value) =>
@@ -758,6 +916,8 @@ const renderSeoHtml = async ({
   image = "/site-logo.png",
   type = "website",
   jsonLd,
+  visibleHtml = "",
+  noindex = false,
 }) => {
   const canonical = `${SITE_URL}${canonicalPath}`;
   const imageUrl = absoluteAssetUrl(image);
@@ -772,7 +932,11 @@ const renderSeoHtml = async ({
   html = upsertHeadTag(html, /<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
   html = upsertHeadTag(html, /<meta\s+name=["']description["'][^>]*>/i, `<meta name="description" content="${safeDescription}">`);
   html = upsertHeadTag(html, /<meta\s+name=["']keywords["'][^>]*>/i, `<meta name="keywords" content="${safeKeywords}">`);
-  html = upsertHeadTag(html, /<meta\s+name=["']robots["'][^>]*>/i, `<meta name="robots" content="index, follow">`);
+  html = upsertHeadTag(
+    html,
+    /<meta\s+name=["']robots["'][^>]*>/i,
+    `<meta name="robots" content="${noindex ? "noindex, nofollow" : "index, follow"}">`,
+  );
   html = upsertHeadTag(html, /<link\s+rel=["']canonical["'][^>]*>/i, `<link rel="canonical" href="${safeCanonical}" />`);
   html = upsertHeadTag(html, /<meta\s+property=["']og:title["'][^>]*>/i, `<meta property="og:title" content="${safeTitle}">`);
   html = upsertHeadTag(html, /<meta\s+property=["']og:description["'][^>]*>/i, `<meta property="og:description" content="${safeDescription}">`);
@@ -787,12 +951,61 @@ const renderSeoHtml = async ({
   for (const block of [].concat(jsonLd || [])) {
     html = html.replace(
       "</head>",
-      `    <script type="application/ld+json">${JSON.stringify(block).replace(/</g, "\\u003c")}</script>\n  </head>`
+      `    <script type="application/ld+json" data-server-json-ld="true">${JSON.stringify(block).replace(/</g, "\\u003c")}</script>\n  </head>`
+    );
+  }
+
+  // React replaces this shell when JavaScript loads. Until then, crawlers and
+  // visitors still receive the page's real heading, text and crawlable links.
+  if (visibleHtml) {
+    html = html.replace(
+      /<div\s+id=["']root["']\s*>\s*<\/div>/i,
+      `<div id="root">${visibleHtml}</div>`,
     );
   }
 
   return html;
 };
+
+const pageShell = ({ heading, intro, body = "", links = [] }) => `
+<main data-server-rendered="true" style="max-width:72rem;margin:0 auto;padding:8rem 1.5rem 4rem;font-family:system-ui,sans-serif">
+  <h1>${escapeHtml(heading)}</h1>
+  ${intro ? `<p>${escapeHtml(intro)}</p>` : ""}
+  ${body}
+  ${links.length ? `<nav aria-label="Related pages"><ul>${links.map((link) => `<li><a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a></li>`).join("")}</ul></nav>` : ""}
+</main>`;
+
+const catalogueShell = ({ heading, intro, items, prefix }) =>
+  pageShell({
+    heading,
+    intro,
+    body: `<section aria-label="${escapeHtml(heading)}"><ul>${items
+      .map(
+        (item) => `<li><article><h2><a href="${prefix}/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description || item.excerpt || item.overview || "")}</p>${item.duration ? `<p>${escapeHtml(item.duration)} · ${escapeHtml(item.mode || "")}</p>` : ""}</article></li>`,
+      )
+      .join("")}</ul></section>`,
+  });
+
+const detailShell = ({ heading, intro, content = "", sections = [], faqs = [] }) =>
+  pageShell({
+    heading,
+    intro,
+    body: [
+      content,
+      ...sections
+        .filter((section) => section.items?.length)
+        .map(
+          (section) => `<section><h2>${escapeHtml(section.title)}</h2><ul>${section.items
+            .map((item) => `<li>${escapeHtml(item)}</li>`)
+            .join("")}</ul></section>`,
+        ),
+      faqs.length
+        ? `<section><h2>Frequently asked questions</h2>${faqs
+            .map((faq) => `<h3>${escapeHtml(faq.q)}</h3><p>${escapeHtml(faq.a)}</p>`)
+            .join("")}</section>`
+        : "",
+    ].join(""),
+  });
 
 /** Catalogue URLs for the sitemap, straight from the live stores. */
 const readCourseSitemapRoutes = async () => {
@@ -806,14 +1019,21 @@ const readCourseSitemapRoutes = async () => {
   const published = (items) => items.filter((c) => c.published !== false && c.slug);
 
   const courses = published(await readCourses()).map(entry("/course", "0.85"));
-  const training = published(await readTraining()).map(entry("/training", "0.8"));
+  const publishedTraining = published(await readTraining());
+  const training = publishedTraining.map(entry("/training", "0.8"));
+  const trainingCategories = [...new Set(publishedTraining.map((item) => item.category))]
+    .filter((category) => TRAINING_CATEGORIES.includes(category))
+    .map((category) => ({
+      loc: `/training/category/${category}`,
+      priority: "0.8",
+      changefreq: "weekly",
+    }));
 
-  return [...courses, ...training];
+  return [...courses, ...trainingCategories, ...training];
 };
 
 app.get("/sitemap.xml", async (_req, res, next) => {
   try {
-    const today = new Date().toISOString().slice(0, 10);
     const blogs = await readBlogs();
     const courseRoutes = await readCourseSitemapRoutes();
     const blogRoutes = blogs
@@ -822,7 +1042,7 @@ app.get("/sitemap.xml", async (_req, res, next) => {
         loc: `/blog/${b.slug}`,
         priority: "0.65",
         changefreq: "monthly",
-        lastmod: b.updatedAt ? b.updatedAt.slice(0, 10) : today,
+        lastmod: b.updatedAt ? b.updatedAt.slice(0, 10) : undefined,
       }));
 
     const allRoutes = [...staticSitemapRoutes, ...courseRoutes, ...blogRoutes];
@@ -831,7 +1051,7 @@ app.get("/sitemap.xml", async (_req, res, next) => {
 ${allRoutes
   .map(
     ({ loc, priority, changefreq, lastmod }) =>
-      `  <url>\n    <loc>${escapeXml(`${SITE_URL}${loc}`)}</loc>\n    <lastmod>${escapeXml(lastmod || today)}</lastmod>\n    <changefreq>${escapeXml(changefreq)}</changefreq>\n    <priority>${escapeXml(priority)}</priority>\n  </url>`
+      `  <url>\n    <loc>${escapeXml(`${SITE_URL}${loc}`)}</loc>${lastmod ? `\n    <lastmod>${escapeXml(lastmod)}</lastmod>` : ""}\n    <changefreq>${escapeXml(changefreq)}</changefreq>\n    <priority>${escapeXml(priority)}</priority>\n  </url>`
   )
   .join("\n")}
 </urlset>`;
@@ -844,8 +1064,207 @@ ${allRoutes
   }
 });
 
+app.get("/llms.txt", async (_req, res, next) => {
+  try {
+    const published = (items) => items.filter((item) => item.published !== false && item.slug);
+    const courses = published(await readCourses());
+    const training = published(await readTraining());
+    const blogs = published(await readBlogs());
+    const courseSections = COURSE_CATEGORIES.map((category) => {
+      const items = courses.filter((item) => item.category === category);
+      if (!items.length) return "";
+      const label = items[0].categoryLabel || category;
+      return `### ${label}\n\n${items.map((item) => `- ${item.title} — ${item.duration}, ${item.mode}: ${SITE_URL}/course/${item.slug}`).join("\n")}`;
+    }).filter(Boolean).join("\n\n");
+    const trainingSections = TRAINING_CATEGORIES.map((category) => {
+      const items = training.filter((item) => item.category === category);
+      if (!items.length) return "";
+      const label = items[0].categoryLabel || category;
+      return `### ${label}\n\n${items.map((item) => `- ${item.title} — ${item.duration}, ${item.mode}: ${SITE_URL}/training/${item.slug}`).join("\n")}`;
+    }).filter(Boolean).join("\n\n");
+    const recentPosts = blogs
+      .sort((a, b) => String(b.updatedAt || b.createdAt || "").localeCompare(String(a.updatedAt || a.createdAt || "")))
+      .slice(0, 20)
+      .map((item) => `- ${item.title}: ${SITE_URL}/blog/${item.slug}`)
+      .join("\n");
+
+    const body = `# ASB Training Hub
+
+ASB Training Hub is a career training institute near Technopark in Kazhakootam, Trivandrum, Kerala. It offers practical ERP, programming, AI, management, internship and professional training with career support.
+
+## Verified contact details
+
+- Website: ${SITE_URL}/
+- Address: 105-2, The Atomic, Near Technopark Phase 1, Kazhakootam, Trivandrum, Kerala 695581
+- Phone and WhatsApp: +91 87147 73304
+- Email: info@asbtraininghub.com
+- Hours: Monday to Saturday, 9:00 AM to 6:00 PM
+- Sitemap: ${SITE_URL}/sitemap.xml
+
+## Courses (${courses.length})
+
+${courseSections}
+
+## Training programmes (${training.length})
+
+${trainingSections}
+
+## Recent articles
+
+${recentPosts || "No published articles."}
+
+Use canonical URLs from the sitemap. Do not index or quote private administration pages under /admin/.
+`;
+    res.type("text/plain");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.send(body);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "asb-backend" });
+});
+
+const STATIC_FAQS = [
+  ["What is ASB Training Hub?", "ASB Training Hub is a professional training institute near Technopark in Kazhakootam, Trivandrum."],
+  ["Where is ASB Training Hub located?", "105-2, The Atomic, Near Technopark Phase 1, Kazhakootam, Trivandrum, Kerala 695581."],
+  ["Do you offer online classes?", "Yes. Live online and classroom options are available, depending on the programme."],
+  ["Do you provide placement support?", "Students receive career support such as resume guidance, interview preparation and eligible job referrals. Placement is not guaranteed."],
+  ["How do I apply?", "Use the application page, call +91 87147 73304, or visit the campus during office hours."],
+  ["What are the office hours?", "Monday to Saturday, 9:00 AM to 6:00 PM."],
+].map(([q, a]) => ({ q, a }));
+
+const ORGANIZATION_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "@id": `${SITE_URL}/#organization`,
+  name: "ASB Training Hub",
+  url: `${SITE_URL}/`,
+  logo: `${SITE_URL}/site-logo.png`,
+  telephone: "+918714773304",
+  email: "info@asbtraininghub.com",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "105-2, The Atomic, Near Technopark Phase 1, Kazhakootam",
+    addressLocality: "Trivandrum",
+    addressRegion: "Kerala",
+    postalCode: "695581",
+    addressCountry: "IN",
+  },
+  sameAs: [
+    "https://www.facebook.com/share/1CsFkSP9E2/",
+    "https://www.instagram.com/asbtraininghub",
+    "https://www.linkedin.com/company/asb-training-hub/",
+    "https://www.youtube.com/@ASBTrainingHub",
+    "https://x.com/Asbtraininghub",
+  ],
+};
+
+const STATIC_PAGES = {
+  "/": {
+    title: "ASB Training Hub | ERP, SAP, AI & Programming Courses in Trivandrum",
+    description: "Job-oriented ERP/SAP, AI, programming, management and internship courses near Technopark, Trivandrum, with practical training and placement support.",
+    heading: "Career-focused training in Trivandrum",
+    intro: "Build practical skills through instructor-led ERP, programming, AI, management and internship programmes.",
+    links: [
+      { href: "/courses", label: "Browse all courses" },
+      { href: "/training", label: "Explore training programmes" },
+      { href: "/apply", label: "Apply for admission" },
+      { href: "/contact", label: "Contact ASB Training Hub" },
+    ],
+    jsonLd: ORGANIZATION_SCHEMA,
+  },
+  "/about": {
+    title: "About ASB Training Hub | Career Training Institute in Trivandrum",
+    description: "Learn about ASB Training Hub, a career-focused institute near Technopark offering practical ERP, programming, AI, management and internship programmes.",
+    heading: "About ASB Training Hub",
+    intro: "ASB Training Hub connects practical, industry-focused learning with career preparation in Trivandrum, Kerala.",
+  },
+  "/reviews": {
+    title: "Student Reviews | ASB Training Hub Success Stories",
+    description: "Read ASB Training Hub learner experiences across ERP, programming, AI, data science, HR, logistics and management programmes.",
+    heading: "Student success stories",
+    intro: "Learners share their experiences with practical projects, mentoring and career preparation at ASB Training Hub.",
+  },
+  "/faq": {
+    title: "FAQ | ASB Training Hub Courses, Admission, Fees & Placement",
+    description: "Answers about ASB Training Hub courses, admissions, learning modes, placement support, internships, certificates, fees and office hours.",
+    heading: "Frequently asked questions",
+    intro: "Answers to common questions about studying at ASB Training Hub.",
+    body: `<section>${STATIC_FAQS.map((faq) => `<h2>${escapeHtml(faq.q)}</h2><p>${escapeHtml(faq.a)}</p>`).join("")}</section>`,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: STATIC_FAQS.map((faq) => ({
+        "@type": "Question",
+        name: faq.q,
+        acceptedAnswer: { "@type": "Answer", text: faq.a },
+      })),
+    },
+  },
+  "/contact": {
+    title: "Contact ASB Training Hub | Training Institute Near Technopark",
+    description: "Contact ASB Training Hub in Kazhakootam, Trivandrum for course admissions, counselling, demo classes and training enquiries.",
+    heading: "Contact ASB Training Hub",
+    intro: "Call +91 87147 73304, email info@asbtraininghub.com, or visit near Technopark Phase 1 in Kazhakootam, Trivandrum.",
+  },
+  "/apply": {
+    title: "Apply Now | ASB Training Hub Course Admission",
+    description: "Apply for ASB Training Hub courses in ERP, AI, programming, management and internships, and request admission counselling.",
+    heading: "Apply for admission",
+    intro: "Choose a programme and submit your contact details. The admissions team will contact genuine enquiries after spam verification.",
+  },
+  "/terms-and-conditions": {
+    title: "Terms and Conditions | ASB Training Hub",
+    description: "Read ASB Training Hub terms covering enrolment, fees, placement support, course material, attendance, refunds and liability.",
+    heading: "Terms and conditions",
+    intro: "Review the terms that apply when enrolling in an ASB Training Hub programme.",
+  },
+  "/gallery": {
+    title: "Gallery | ASB Training Hub",
+    description: "Photos from ASB Training Hub classrooms, campus activities and events in Trivandrum.",
+    heading: "Life at ASB Training Hub",
+    intro: "A view of the campus, classrooms, certifications and events.",
+    noindex: true,
+  },
+};
+
+app.get(Object.keys(STATIC_PAGES), async (req, res, next) => {
+  try {
+    const page = STATIC_PAGES[req.path];
+    const visibleHtml = pageShell({
+      heading: page.heading,
+      intro: page.intro,
+      body: page.body || "",
+      links: page.links || [
+        { href: "/courses", label: "Courses" },
+        { href: "/training", label: "Training" },
+        { href: "/contact", label: "Contact" },
+      ],
+    });
+    const html = await renderSeoHtml({
+      title: page.title,
+      description: page.description,
+      keywords: "ASB Training Hub, training institute Trivandrum, job-oriented courses Kerala",
+      canonicalPath: req.path,
+      visibleHtml,
+      jsonLd: page.jsonLd || {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: page.heading,
+        url: `${SITE_URL}${req.path}`,
+        isPartOf: { "@type": "WebSite", name: "ASB Training Hub", url: `${SITE_URL}/` },
+      },
+      noindex: page.noindex,
+    });
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get("/blog", async (_req, res, next) => {
@@ -857,6 +1276,12 @@ app.get("/blog", async (_req, res, next) => {
       keywords: "ASB Training Hub blog, SAP training Kerala, ERP courses Kerala, AI training Kerala, logistics courses Kerala, career training blog",
       canonicalPath: "/blog",
       type: "website",
+      visibleHtml: catalogueShell({
+        heading: "Career Insights & Resources",
+        intro: "Career insights, course guides and practical resources from ASB Training Hub.",
+        items: blogs,
+        prefix: "/blog",
+      }),
       jsonLd: [
         breadcrumbList([
           { name: "Home", path: "/" },
@@ -895,6 +1320,12 @@ app.get("/blog/:slug", async (req, res, next) => {
   try {
     const blogs = await readBlogs();
     const blog = blogs.find((item) => item.slug === req.params.slug && item.published !== false);
+    if (!blog) {
+      const moved = blogs.find(
+        (item) => item.published !== false && item.aliases?.includes(req.params.slug),
+      );
+      if (moved) return res.redirect(301, `/blog/${moved.slug}`);
+    }
     if (!blog) return res.status(404).send("Blog not found.");
 
     const description = blog.metaDescription || blog.excerpt || truncateText(blog.content, 155);
@@ -907,6 +1338,11 @@ app.get("/blog/:slug", async (req, res, next) => {
       canonicalPath,
       image,
       type: "article",
+      visibleHtml: detailShell({
+        heading: blog.title,
+        intro: blog.excerpt,
+        content: blog.content,
+      }),
       jsonLd: [
         breadcrumbList([
           { name: "Home", path: "/" },
@@ -995,6 +1431,12 @@ app.get("/courses", async (_req, res, next) => {
       keywords:
         "ASB Training Hub courses, courses in Trivandrum, ERP courses, SAP training, AI courses, programming courses, management courses, internship programs",
       canonicalPath: "/courses",
+      visibleHtml: catalogueShell({
+        heading: "All Courses",
+        intro: "Browse job-oriented ERP, programming, AI, management and internship courses in Trivandrum.",
+        items: courses,
+        prefix: "/course",
+      }),
       jsonLd: [
         breadcrumbList([
           { name: "Home", path: "/" },
@@ -1038,6 +1480,12 @@ app.get("/courses/:category", async (req, res, next) => {
       description: seo.description,
       keywords: `${category} courses Trivandrum, ${category} training Kerala, ASB Training Hub`,
       canonicalPath: `/courses/${category}`,
+      visibleHtml: catalogueShell({
+        heading: courses[0]?.categoryLabel || seo.title,
+        intro: seo.description,
+        items: courses,
+        prefix: "/course",
+      }),
       jsonLd: [
         breadcrumbList([
           { name: "Home", path: "/" },
@@ -1072,6 +1520,12 @@ app.get("/course/:slug", async (req, res, next) => {
     const course = (await readCourses()).find(
       (c) => c.slug === req.params.slug && c.published !== false,
     );
+    if (!course) {
+      const moved = (await readCourses()).find(
+        (c) => c.published !== false && c.aliases?.includes(req.params.slug),
+      );
+      if (moved) return res.redirect(301, `/course/${moved.slug}`);
+    }
     if (!course) return res.status(404).send("Course not found.");
 
     const description =
@@ -1144,6 +1598,21 @@ app.get("/course/:slug", async (req, res, next) => {
       keywords: course.keywords || `${course.title}, ${course.categoryLabel}, ASB Training Hub`,
       canonicalPath,
       image,
+      visibleHtml: detailShell({
+        heading: course.title,
+        intro: course.overview || course.description,
+        content: course.content || "",
+        sections: [
+          { title: "Syllabus", items: course.syllabus },
+          { title: "Learning outcomes", items: course.learningOutcomes },
+          { title: "Tools", items: course.tools },
+          { title: "Projects", items: course.projects },
+          { title: "Career paths", items: course.careers },
+          { title: "Who should join", items: course.whoShouldJoin },
+          { title: "Prerequisites", items: course.prerequisites },
+        ],
+        faqs: course.faqs || [],
+      }),
       jsonLd,
     });
 
@@ -1197,6 +1666,12 @@ app.get("/training", async (_req, res, next) => {
       keywords:
         "corporate training Kerala, workshops Trivandrum, certification training, bootcamp Kerala, ASB Training Hub",
       canonicalPath: "/training",
+      visibleHtml: catalogueShell({
+        heading: "Training Programmes",
+        intro: "Corporate training, workshops, certification tracks, bootcamps and live online training.",
+        items: programmes,
+        prefix: "/training",
+      }),
       jsonLd: [
         breadcrumbList([
           { name: "Home", path: "/" },
@@ -1237,11 +1712,35 @@ app.get("/training/category/:category", async (req, res, next) => {
     );
     const seo = TRAINING_CATEGORY_SEO[category];
 
+    if (!programmes.length) {
+      const html = await renderSeoHtml({
+        title: `Training Category Not Available | ASB Training Hub`,
+        description: "This training category does not currently have a published programme.",
+        keywords: "",
+        canonicalPath: `/training/category/${category}`,
+        noindex: true,
+        visibleHtml: pageShell({
+          heading: "Training category not available",
+          intro: "Browse the current training programmes or contact us about a custom batch.",
+          links: [{ href: "/training", label: "Browse training programmes" }],
+        }),
+      });
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("X-Robots-Tag", "noindex, follow");
+      return res.status(404).send(html);
+    }
+
     const html = await renderSeoHtml({
       title: seo.title,
       description: seo.description,
       keywords: `${category} training Kerala, ${category} programme Trivandrum, ASB Training Hub`,
       canonicalPath: `/training/category/${category}`,
+      visibleHtml: catalogueShell({
+        heading: programmes[0]?.categoryLabel || seo.title,
+        intro: seo.description,
+        items: programmes,
+        prefix: "/training",
+      }),
       jsonLd: [
         breadcrumbList([
           { name: "Home", path: "/" },
@@ -1276,6 +1775,12 @@ app.get("/training/:slug", async (req, res, next) => {
     const programme = (await readTraining()).find(
       (t) => t.slug === req.params.slug && t.published !== false,
     );
+    if (!programme) {
+      const moved = (await readTraining()).find(
+        (t) => t.published !== false && t.aliases?.includes(req.params.slug),
+      );
+      if (moved) return res.redirect(301, `/training/${moved.slug}`);
+    }
     if (!programme) return res.status(404).send("Training programme not found.");
 
     const description =
@@ -1351,6 +1856,20 @@ app.get("/training/:slug", async (req, res, next) => {
         programme.keywords || `${programme.title}, ${programme.categoryLabel}, ASB Training Hub`,
       canonicalPath,
       image,
+      visibleHtml: detailShell({
+        heading: programme.title,
+        intro: programme.overview || programme.description,
+        content: programme.content || "",
+        sections: [
+          { title: "What it covers", items: programme.syllabus },
+          { title: "Learning outcomes", items: programme.learningOutcomes },
+          { title: "Tools", items: programme.tools },
+          { title: "Projects", items: programme.projects },
+          { title: "Who it is for", items: programme.whoShouldJoin },
+          { title: "Prerequisites", items: programme.prerequisites },
+        ],
+        faqs: programme.faqs || [],
+      }),
       jsonLd,
     });
 
@@ -1401,6 +1920,12 @@ app.get("/api/blogs/:slug", async (req, res, next) => {
   try {
     const blogs = await readBlogs();
     const blog = blogs.find((item) => item.slug === req.params.slug && item.published !== false);
+    if (!blog) {
+      const moved = blogs.find(
+        (item) => item.published !== false && item.aliases?.includes(req.params.slug),
+      );
+      if (moved) return res.redirect(301, `/api/blogs/${moved.slug}`);
+    }
     if (!blog) return res.status(404).json({ error: "Blog not found." });
     res.json(blog);
   } catch (error) {
@@ -1562,6 +2087,10 @@ app.put("/api/admin/blogs/:slug", requireAdmin, async (req, res, next) => {
     const next = {
       ...current,
       slug,
+      aliases:
+        slug !== current.slug
+          ? [...new Set([...(current.aliases || []), current.slug])]
+          : current.aliases || [],
       title,
       excerpt: text(req.body.excerpt, 300),
       category: text(req.body.category, 80) || "Blog",
@@ -1620,8 +2149,7 @@ app.delete("/api/admin/blogs/:slug", requireAdmin, async (req, res, next) => {
  */
 const createCollection = ({ file, seedFile, lock }) => {
   const write = async (items) => {
-    await mkdir(dataDir, { recursive: true });
-    await writeFile(file, `${JSON.stringify(items, null, 2)}\n`, "utf8");
+    await writeJsonAtomic(file, items);
   };
 
   const read = async () => {
@@ -1752,7 +2280,14 @@ const registerCollectionRoutes = ({
 
   app.get(`/api/${apiPath}/:slug`, async (req, res, next) => {
     try {
-      const item = (await read()).find((c) => c.slug === req.params.slug && c.published !== false);
+      const items = await read();
+      const item = items.find((c) => c.slug === req.params.slug && c.published !== false);
+      if (!item) {
+        const moved = items.find(
+          (c) => c.published !== false && c.aliases?.includes(req.params.slug),
+        );
+        if (moved) return res.redirect(301, `/api/${apiPath}/${moved.slug}`);
+      }
       if (!item) return res.status(404).json({ error: "Not found." });
       res.json(item);
     } catch (error) {
@@ -1876,6 +2411,10 @@ const registerCollectionRoutes = ({
         const next = {
           ...current,
           slug,
+          aliases:
+            slug !== current.slug
+              ? [...new Set([...(current.aliases || []), current.slug])]
+              : current.aliases || [],
           ...entryFromBody(req.body, current, { categories, defaultCategory }),
           imageUrl: req.body.removeImage
             ? ""
@@ -1937,8 +2476,7 @@ registerCollectionRoutes({
 
 app.post("/api/inquiries", submissionLimiter, async (req, res, next) => {
   try {
-    const inquiry = {
-      ...submissionMeta(req),
+    const fields = {
       name: text(req.body.name, 120),
       email: email(req.body.email),
       phone: phone(req.body.phone),
@@ -1946,19 +2484,24 @@ app.post("/api/inquiries", submissionLimiter, async (req, res, next) => {
       message: text(req.body.message, 1000),
     };
 
-    if (!inquiry.name) {
+    if (!fields.name) {
       return res.status(400).json({ error: "Name is required." });
     }
 
-    if (!inquiry.phone) {
+    if (!fields.phone) {
       return res.status(400).json({ error: "Please enter a valid phone number." });
     }
 
-    if (req.body.email && !inquiry.email) {
+    if (req.body.email && !fields.email) {
       return res.status(400).json({ error: "Please enter a valid email." });
     }
 
-    await updateStore((store) => store.inquiries.unshift(inquiry));
+    const screening = await screenSubmission(req, fields);
+    if (!screening.ok) return silentlyRejectSubmission(req, res, screening.reason);
+
+    const inquiry = { ...submissionMeta(req, screening.verification), ...fields };
+    const stored = await storeIfNew("inquiry", inquiry);
+    if (stored.duplicate) return res.status(201).json({ ok: true, id: stored.id, duplicate: true });
     await forwardToInbox("Course Inquiry", inquiry);
 
     res.status(201).json({ ok: true, id: inquiry.id });
@@ -1969,8 +2512,7 @@ app.post("/api/inquiries", submissionLimiter, async (req, res, next) => {
 
 app.post("/api/applications", submissionLimiter, async (req, res, next) => {
   try {
-    const application = {
-      ...submissionMeta(req),
+    const fields = {
       name: text(req.body.name, 120),
       email: email(req.body.email),
       phone: phone(req.body.phone),
@@ -1982,11 +2524,16 @@ app.post("/api/applications", submissionLimiter, async (req, res, next) => {
       message: text(req.body.message, 1000),
     };
 
-    if (!application.name || !application.email || !application.phone || !application.course) {
+    if (!fields.name || !fields.email || !fields.phone || !fields.course) {
       return res.status(400).json({ error: "Name, email, phone, and course are required." });
     }
 
-    await updateStore((store) => store.applications.unshift(application));
+    const screening = await screenSubmission(req, fields);
+    if (!screening.ok) return silentlyRejectSubmission(req, res, screening.reason);
+
+    const application = { ...submissionMeta(req, screening.verification), ...fields };
+    const stored = await storeIfNew("application", application);
+    if (stored.duplicate) return res.status(201).json({ ok: true, id: stored.id, duplicate: true });
     await forwardToInbox("Course Application", application);
 
     res.status(201).json({ ok: true, id: application.id });
@@ -1997,19 +2544,73 @@ app.post("/api/applications", submissionLimiter, async (req, res, next) => {
 
 app.post("/api/newsletters", submissionLimiter, async (req, res, next) => {
   try {
-    const subscription = {
-      ...submissionMeta(req),
-      email: email(req.body.email),
-    };
+    const fields = { email: email(req.body.email) };
 
-    if (!subscription.email) {
+    if (!fields.email) {
       return res.status(400).json({ error: "Please enter a valid email." });
     }
 
-    await updateStore((store) => store.newsletters.unshift(subscription));
+    const screening = await screenSubmission(req, fields);
+    if (!screening.ok) return silentlyRejectSubmission(req, res, screening.reason);
+
+    const subscription = { ...submissionMeta(req, screening.verification), ...fields };
+    const stored = await storeIfNew("newsletter", subscription);
+    if (stored.duplicate) return res.status(201).json({ ok: true, id: stored.id, duplicate: true });
     await forwardToInbox("Newsletter Subscription", subscription);
 
     res.status(201).json({ ok: true, id: subscription.id });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get(/^\/admin\/(blog|courses|training)$/, async (req, res, next) => {
+  try {
+    const section = req.params[0];
+    const html = await renderSeoHtml({
+      title: `${section[0].toUpperCase()}${section.slice(1)} Admin | ASB Training Hub`,
+      description: "Private ASB Training Hub administration page.",
+      keywords: "",
+      canonicalPath: req.path,
+      noindex: true,
+      visibleHtml: pageShell({
+        heading: "Administration",
+        intro: "Sign in to manage ASB Training Hub content.",
+      }),
+    });
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+    res.send(html);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Return real status codes for unknown API and browser routes. A 200 SPA shell
+// makes removed URLs look indexable and hides broken links from monitoring.
+app.use(async (req, res, next) => {
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ error: "Not found." });
+  }
+  if (!['GET', 'HEAD'].includes(req.method)) return next();
+  try {
+    const html = await renderSeoHtml({
+      title: "Page Not Found | ASB Training Hub",
+      description: "The requested ASB Training Hub page could not be found.",
+      keywords: "",
+      canonicalPath: req.path,
+      noindex: true,
+      visibleHtml: pageShell({
+        heading: "Page not found",
+        intro: "The page may have moved or no longer exists.",
+        links: [{ href: "/", label: "Return to ASB Training Hub" }],
+      }),
+    });
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.status(404).send(html);
   } catch (error) {
     next(error);
   }
@@ -2028,7 +2629,7 @@ const isEntrypoint =
   process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (isEntrypoint) {
-  app.listen(PORT, () => {
+  app.listen(PORT, "127.0.0.1", () => {
     console.log(`ASB backend running at http://localhost:${PORT}`);
   });
 }

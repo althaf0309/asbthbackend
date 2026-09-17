@@ -178,7 +178,7 @@ describe("training admin API", () => {
 
 describe("training pages are server-rendered", () => {
   const jsonLdTypes = (html) =>
-    [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
       .map((m) => {
         try {
           return JSON.parse(m[1])["@type"];

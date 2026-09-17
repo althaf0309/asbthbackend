@@ -326,7 +326,7 @@ describe("admin course API", () => {
  * ------------------------------------------------------------------ */
 describe("course pages are server-rendered for crawlers", () => {
   const jsonLdBlocks = (html) =>
-    [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
       .map((m) => {
         try {
           return JSON.parse(m[1]);

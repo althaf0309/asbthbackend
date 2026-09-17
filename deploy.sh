@@ -65,14 +65,15 @@ git fetch origin main --quiet
 # hard reset would replace them with whatever is committed.
 BACKUP="$BACKEND/data-backups/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP"
-cp -a "$BACKEND/data/." "$BACKUP/" 2>/dev/null || true
+cp -a "$BACKEND/data/." "$BACKUP/" || die "could not create a complete data backup"
 ok "data backed up to $BACKUP"
 
 # Reset only tracked source, never data/.
 git reset --hard origin/main --quiet -- ':(exclude)data' 2>/dev/null   || git checkout -- . 2>/dev/null || true
 git merge --ff-only origin/main --quiet 2>/dev/null || git reset --hard origin/main --quiet
-# Restore anything the reset clobbered.
-cp -a "$BACKUP/." "$BACKEND/data/" 2>/dev/null || true
+[ -d "$BACKEND/data" ] || die "live data directory disappeared; deployment stopped. Restore from $BACKUP"
+# The running application may accept submissions while source updates. Never
+# copy the older snapshot back over live data, because that would erase them.
 ok "at $(git rev-parse --short HEAD), data preserved"
 
 npm ci --omit=dev --silent

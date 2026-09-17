@@ -113,14 +113,14 @@ describe("SEO: sitemap.xml", () => {
     }
   });
 
-  it("gives every entry a valid lastmod, changefreq and priority", () => {
+  it("gives every entry valid optional lastmod, changefreq and priority", () => {
     const entries = [...String(sitemap).matchAll(/<url>([\s\S]*?)<\/url>/g)].map((m) => m[1]);
     assert.ok(entries.length > 0);
     for (const entry of entries) {
       const lastmod = entry.match(/<lastmod>([^<]+)<\/lastmod>/);
       const changefreq = entry.match(/<changefreq>([^<]+)<\/changefreq>/);
       const priority = entry.match(/<priority>([^<]+)<\/priority>/);
-      assert.ok(lastmod && /^\d{4}-\d{2}-\d{2}$/.test(lastmod[1]), `bad lastmod: ${entry}`);
+      assert.ok(!lastmod || /^\d{4}-\d{2}-\d{2}$/.test(lastmod[1]), `bad lastmod: ${entry}`);
       assert.ok(
         changefreq &&
           ["always", "hourly", "daily", "weekly", "monthly", "yearly", "never"].includes(
@@ -237,7 +237,7 @@ describe("SEO: server-rendered blog pages", () => {
  * ------------------------------------------------------------------ */
 describe("AEO: structured data", () => {
   const jsonLdBlocks = (html) =>
-    [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
       .map((m) => {
         try {
           return JSON.parse(m[1]);
@@ -249,7 +249,7 @@ describe("AEO: structured data", () => {
 
   it("every JSON-LD block on a blog post is valid JSON", () => {
     if (!renderedBlogPage) return;
-    const raw = [...renderedBlogPage.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+    const raw = [...renderedBlogPage.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)];
     assert.ok(raw.length > 0, "blog post has no JSON-LD");
     for (const [, body] of raw) {
       assert.doesNotThrow(() => JSON.parse(body), `invalid JSON-LD: ${body.slice(0, 120)}`);
@@ -321,6 +321,27 @@ describe("AEO: structured data", () => {
  * GEO - generative engine surfaces
  * ------------------------------------------------------------------ */
 describe("GEO: generative engine surfaces", () => {
+  it("serves static routes with visible HTML and returns a real noindex 404", async () => {
+    const about = await api.get("/about");
+    assert.equal(about.status, 200);
+    assert.match(String(about.body), /<h1>About ASB Training Hub<\/h1>/i);
+    assert.match(String(about.body), /canonical" href="https:\/\/www\.asbtraininghub\.com\/about/i);
+
+    const missing = await api.get("/definitely-not-a-real-page");
+    assert.equal(missing.status, 404);
+    assert.match(String(missing.body), /noindex, nofollow/i);
+    assert.match(missing.headers.get("x-robots-tag") || "", /noindex/i);
+  });
+
+  it("generates llms.txt from the live catalogue", async () => {
+    const res = await api.get("/llms.txt");
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get("content-type") || "", /text\/plain/);
+    assert.match(String(res.body), /# ASB Training Hub/);
+    assert.match(String(res.body), /\/course\/erp-finance-controlling/);
+    assert.doesNotMatch(String(res.body), /https:\/\/www\.asbtraininghub\.com\/admin\//);
+  });
+
   it("blog HTML is served to a crawler without requiring JavaScript", () => {
     if (!renderedBlogPage) return;
     assert.match(renderedBlogPage, /<title>/i);

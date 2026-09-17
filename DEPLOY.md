@@ -32,11 +32,24 @@ ADMIN_USER=<pick a username>
 ADMIN_PASSWORD=<at least 12 characters>
 NODE_ENV=production
 WEB3FORMS_ACCESS_KEY=<your key>
+TURNSTILE_SECRET_KEY=<Cloudflare Turnstile secret key>
 ```
 
 `.env` is loaded automatically and is gitignored. Without
 `WEB3FORMS_ACCESS_KEY` submissions are still stored and visible in the admin
 console, they just are not emailed.
+
+To reject automated submissions with a server-verified challenge, create a
+free Cloudflare Turnstile widget for `asbtraininghub.com`, set the secret above,
+and create `/var/www/asbtraininghub/frontend/.env.production` before building:
+
+```bash
+VITE_TURNSTILE_SITE_KEY=<matching Turnstile site key>
+```
+
+The site key is public and compiled into the frontend. The secret belongs only
+in `backend/.env`. Configure both keys together; the backend fails closed when
+the secret is set and the browser does not provide a valid challenge token.
 
 ```bash
 chmod 600 .env

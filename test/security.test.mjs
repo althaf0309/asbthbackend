@@ -172,6 +172,13 @@ describe("B. authorisation on admin routes", () => {
       assert.ok(!text.includes("9999999999"), `${route} leaked a submitter phone`);
     }
   });
+
+  it("B6 rejects an unauthenticated large admin upload before parsing it", async () => {
+    const res = await api.post("/api/admin/courses", {
+      raw: JSON.stringify({ padding: "x".repeat(250_000) }),
+    });
+    assert.equal(res.status, 401);
+  });
 });
 
 /* ------------------------------------------------------------------ *
@@ -396,7 +403,48 @@ describe("E. abuse resistance and limits", () => {
     assert.equal(res.status, 400, "a non-numeric phone value must be rejected");
   });
 
-  it("E6 truncates oversized free-text instead of storing it whole", async () => {
+  it("E6 silently drops honeypot and automated-pattern spam", async () => {
+    const before = (await api.get("/api/admin/submissions", { token })).body.length;
+
+    const honeypot = await api.post("/api/inquiries", {
+      body: { name: "Real Looking", phone: "9876543210", website: "https://spam.test" },
+    });
+    const screenshotPattern = await api.post("/api/inquiries", {
+      body: {
+        name: "Mozfk Ephnan",
+        email: "t.o.r.o.z.u.w.oca.4.4@gmail.com",
+        phone: "7719535792",
+        message: "gTqUFEVkrVbwLuiKP",
+      },
+    });
+    const newsletterPattern = await api.post("/api/newsletters", {
+      body: { email: "t.o.r.o.z.u.w.oca.4.4@gmail.com" },
+    });
+
+    assert.equal(honeypot.status, 201);
+    assert.equal(screenshotPattern.status, 201);
+    assert.equal(newsletterPattern.status, 201);
+    assert.equal(honeypot.body.id, undefined);
+    assert.equal(screenshotPattern.body.id, undefined);
+
+    const after = (await api.get("/api/admin/submissions", { token })).body.length;
+    assert.equal(after, before, "rejected spam must not be stored in the admin inbox");
+  });
+
+  it("E7 de-duplicates Gmail dot and plus aliases", async () => {
+    const first = await api.post("/api/newsletters", {
+      body: { email: "first.name@gmail.com" },
+    });
+    const second = await api.post("/api/newsletters", {
+      body: { email: "firstname+campaign@gmail.com" },
+    });
+    assert.equal(first.status, 201);
+    assert.equal(second.status, 201);
+    assert.equal(second.body.duplicate, true);
+    assert.equal(second.body.id, first.body.id);
+  });
+
+  it("E8 truncates oversized free-text instead of storing it whole", async () => {
     const res = await api.post("/api/inquiries", {
       body: { name: "Trunc", phone: "9876543210", message: "z".repeat(50_000) },
     });
@@ -406,7 +454,7 @@ describe("E. abuse resistance and limits", () => {
     assert.ok(stored.message.length <= 1000, "message must be capped at 1000 chars");
   });
 
-  it("E7 does not lose writes under concurrent submissions", async () => {
+  it("E9 does not lose writes under concurrent submissions", async () => {
     const before = (await api.get("/api/admin/submissions", { token })).body.length;
     await Promise.all(
       Array.from({ length: 20 }, (_, i) =>
@@ -421,7 +469,7 @@ describe("E. abuse resistance and limits", () => {
     );
   });
 
-  it("E8 rejects an image larger than the documented 10 MB limit", async () => {
+  it("E10 rejects an image larger than the documented 10 MB limit", async () => {
     const oversized = `data:image/png;base64,${"A".repeat(14_000_000)}`;
     const res = await api.post("/api/admin/blogs", {
       token,
@@ -472,5 +520,10 @@ describe("F. response hardening", () => {
       "*",
       "wildcard CORS on an authenticated endpoint",
     );
+  });
+
+  it("F5 prevents authenticated admin responses from being cached", async () => {
+    const res = await api.get("/api/admin/submissions", { token });
+    assert.match(res.headers.get("cache-control") || "", /no-store/i);
   });
 });
