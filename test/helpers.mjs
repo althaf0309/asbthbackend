@@ -17,6 +17,10 @@ export const bootstrapEnv = async ({
   process.env.ADMIN_USER = adminUser;
   process.env.ADMIN_PASSWORD = adminPassword;
   process.env.ADMIN_TOKEN = adminToken;
+  // Tests must never contact external notification or challenge services, even
+  // when a developer has configured real credentials in backend/.env.
+  process.env.WEB3FORMS_ACCESS_KEY = "";
+  process.env.TURNSTILE_SECRET_KEY = "";
   // Sits between the concurrency test (20 requests, must all succeed) and the
   // flood test (40 requests, must be throttled).
   process.env.RATE_LIMIT_SUBMISSION = process.env.RATE_LIMIT_SUBMISSION || "30";

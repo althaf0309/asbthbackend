@@ -709,43 +709,41 @@ const silentlyRejectSubmission = (req, res, reason) => {
 /* ------------------------------------------------------------------ *
  * Inbox notification
  *
- * The browser used to POST straight to Web3Forms with the access key in the
- * bundle, so anyone could flood the inbox and bypass every check above. The
- * call now happens here, keyed from the environment and gated by the same rate
- * limiter as the endpoint itself.
+ * Web3Forms' free plan rejects server-side requests with HTTP 403. The backend
+ * therefore returns a browser delivery instruction only after a submission has
+ * passed validation, rate limits, spam screening and Turnstile. Rejected bots
+ * never receive the public Web3Forms access key.
  * ------------------------------------------------------------------ */
 
 const WEB3FORMS_KEY = process.env.WEB3FORMS_ACCESS_KEY || "";
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 
-const forwardToInbox = async (formType, submission) => {
-  if (!WEB3FORMS_KEY) return;
+if (!WEB3FORMS_KEY) {
+  console.warn(
+    "WEB3FORMS_ACCESS_KEY is not set. Forms will be stored in admin, but email notifications are disabled.",
+  );
+}
 
+if (!TURNSTILE_SECRET_KEY) {
+  console.warn(
+    "TURNSTILE_SECRET_KEY is not set. Public forms use local spam screening without Cloudflare verification.",
+  );
+}
+
+const inboxNotification = (formType, submission) => {
+  if (!WEB3FORMS_KEY) return undefined;
   const { id, ip, userAgent, status, note, createdAt, updatedAt, ...fields } = submission;
-
-  try {
-    const response = await fetch(WEB3FORMS_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
+  return {
+    endpoint: WEB3FORMS_ENDPOINT,
+    payload: {
         access_key: WEB3FORMS_KEY,
         from_name: "ASB Training Hub Website",
         subject: `New ${formType} - ASB Training Hub`,
         form_type: formType,
         reference_id: id,
         ...fields,
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
-
-    if (!response.ok) {
-      console.warn(`Inbox notification failed for ${id}: HTTP ${response.status}`);
-    }
-  } catch (error) {
-    // The submission is already stored; a notification failure must not turn
-    // into a failed form for the visitor.
-    console.warn(`Inbox notification failed for ${id}:`, error.message);
-  }
+    },
+  };
 };
 
 const getSubmissionList = (store, type) => {
@@ -2502,9 +2500,11 @@ app.post("/api/inquiries", submissionLimiter, async (req, res, next) => {
     const inquiry = { ...submissionMeta(req, screening.verification), ...fields };
     const stored = await storeIfNew("inquiry", inquiry);
     if (stored.duplicate) return res.status(201).json({ ok: true, id: stored.id, duplicate: true });
-    await forwardToInbox("Course Inquiry", inquiry);
-
-    res.status(201).json({ ok: true, id: inquiry.id });
+    res.status(201).json({
+      ok: true,
+      id: inquiry.id,
+      notification: inboxNotification("Course Inquiry", inquiry),
+    });
   } catch (error) {
     next(error);
   }
@@ -2534,9 +2534,11 @@ app.post("/api/applications", submissionLimiter, async (req, res, next) => {
     const application = { ...submissionMeta(req, screening.verification), ...fields };
     const stored = await storeIfNew("application", application);
     if (stored.duplicate) return res.status(201).json({ ok: true, id: stored.id, duplicate: true });
-    await forwardToInbox("Course Application", application);
-
-    res.status(201).json({ ok: true, id: application.id });
+    res.status(201).json({
+      ok: true,
+      id: application.id,
+      notification: inboxNotification("Course Application", application),
+    });
   } catch (error) {
     next(error);
   }
@@ -2556,9 +2558,11 @@ app.post("/api/newsletters", submissionLimiter, async (req, res, next) => {
     const subscription = { ...submissionMeta(req, screening.verification), ...fields };
     const stored = await storeIfNew("newsletter", subscription);
     if (stored.duplicate) return res.status(201).json({ ok: true, id: stored.id, duplicate: true });
-    await forwardToInbox("Newsletter Subscription", subscription);
-
-    res.status(201).json({ ok: true, id: subscription.id });
+    res.status(201).json({
+      ok: true,
+      id: subscription.id,
+      notification: inboxNotification("Newsletter Subscription", subscription),
+    });
   } catch (error) {
     next(error);
   }
