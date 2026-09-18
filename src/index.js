@@ -840,12 +840,17 @@ const LOCATION_TOPICS = [
 const locationDistrictPath = (location) => `/locations/kerala/${location.slug}`;
 const locationTopicPath = (location, topic) => `${locationDistrictPath(location)}/${topic.slug}`;
 const localizedCoursePath = (location, course) => `${locationDistrictPath(location)}/course/${course.slug}`;
+const AI_LANDING_PAGES = [
+  ["generative-ai-course-kerala","Generative AI Course in Kerala"],["agentic-ai-course-kerala","Agentic AI Course in Kerala"],["prompt-engineering-course-kerala","Prompt Engineering Course in Kerala"],["chatgpt-course-kerala","ChatGPT Course in Kerala"],["llm-course-kerala","LLM Course in Kerala"],["rag-course-kerala","RAG Course in Kerala"],["mcp-course-kerala","MCP Course in Kerala"],["ai-agent-development-course-kerala","AI Agent Development Course in Kerala"],["ai-automation-course-kerala","AI Automation Course in Kerala"],["ai-course-for-beginners-kerala","AI Course for Beginners in Kerala"],["ai-course-working-professionals-kerala","AI Course for Working Professionals in Kerala"],["online-ai-course-kerala","Online AI Course in Kerala"],["offline-ai-course-trivandrum","Offline AI Course in Trivandrum"],["ai-course-placement-support-kerala","AI Course with Placement Support in Kerala"],["ai-career-guide-kerala","AI Career Guide for Kerala"],["ai-tools-training-kerala","AI Tools Training in Kerala"],
+].map(([slug,title])=>({slug,title,description:`Explore ${title.toLowerCase()} with practical lessons, guided projects, instructor support and career-focused learning at ASB Training Hub.`}));
 
 const staticSitemapRoutes = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
   { loc: "/about", priority: "0.8", changefreq: "monthly" },
   { loc: "/courses", priority: "0.95", changefreq: "weekly" },
   { loc: "/locations/kerala", priority: "0.9", changefreq: "monthly" },
+  { loc: "/ai-courses", priority: "0.9", changefreq: "monthly" },
+  ...AI_LANDING_PAGES.map((page)=>({loc:`/ai-courses/${page.slug}`,priority:"0.8",changefreq:"monthly"})),
   { loc: "/reviews", priority: "0.7", changefreq: "monthly" },
   { loc: "/faq", priority: "0.8", changefreq: "monthly" },
   { loc: "/blog", priority: "0.8", changefreq: "weekly" },
@@ -1324,6 +1329,8 @@ app.get(Object.keys(STATIC_PAGES), async (req, res, next) => {
 });
 
 app.get("/locations", (_req, res) => res.redirect(301, "/locations/kerala"));
+app.get("/ai-courses", async (_req,res,next)=>{try{const html=await renderSeoHtml({title:"AI Courses in Kerala | Complete Learning Paths",description:"Explore Generative AI, Agentic AI, prompt engineering, LLM, RAG, MCP, automation and career-focused AI courses in Kerala.",keywords:"AI courses Kerala, Generative AI, Agentic AI, prompt engineering, LLM, RAG, MCP",canonicalPath:"/ai-courses",image:"/images/ai-course-hub.webp",visibleHtml:catalogueShell({heading:"AI Courses and Career Paths in Kerala",intro:"Choose a focused pathway for AI development, automation, professional upskilling or career preparation.",items:AI_LANDING_PAGES,prefix:"/ai-courses"}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:"AI courses in Kerala",itemListElement:AI_LANDING_PAGES.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}/ai-courses/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
+app.get("/ai-courses/:slug",async(req,res,next)=>{try{const page=AI_LANDING_PAGES.find(p=>p.slug===req.params.slug);if(!page)return next();const path=`/ai-courses/${page.slug}`;const html=await renderSeoHtml({title:`${page.title} | ASB Training Hub`,description:page.description,keywords:`${page.title}, AI training Kerala, job-oriented AI course`,canonicalPath:path,image:"/images/ai-course-hub.webp",visibleHtml:detailShell({heading:page.title,intro:page.description,content:`<h2>Practical learning for real AI work</h2><p>This focused pathway combines clear instruction, guided practice, portfolio projects and feedback. Learners can discuss prerequisites, fees, schedules and delivery options before enrolling.</p><h2>Career-focused course support</h2><p>Build demonstrable skills through assignments and applied projects, with guidance for portfolio presentation and interviews.</p>`,sections:[{title:"Learning approach",items:["Instructor-led concepts and demonstrations","Guided practical exercises","Portfolio-ready project work","Feedback and career preparation"]}],links:[{href:"/ai-courses",label:"All AI learning paths"},{href:"/courses/ai",label:"Browse AI courses"},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:"AI courses",path:"/ai-courses"},{name:page.title,path}]),{"@context":"https://schema.org","@type":"Course",name:page.title,description:page.description,url:`${SITE_URL}${path}`,provider:{"@type":"EducationalOrganization","@id":`${SITE_URL}/#organization`,name:"ASB Training Hub"}}]});res.type("html").send(html)}catch(e){next(e)}});
 app.get("/location/:slug", (req, res, next) => {
   const location = LOCATION_PAGES.find((item) => item.slug === req.params.slug);
   if (!location) return next();
