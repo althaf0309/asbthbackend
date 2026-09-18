@@ -19,6 +19,7 @@ dotenv.config({ path: path.join(rootDir, ".env"), quiet: true });
 const dataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(rootDir, "data");
 const uploadDir = path.join(dataDir, "uploads");
 const submissionsFile = path.join(dataDir, "submissions.json");
+const analyticsFile = path.join(dataDir, "analytics.json");
 const blogsFile = path.join(dataDir, "blogs.json");
 const coursesFile = path.join(dataDir, "courses.json");
 // Committed seed. courses.json (the live, editable store) is gitignored and
@@ -270,6 +271,18 @@ const storeLock = createFileLock();
 const blogLock = createFileLock();
 const courseLock = createFileLock();
 const trainingLock = createFileLock();
+const analyticsLock = createFileLock();
+
+const readAnalytics = async () => {
+  try { return JSON.parse(await readFile(analyticsFile, "utf8")); }
+  catch (error) { if (error.code === "ENOENT") return []; throw error; }
+};
+const recordAnalytics = (event) => analyticsLock(async () => {
+  const events = await readAnalytics();
+  events.push(event);
+  if (events.length > 20000) events.splice(0, events.length - 20000);
+  await writeJsonAtomic(analyticsFile, events);
+});
 
 const readStore = async () => {
   try {
@@ -1175,6 +1188,37 @@ Use canonical URLs from the sitemap. Do not index or quote private administratio
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "asb-backend" });
+});
+
+app.post("/api/analytics/events", async (req, res, next) => {
+  try {
+    const allowed = new Set(["page_view", "engagement", "form_submit"]);
+    const eventType = text(req.body?.eventType, 30);
+    if (!allowed.has(eventType)) return res.status(400).json({ error: "Invalid analytics event." });
+    await recordAnalytics({
+      id: `${Date.now().toString(36)}-${randomBytes(4).toString("hex")}`,
+      eventType, sessionId: text(req.body?.sessionId, 80), path: text(req.body?.path, 500) || "/",
+      title: text(req.body?.title, 200), referrer: text(req.body?.referrer, 500),
+      durationSeconds: Math.max(0, Math.min(86400, Number(req.body?.durationSeconds) || 0)),
+      scrollDepth: Math.max(0, Math.min(100, Number(req.body?.scrollDepth) || 0)),
+      formType: text(req.body?.formType, 30), email: text(req.body?.email, 254).toLowerCase(),
+      ip: requestIp(req), userAgent: text(req.get("user-agent"), 500),
+      country: text(req.get("cf-ipcountry"), 10), region: text(req.get("cf-region"), 100), city: text(req.get("cf-ipcity"), 100),
+      createdAt: new Date().toISOString(),
+    });
+    res.status(202).json({ ok: true });
+  } catch (error) { next(error); }
+});
+
+app.get("/api/admin/analytics", requireAdmin, async (_req, res, next) => {
+  try {
+    const events = await readAnalytics();
+    const sessions = new Set(events.map((event) => event.sessionId).filter(Boolean));
+    const views = events.filter((event) => event.eventType === "page_view");
+    const submissions = events.filter((event) => event.eventType === "form_submit");
+    const group = (items, key) => Object.entries(items.reduce((acc, item) => { const value = item[key] || "Unknown"; acc[value] = (acc[value] || 0) + 1; return acc; }, {})).sort((a,b) => b[1] - a[1]);
+    res.json({ summary: { pageViews: views.length, sessions: sessions.size, formSubmissions: submissions.length, averageScrollDepth: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.scrollDepth,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)), averageDurationSeconds: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.durationSeconds,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)) }, topPages: group(views,"path").slice(0,25), locations: group(views,"city").slice(0,25), submissions: submissions.slice(-100).reverse(), recentEvents: events.slice(-250).reverse() });
+  } catch (error) { next(error); }
 });
 
 const STATIC_FAQS = [
