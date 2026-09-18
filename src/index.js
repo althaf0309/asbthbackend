@@ -310,17 +310,17 @@ const updateStore = (mutate) =>
 const seedBlogs = [
   {
     slug: "why-sap-career-2024",
-    title: "Why a SAP Career Is Still One of the Best Choices in 2024",
-    excerpt: "SAP continues to dominate enterprise software with S/4HANA migrations driving massive demand for skilled consultants across India.",
+    title: "Why a ERP Career Is Still One of the Best Choices in 2024",
+    excerpt: "ERP continues to dominate enterprise software with S/4HANA migrations driving massive demand for skilled consultants across India.",
     category: "Career",
     author: "ASB Team",
     readTime: "5 min",
-    metaTitle: "Why a SAP Career Is Still One of the Best Choices in 2024 | ASB Training Hub",
-    metaDescription: "Explore why SAP and ERP careers remain strong choices for students and working professionals in 2024.",
-    keywords: "SAP career, ERP training, SAP courses, ASB Training Hub",
+    metaTitle: "Why a ERP Career Is Still One of the Best Choices in 2024 | ASB Training Hub",
+    metaDescription: "Explore why ERP and ERP careers remain strong choices for students and working professionals in 2024.",
+    keywords: "ERP career, ERP training, ERP courses, ASB Training Hub",
     imageUrl: "/blog/why-sap-career-2024.webp",
-    imageAlt: "SAP career training",
-    content: "<p>SAP remains one of the strongest career paths for students and working professionals who want enterprise technology roles. Businesses still need skilled consultants for finance, procurement, sales, production, HR, and analytics workflows.</p><p>At ASB Training Hub, our SAP-oriented ERP courses focus on practical configuration, business process understanding, and interview preparation.</p>",
+    imageAlt: "ERP career training",
+    content: "<p>ERP remains one of the strongest career paths for students and working professionals who want enterprise technology roles. Businesses still need skilled consultants for finance, procurement, sales, production, HR, and analytics workflows.</p><p>At ASB Training Hub, our ERP courses focus on practical configuration, business process understanding, and interview preparation.</p>",
     createdAt: "2024-03-15T00:00:00.000Z",
     updatedAt: "2024-03-15T00:00:00.000Z",
     published: true,
@@ -379,13 +379,13 @@ const seedBlogs = [
   {
     slug: "erp-implementation",
     title: "Understanding ERP Implementation: A Beginner's Guide",
-    excerpt: "Learn the fundamentals of ERP implementation, key phases, and why SAP is the preferred choice for enterprises.",
+    excerpt: "Learn the fundamentals of ERP implementation, key phases, and why ERP is the preferred choice for enterprises.",
     category: "ERP",
     author: "ASB Team",
     readTime: "8 min",
     metaTitle: "Understanding ERP Implementation: A Beginner's Guide | ASB Training Hub",
     metaDescription: "A beginner-friendly guide to ERP implementation phases, roles, and consultant skills.",
-    keywords: "ERP implementation, ERP training, SAP implementation",
+    keywords: "ERP implementation, ERP training, ERP implementation",
     imageUrl: "/blog/erp-implementation.webp",
     imageAlt: "ERP implementation guide",
     content: "<p>ERP implementation connects business requirements with system configuration. A consultant must understand process mapping, master data, testing, user training, and go-live support. The technology is rarely the hard part; aligning a business on how it wants to work is.</p><h2>The standard phases</h2><p>Most implementations follow a recognisable sequence: preparation and scoping, business blueprint, realisation and configuration, final preparation and testing, then go-live and hypercare support. Each phase has its own deliverables, and skipping documentation in an early phase reliably causes rework in a later one.</p><h2>Where projects go wrong</h2><p>The two most common failure points are master data and change management. Dirty or incomplete master data will surface during testing and delay go-live. Insufficient user training means a technically correct system that nobody uses correctly, which looks identical to a failed implementation from the business side.</p><h2>What a consultant is expected to do</h2><p>A functional consultant maps existing business processes, configures the system to support them, writes the functional specifications that developers build against, prepares test scripts, runs user acceptance testing, and supports users through the first weeks after go-live. Strong communication matters as much as configuration knowledge.</p><h2>Getting started</h2><p>Learn one module deeply before broadening out, understand the underlying business process rather than just the transaction codes, and get hands-on with a sandbox system. ASB Training Hub ERP courses are built around configuration practice and process understanding, with project work that mirrors a real implementation cycle.</p>",
@@ -845,7 +845,7 @@ const LOCATION_TOPICS = [
   { slug: "generative-ai-course", name: "Generative AI Course", shortName: "Generative AI", category: "ai", summary: "Learn prompt engineering, large language models, RAG, AI application development and responsible use through guided practical projects.", outcomes: ["Prompt engineering for real tasks", "LLM and RAG application fundamentals", "Generative AI workflow projects", "Portfolio and career preparation"] },
   { slug: "agentic-ai-course", name: "Agentic AI Course", shortName: "Agentic AI", category: "ai", summary: "Build AI agents, tool-using workflows and multi-agent systems with practical automation projects and instructor guidance.", outcomes: ["AI agent architecture and planning", "Tool use and workflow automation", "Multi-agent application projects", "Deployment and career preparation"] },
   { slug: "ai-course", name: "Artificial Intelligence Course", shortName: "AI", category: "ai", summary: "Develop practical foundations in artificial intelligence, Python, machine learning, automation and applied AI projects.", outcomes: ["Python and AI foundations", "Machine learning concepts", "Applied AI and automation projects", "Certification and career guidance"] },
-  { slug: "erp-sap-courses", name: "ERP and SAP Courses", shortName: "ERP and SAP", category: "erp", summary: "Build practical ERP skills across finance, materials, sales, production, HR, quality and technical modules through process-based training.", outcomes: ["Business process and ERP foundations", "Module-focused practical exercises", "Configuration and implementation concepts", "ERP career preparation"] },
+  { slug: "erp-sap-courses", name: "ERP Courses", shortName: "ERP", category: "erp", summary: "Build practical ERP skills across finance, materials, sales, production, HR, quality and technical modules through process-based training.", outcomes: ["Business process and ERP foundations", "Module-focused practical exercises", "Configuration and implementation concepts", "ERP career preparation"] },
   { slug: "programming-courses", name: "Programming Courses", shortName: "Programming", category: "programming", summary: "Learn programming through guided coding practice, application development and portfolio projects across popular languages and full-stack paths.", outcomes: ["Programming and problem-solving foundations", "Frontend and backend development", "Database and application projects", "Developer career preparation"] },
   { slug: "management-courses", name: "Management Courses", shortName: "Management", category: "management", summary: "Develop industry-focused skills in logistics, supply chain, warehouse, HR, finance, hospitality and IT management.", outcomes: ["Industry process fundamentals", "Operational and management tools", "Case studies and practical assignments", "Professional career preparation"] },
   { slug: "internship-programs", name: "Internship Programs", shortName: "Internship", category: "internship", summary: "Combine structured technical training with practical assignments, project experience and internship-oriented career preparation.", outcomes: ["Job-oriented technical training", "Guided practical projects", "Portfolio and interview preparation", "Internship and career support"] },
@@ -1261,8 +1261,8 @@ const ORGANIZATION_SCHEMA = {
 
 const STATIC_PAGES = {
   "/": {
-    title: "ASB Training Hub | ERP, SAP, AI & Programming Courses in Trivandrum",
-    description: "Job-oriented ERP/SAP, AI, programming, management and internship courses near Technopark, Trivandrum, with practical training and placement support.",
+    title: "ASB Training Hub | ERP, ERP, AI & Programming Courses in Trivandrum",
+    description: "Job-oriented ERP, AI, programming, management and internship courses near Technopark, Trivandrum, with practical training and placement support.",
     heading: "Career-focused training in Trivandrum",
     intro: "Build practical skills through instructor-led ERP, programming, AI, management and internship programmes.",
     links: [
@@ -1546,8 +1546,8 @@ app.get("/blog", async (_req, res, next) => {
     const blogs = (await readBlogs()).filter((blog) => blog.published !== false);
     const html = await renderSeoHtml({
       title: "Blog | ASB Training Hub",
-      description: "Career insights, ERP, SAP, AI, programming, logistics, and internship resources from ASB Training Hub.",
-      keywords: "ASB Training Hub blog, SAP training Kerala, ERP courses Kerala, AI training Kerala, logistics courses Kerala, career training blog",
+      description: "Career insights, ERP, ERP, AI, programming, logistics, and internship resources from ASB Training Hub.",
+      keywords: "ASB Training Hub blog, ERP training Kerala, ERP courses Kerala, AI training Kerala, logistics courses Kerala, career training blog",
       canonicalPath: "/blog",
       type: "website",
       visibleHtml: catalogueShell({
@@ -1670,9 +1670,9 @@ app.get("/blog/:slug", async (req, res, next) => {
 
 const COURSE_CATEGORY_SEO = {
   erp: {
-    title: "ERP & SAP Courses in Trivandrum | ASB Training Hub",
+    title: "ERP Courses in Trivandrum | ASB Training Hub",
     description:
-      "Practical ERP and SAP-style training in finance, materials, sales, production, HR, quality and ABAP, with internship and placement support.",
+      "Practical ERP-style training in finance, materials, sales, production, HR, quality and ABAP, with internship and placement support.",
   },
   programming: {
     title: "Programming Courses in Trivandrum | ASB Training Hub",
@@ -1701,9 +1701,9 @@ app.get("/courses", async (_req, res, next) => {
     const courses = (await readCourses()).filter((c) => c.published !== false);
     const html = await renderSeoHtml({
       title: "Courses | ASB Training Hub ERP, AI, Programming & Management",
-      description: `Browse ${courses.length}+ job-oriented courses at ASB Training Hub including ERP/SAP, programming, AI, management and internship programs in Trivandrum.`,
+      description: `Browse ${courses.length}+ job-oriented courses at ASB Training Hub including ERP, programming, AI, management and internship programs in Trivandrum.`,
       keywords:
-        "ASB Training Hub courses, courses in Trivandrum, ERP courses, SAP training, AI courses, programming courses, management courses, internship programs",
+        "ASB Training Hub courses, courses in Trivandrum, ERP courses, ERP training, AI courses, programming courses, management courses, internship programs",
       canonicalPath: "/courses",
       visibleHtml: catalogueShell({
         heading: "All Courses",

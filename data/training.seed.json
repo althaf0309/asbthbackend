@@ -132,11 +132,11 @@
   {
     "id": "sap-fico-certification-track",
     "slug": "sap-fico-certification-track",
-    "title": "SAP FICO Certification Track",
+    "title": "ERP FICO Certification Track",
     "category": "certification",
     "categoryLabel": "Certification Tracks",
     "icon": "Award",
-    "description": "A focused track that prepares working professionals for SAP FICO certification alongside a full-time job.",
+    "description": "A focused track that prepares working professionals for ERP FICO certification alongside a full-time job.",
     "overview": "Evening and weekend sessions aimed squarely at the certification syllabus, with configuration practice in a sandbox system and mock exams throughout. Designed for people already working who need a structured path rather than open-ended study.",
     "duration": "12 weeks",
     "mode": "Online & Offline",
@@ -149,12 +149,12 @@
       "Integration with materials management and sales",
       "Certification exam patterns and mock papers"
     ],
-    "tools": ["SAP S/4HANA sandbox", "SAP Fiori", "Exam simulator"],
-    "careers": ["SAP FICO Consultant", "Finance Systems Analyst", "ERP Support Consultant"],
+    "tools": ["ERP S/4HANA sandbox", "ERP Fiori", "Exam simulator"],
+    "careers": ["ERP FICO Consultant", "Finance Systems Analyst", "ERP Support Consultant"],
     "whoShouldJoin": [
       "Accountants moving into ERP consulting",
       "Working professionals preparing for certification",
-      "Finance graduates targeting SAP roles"
+      "Finance graduates targeting ERP roles"
     ],
     "learningOutcomes": [
       "Configure a full financial accounting module end to end",
@@ -164,11 +164,11 @@
     ],
     "prerequisites": ["An accounting or finance background", "Availability for evening or weekend sessions"],
     "projects": ["A full FICO configuration in a sandbox", "A month-end close walkthrough"],
-    "certificate": "ASB Training Hub completion certificate plus structured preparation for the official SAP certification exam, which is booked and sat separately.",
+    "certificate": "ASB Training Hub completion certificate plus structured preparation for the official ERP certification exam, which is booked and sat separately.",
     "faqs": [
       {
-        "q": "Does this include the official SAP exam fee?",
-        "a": "No. The track prepares you for the exam; the exam itself is booked and paid for directly with SAP. We help with scheduling."
+        "q": "Does this include the official ERP exam fee?",
+        "a": "No. The track prepares you for the exam; the exam itself is booked and paid for directly with ERP. We help with scheduling."
       },
       {
         "q": "Can I do this while working full time?",
@@ -179,13 +179,13 @@
         "a": "Yes, every participant gets their own sandbox login for the duration of the track and four weeks afterwards."
       }
     ],
-    "content": "<p>This track is built for people already in work who need a structured route to SAP FICO certification rather than open-ended self-study.</p><h2>How it is scheduled</h2><p>Sessions run in the evenings and at weekends across twelve weeks. Every participant gets their own sandbox login, kept active for four weeks after the track ends so you can keep practising.</p><h2>Exam preparation</h2><p>Mock papers run throughout, not just at the end, so weak areas surface early. The official SAP exam is booked and paid for separately; we help with scheduling and readiness.</p><h2>Enrolling</h2><p>Call +91 87147 73304 or email info@asbtraininghub.com for the next batch date and fee structure.</p>",
+    "content": "<p>This track is built for people already in work who need a structured route to ERP FICO certification rather than open-ended self-study.</p><h2>How it is scheduled</h2><p>Sessions run in the evenings and at weekends across twelve weeks. Every participant gets their own sandbox login, kept active for four weeks after the track ends so you can keep practising.</p><h2>Exam preparation</h2><p>Mock papers run throughout, not just at the end, so weak areas surface early. The official ERP exam is booked and paid for separately; we help with scheduling and readiness.</p><h2>Enrolling</h2><p>Call +91 87147 73304 or email info@asbtraininghub.com for the next batch date and fee structure.</p>",
     "imageUrl": "",
-    "imageAlt": "SAP FICO certification track at ASB Training Hub",
+    "imageAlt": "ERP FICO certification track at ASB Training Hub",
     "secondaryImageUrl": "",
-    "secondaryImageAlt": "SAP configuration practice session",
-    "metaTitle": "SAP FICO Certification Training in Trivandrum | ASB Training Hub",
-    "metaDescription": "12-week SAP FICO certification track for working professionals. Evening and weekend batches, sandbox access, mock exams throughout.",
+    "secondaryImageAlt": "ERP configuration practice session",
+    "metaTitle": "ERP FICO Certification Training in Trivandrum | ASB Training Hub",
+    "metaDescription": "12-week ERP FICO certification track for working professionals. Evening and weekend batches, sandbox access, mock exams throughout.",
     "keywords": "sap fico certification kerala, sap training for working professionals, sap fico course trivandrum, asb training hub",
     "published": true,
     "createdAt": "2026-09-09T00:00:00.000Z",
