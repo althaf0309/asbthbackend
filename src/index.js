@@ -1199,6 +1199,8 @@ app.post("/api/analytics/events", async (req, res, next) => {
       id: `${Date.now().toString(36)}-${randomBytes(4).toString("hex")}`,
       eventType, sessionId: text(req.body?.sessionId, 80), path: text(req.body?.path, 500) || "/",
       title: text(req.body?.title, 200), referrer: text(req.body?.referrer, 500),
+      searchTerm: text(req.body?.searchTerm, 300), landingKeyword: text(req.body?.landingKeyword, 300),
+      campaign: text(req.body?.campaign, 200), source: text(req.body?.source, 100),
       durationSeconds: Math.max(0, Math.min(86400, Number(req.body?.durationSeconds) || 0)),
       scrollDepth: Math.max(0, Math.min(100, Number(req.body?.scrollDepth) || 0)),
       formType: text(req.body?.formType, 30), email: text(req.body?.email, 254).toLowerCase(),
@@ -1217,7 +1219,8 @@ app.get("/api/admin/analytics", requireAdmin, async (_req, res, next) => {
     const views = events.filter((event) => event.eventType === "page_view");
     const submissions = events.filter((event) => event.eventType === "form_submit");
     const group = (items, key) => Object.entries(items.reduce((acc, item) => { const value = item[key] || "Unknown"; acc[value] = (acc[value] || 0) + 1; return acc; }, {})).sort((a,b) => b[1] - a[1]);
-    res.json({ summary: { pageViews: views.length, sessions: sessions.size, formSubmissions: submissions.length, averageScrollDepth: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.scrollDepth,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)), averageDurationSeconds: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.durationSeconds,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)) }, topPages: group(views,"path").slice(0,25), locations: group(views,"city").slice(0,25), submissions: submissions.slice(-100).reverse(), recentEvents: events.slice(-250).reverse() });
+    const keywordEvents = views.map((event) => ({ ...event, keyword: event.searchTerm || event.landingKeyword || "Unknown" }));
+    res.json({ summary: { pageViews: views.length, sessions: sessions.size, formSubmissions: submissions.length, averageScrollDepth: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.scrollDepth,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)), averageDurationSeconds: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.durationSeconds,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)) }, topPages: group(views,"path").slice(0,25), keywords: group(keywordEvents,"keyword").slice(0,50), sources: group(views,"source").slice(0,25), locations: group(views,"city").slice(0,25), submissions: submissions.slice(-100).reverse(), recentEvents: events.slice(-250).reverse() });
   } catch (error) { next(error); }
 });
 
