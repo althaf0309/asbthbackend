@@ -1204,7 +1204,7 @@ app.post("/api/analytics/events", async (req, res, next) => {
       durationSeconds: Math.max(0, Math.min(86400, Number(req.body?.durationSeconds) || 0)),
       scrollDepth: Math.max(0, Math.min(100, Number(req.body?.scrollDepth) || 0)),
       formType: text(req.body?.formType, 30), email: text(req.body?.email, 254).toLowerCase(),
-      ip: requestIp(req), userAgent: text(req.get("user-agent"), 500),
+      ip: req.ip, userAgent: text(req.get("user-agent"), 500),
       country: text(req.get("cf-ipcountry"), 10), region: text(req.get("cf-region"), 100), city: text(req.get("cf-ipcity"), 100),
       createdAt: new Date().toISOString(),
     });

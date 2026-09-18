@@ -7,6 +7,7 @@ node_modules
 data/blogs.json
 data/courses.json
 data/training.json
+data/analytics.json
 data/submissions.json
 data/uploads/*
 !data/uploads/.gitkeep
