@@ -1195,7 +1195,7 @@ app.get("/api/health", (_req, res) => {
 
 app.post("/api/analytics/events", async (req, res, next) => {
   try {
-    const allowed = new Set(["page_view", "engagement", "form_submit"]);
+    const allowed = new Set(["page_view", "engagement", "form_submit", "direct_contact"]);
     const eventType = text(req.body?.eventType, 30);
     if (!allowed.has(eventType)) return res.status(400).json({ error: "Invalid analytics event." });
     await recordAnalytics({
@@ -1207,6 +1207,7 @@ app.post("/api/analytics/events", async (req, res, next) => {
       durationSeconds: Math.max(0, Math.min(86400, Number(req.body?.durationSeconds) || 0)),
       scrollDepth: Math.max(0, Math.min(100, Number(req.body?.scrollDepth) || 0)),
       formType: text(req.body?.formType, 30), email: text(req.body?.email, 254).toLowerCase(),
+      channel: text(req.body?.channel, 30), placement: text(req.body?.placement, 80),
       ip: req.ip, userAgent: text(req.get("user-agent"), 500),
       country: text(req.get("cf-ipcountry"), 10), region: text(req.get("cf-region"), 100), city: text(req.get("cf-ipcity"), 100),
       createdAt: new Date().toISOString(),
@@ -1215,15 +1216,28 @@ app.post("/api/analytics/events", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-app.get("/api/admin/analytics", requireAdmin, async (_req, res, next) => {
+app.get("/api/admin/analytics", requireAdmin, async (req, res, next) => {
   try {
-    const events = await readAnalytics();
+    const now = new Date();
+    const parseDay = (value, end = false) => {
+      if (!value) return null;
+      const parsed = new Date(`${value}T${end ? "23:59:59.999" : "00:00:00.000"}Z`);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
+    const from = parseDay(text(req.query.from, 10)) || new Date(now.getTime() - 29 * 86400000);
+    const to = parseDay(text(req.query.to, 10), true) || now;
+    if (from > to) return res.status(400).json({ error: "Invalid analytics date range." });
+    const events = (await readAnalytics()).filter((event) => {
+      const created = new Date(event.createdAt);
+      return created >= from && created <= to;
+    });
     const sessions = new Set(events.map((event) => event.sessionId).filter(Boolean));
     const views = events.filter((event) => event.eventType === "page_view");
     const submissions = events.filter((event) => event.eventType === "form_submit");
+    const contacts = events.filter((event) => event.eventType === "direct_contact");
     const group = (items, key) => Object.entries(items.reduce((acc, item) => { const value = item[key] || "Unknown"; acc[value] = (acc[value] || 0) + 1; return acc; }, {})).sort((a,b) => b[1] - a[1]);
     const keywordEvents = views.map((event) => ({ ...event, keyword: event.searchTerm || event.landingKeyword || "Unknown" }));
-    res.json({ summary: { pageViews: views.length, sessions: sessions.size, formSubmissions: submissions.length, averageScrollDepth: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.scrollDepth,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)), averageDurationSeconds: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.durationSeconds,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)) }, topPages: group(views,"path").slice(0,25), keywords: group(keywordEvents,"keyword").slice(0,50), sources: group(views,"source").slice(0,25), locations: group(views,"city").slice(0,25), submissions: submissions.slice(-100).reverse(), recentEvents: events.slice(-250).reverse() });
+    res.json({ range: { from: from.toISOString(), to: to.toISOString() }, summary: { pageViews: views.length, sessions: sessions.size, formSubmissions: submissions.length, directContacts: contacts.length, averageScrollDepth: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.scrollDepth,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)), averageDurationSeconds: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.durationSeconds,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)) }, topPages: group(views,"path").slice(0,25), keywords: group(keywordEvents,"keyword").slice(0,50), sources: group(views,"source").slice(0,25), locations: group(views,"city").slice(0,25), submissions: submissions.slice(-100).reverse(), recentEvents: events.slice(-250).reverse() });
   } catch (error) { next(error); }
 });
 
