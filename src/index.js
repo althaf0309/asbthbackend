@@ -277,11 +277,34 @@ const readAnalytics = async () => {
   try { return JSON.parse(await readFile(analyticsFile, "utf8")); }
   catch (error) { if (error.code === "ENOENT") return []; throw error; }
 };
+/**
+ * Analytics rows carry visitor IP addresses and submitted email addresses, so
+ * they are personal data and must not accumulate forever. Two independent
+ * caps apply on every write: an age limit, and the existing row ceiling that
+ * bounds the file even under a traffic spike inside the retention window.
+ */
+const ANALYTICS_MAX_EVENTS = 20000;
+const ANALYTICS_RETENTION_DAYS = Math.max(
+  1,
+  Number(process.env.ANALYTICS_RETENTION_DAYS) || 90,
+);
+
 const recordAnalytics = (event) => analyticsLock(async () => {
   const events = await readAnalytics();
   events.push(event);
-  if (events.length > 20000) events.splice(0, events.length - 20000);
-  await writeJsonAtomic(analyticsFile, events);
+
+  const cutoff = Date.now() - ANALYTICS_RETENTION_DAYS * 86400 * 1000;
+  // Keep rows with no/unparseable timestamp rather than silently dropping them.
+  let kept = events.filter((item) => {
+    const at = Date.parse(item?.createdAt);
+    return Number.isNaN(at) || at >= cutoff;
+  });
+
+  if (kept.length > ANALYTICS_MAX_EVENTS) {
+    kept = kept.slice(kept.length - ANALYTICS_MAX_EVENTS);
+  }
+
+  await writeJsonAtomic(analyticsFile, kept);
 });
 
 const readStore = async () => {
