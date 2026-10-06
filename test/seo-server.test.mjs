@@ -97,13 +97,18 @@ describe("SEO: sitemap.xml", () => {
     assert.ok(found.includes(warehouse), "primary warehouse diploma URL missing");
     assert.ok(found.some((url) => url.startsWith(`${logistics}/`)), "logistics child pages missing");
     assert.ok(found.some((url) => url.startsWith(`${warehouse}/`)), "warehouse child pages missing");
-    assert.ok(!found.some((url) => url.includes("/course-training/logistics")), "legacy logistics URLs remain in sitemap");
-    assert.ok(!found.some((url) => url.includes("/course-training/warehouse")), "legacy warehouse URLs remain in sitemap");
+    assert.ok(found.includes(`${SITE_URL}/course-training/logistics`), "logistics guide hub missing");
+    assert.ok(found.includes(`${SITE_URL}/course-training/warehouse`), "warehouse guide hub missing");
 
     const page = await api.get("/course-training/Diploma-in-warehouse-Management");
     assert.equal(page.status, 200);
     assert.match(String(page.body), /Diploma in warehouse management/i);
     assert.match(String(page.body), /rel="canonical" href="https:\/\/www\.asbtraininghub\.com\/course-training\/Diploma-in-warehouse-Management"/);
+
+    const guideHub = await api.get("/course-training/warehouse");
+    assert.equal(guideHub.status, 200);
+    assert.match(String(guideHub.body), /Warehouse Management and Inventory Learning Guides/i);
+    assert.match(String(guideHub.body), /rel="canonical" href="https:\/\/www\.asbtraininghub\.com\/course-training\/warehouse"/);
   });
 
   it("includes published blog posts and excludes drafts", async () => {

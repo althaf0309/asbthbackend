@@ -931,6 +931,8 @@ const staticSitemapRoutes = [
   ...["agentic","generative"].map((family)=>({loc:`/course-training/${family}/ai`,priority:"0.9",changefreq:"weekly"})),
   ...SEO_AI_PAGES.map((page)=>({loc:`/course-training/${page.family}/ai/${page.slug}`,priority:page.question?"0.65":"0.75",changefreq:"monthly"})),
   ...SEO_LOGISTICS_PAGES.map((page)=>({loc:logisticsPagePath(page),priority:page.slug===LOGISTICS_FAMILIES[page.family].primarySlug?"0.9":page.question?"0.65":"0.75",changefreq:page.slug===LOGISTICS_FAMILIES[page.family].primarySlug?"weekly":"monthly"})),
+  { loc: "/course-training/logistics", priority: "0.85", changefreq: "monthly" },
+  { loc: "/course-training/warehouse", priority: "0.85", changefreq: "monthly" },
   { loc: "/keyword-courses", priority: "0.85", changefreq: "monthly" },
   ...KEYWORD_COURSES.map((course)=>({loc:`/keyword-courses/${course.slug}`,priority:"0.7",changefreq:"monthly"})),
   { loc: "/reviews", priority: "0.7", changefreq: "monthly" },
@@ -1513,13 +1515,52 @@ const renderLogisticsPage = async (page) => {
   });
 };
 
+const renderLogisticsHub = async (family) => {
+  const details = LOGISTICS_FAMILIES[family];
+  const canonicalPath = `/course-training/${family}`;
+  const pages = SEO_LOGISTICS_PAGES.filter((item) => item.family === family);
+  const warehouse = family === "warehouse";
+  const title = warehouse
+    ? "Warehouse Management and Inventory Learning Guides"
+    : "Logistics and Supply Chain Learning Guides";
+  const description = warehouse
+    ? "Explore warehouse management, inventory, safety, systems, career and course-selection guides before choosing a formal training pathway."
+    : "Explore logistics, supply chain, operations, career and course-selection guides before choosing a formal diploma training pathway.";
+  const paragraphs = warehouse
+    ? [
+      "Follow the complete warehouse workflow from receiving and inspection through put-away, storage, replenishment, picking, packing, dispatch and returns.",
+      "Compare inventory accuracy, cycle counting, location control, safety, systems and operational reporting with realistic workplace decisions.",
+      "Use the focused guides to evaluate training quality, certification, career preparation, course fees and admission requirements before enrolling.",
+    ]
+    : [
+      "Understand how procurement, inbound movement, storage, inventory, order fulfilment, transport and customer service connect across a supply chain.",
+      "Compare learning options through practical exercises, process evidence, operational measures, career objectives and transparent course information.",
+      "Use the focused guides to explore fees, admissions, online study, certification, internships, careers and location-specific logistics searches.",
+    ];
+  const links = pages.slice(0, 36).map((page) => `<li><a href="${escapeHtml(logisticsPagePath(page))}">${escapeHtml(page.title)}</a></li>`).join("");
+  return renderSeoHtml({
+    title: `${title} | ASB Training Hub`, description, keywords: `${details.label} guides, operations careers Kerala, course comparison`, canonicalPath,
+    image: details.defaultImage,
+    visibleHtml: pageShell({
+      heading: title,
+      intro: description,
+      body: `${paragraphs.map((paragraph, index) => `<section><h2>${["Understand the subject", "Compare practical learning", "Choose the next step"][index]}</h2><p>${escapeHtml(paragraph)}</p></section>`).join("")}<section><h2>Focused learning guides</h2><ul>${links}</ul></section>`,
+      links: [{ href: logisticsFamilyPath(family), label: `View the ${details.label} diploma pathway` }],
+    }),
+    jsonLd: [
+      breadcrumbList([{ name: "Home", path: "/" }, { name: title, path: canonicalPath }]),
+      { "@context": "https://schema.org", "@type": "CollectionPage", name: title, description, url: `${SITE_URL}${canonicalPath}`, mainEntity: { "@type": "ItemList", numberOfItems: pages.length } },
+    ],
+  });
+};
+
 app.get("/course-training/:family", async (req, res, next) => {
   try {
     const family = logisticsFamilyFromSegment(req.params.family);
     if (!family) return next();
     const details = LOGISTICS_FAMILIES[family];
     const canonicalPath = logisticsFamilyPath(family);
-    if (req.params.family.toLowerCase() === family) return res.redirect(301, canonicalPath);
+    if (req.params.family.toLowerCase() === family) return res.type("html").send(await renderLogisticsHub(family));
     const page = SEO_LOGISTICS_PAGES.find((item) => item.family === family && item.slug === details.primarySlug);
     if (!page) return next();
     res.type("html").send(await renderLogisticsPage(page));
