@@ -89,6 +89,23 @@ describe("SEO: sitemap.xml", () => {
     assert.ok(courseUrls.length > 10, `expected many /course/ URLs, got ${courseUrls.length}`);
   });
 
+  it("uses the requested diploma hierarchy for logistics keyword pages", async () => {
+    const found = locs();
+    const logistics = `${SITE_URL}/course-training/Diploma-in-Logistics-and-Supply-Chain-Management`;
+    const warehouse = `${SITE_URL}/course-training/Diploma-in-warehouse-Management`;
+    assert.ok(found.includes(logistics), "primary logistics diploma URL missing");
+    assert.ok(found.includes(warehouse), "primary warehouse diploma URL missing");
+    assert.ok(found.some((url) => url.startsWith(`${logistics}/`)), "logistics child pages missing");
+    assert.ok(found.some((url) => url.startsWith(`${warehouse}/`)), "warehouse child pages missing");
+    assert.ok(!found.some((url) => url.includes("/course-training/logistics")), "legacy logistics URLs remain in sitemap");
+    assert.ok(!found.some((url) => url.includes("/course-training/warehouse")), "legacy warehouse URLs remain in sitemap");
+
+    const page = await api.get("/course-training/Diploma-in-warehouse-Management");
+    assert.equal(page.status, 200);
+    assert.match(String(page.body), /Diploma in warehouse management/i);
+    assert.match(String(page.body), /rel="canonical" href="https:\/\/www\.asbtraininghub\.com\/course-training\/Diploma-in-warehouse-Management"/);
+  });
+
   it("includes published blog posts and excludes drafts", async () => {
     const draft = await api.post("/api/admin/blogs", {
       token,

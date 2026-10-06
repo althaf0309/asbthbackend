@@ -883,6 +883,41 @@ const AI_GUIDES = JSON.parse(await readFile(path.join(rootDir, "data", "ai-guide
 const KEYWORD_COURSES = AI_GUIDES.filter((guide) => guide.kind === "keyword");
 const SEO_AI_PAGES = JSON.parse(await readFile(path.join(rootDir, "data", "seo-ai-pages.json"), "utf8"));
 const SEO_LOGISTICS_PAGES = JSON.parse(await readFile(path.join(rootDir, "data", "seo-logistics-pages.json"), "utf8"));
+const LOGISTICS_FAMILIES = {
+  logistics: {
+    label: "Logistics and Supply Chain Management",
+    segment: "Diploma-in-Logistics-and-Supply-Chain-Management",
+    primarySlug: "diploma-in-logistics-and-supply-chain-management",
+    defaultImage: "/images/logistics-supply-chain-course-hero.webp",
+  },
+  warehouse: {
+    label: "Warehouse and Inventory Management",
+    segment: "Diploma-in-warehouse-Management",
+    primarySlug: "diploma-in-warehouse-management",
+    defaultImage: "/images/warehouse-inventory-course-hero.webp",
+  },
+};
+const logisticsFamilyFromSegment = (segment = "") => {
+  const normalized = segment.toLowerCase();
+  return Object.entries(LOGISTICS_FAMILIES)
+    .find(([family, details]) => normalized === family || normalized === details.segment.toLowerCase())?.[0];
+};
+const logisticsFamilyPath = (family) => `/course-training/${LOGISTICS_FAMILIES[family].segment}`;
+const logisticsPagePath = (page) => page.slug === LOGISTICS_FAMILIES[page.family].primarySlug
+  ? logisticsFamilyPath(page.family)
+  : `${logisticsFamilyPath(page.family)}/${page.slug}`;
+const logisticsPageImage = (page) => {
+  const career = new Set(["career", "placement", "internship", "after-school", "graduate"]);
+  const guidance = new Set(["fees", "admission", "question", "duration", "online", "near-me"]);
+  if (page.family === "logistics") {
+    if (career.has(page.intent)) return "/images/logistics-career-placement-hero.webp";
+    if (guidance.has(page.intent)) return "/images/logistics-admission-fees-hero.webp";
+  } else {
+    if (career.has(page.intent)) return "/images/warehouse-career-placement-hero.webp";
+    if (guidance.has(page.intent) || page.intent === "certification") return "/images/warehouse-inventory-analytics-hero.webp";
+  }
+  return LOGISTICS_FAMILIES[page.family].defaultImage;
+};
 
 const staticSitemapRoutes = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
@@ -895,8 +930,7 @@ const staticSitemapRoutes = [
   ...AI_GUIDES.map((guide)=>({loc:`/ai-guides/${guide.slug}`,priority:"0.65",changefreq:"monthly"})),
   ...["agentic","generative"].map((family)=>({loc:`/course-training/${family}/ai`,priority:"0.9",changefreq:"weekly"})),
   ...SEO_AI_PAGES.map((page)=>({loc:`/course-training/${page.family}/ai/${page.slug}`,priority:page.question?"0.65":"0.75",changefreq:"monthly"})),
-  ...["logistics","warehouse"].map((family)=>({loc:`/course-training/${family}`,priority:"0.9",changefreq:"weekly"})),
-  ...SEO_LOGISTICS_PAGES.map((page)=>({loc:`/course-training/${page.family}/${page.slug}`,priority:page.question?"0.65":"0.75",changefreq:"monthly"})),
+  ...SEO_LOGISTICS_PAGES.map((page)=>({loc:logisticsPagePath(page),priority:page.slug===LOGISTICS_FAMILIES[page.family].primarySlug?"0.9":page.question?"0.65":"0.75",changefreq:page.slug===LOGISTICS_FAMILIES[page.family].primarySlug?"weekly":"monthly"})),
   { loc: "/keyword-courses", priority: "0.85", changefreq: "monthly" },
   ...KEYWORD_COURSES.map((course)=>({loc:`/keyword-courses/${course.slug}`,priority:"0.7",changefreq:"monthly"})),
   { loc: "/reviews", priority: "0.7", changefreq: "monthly" },
@@ -1435,8 +1469,82 @@ app.get("/keyword-courses/:slug",async(req,res,next)=>{try{const c=KEYWORD_COURS
 app.get("/course-training/:family/ai",async(req,res,next)=>{try{const family=req.params.family;if(!["agentic","generative"].includes(family))return next();const label=family==="agentic"?"Agentic AI":"Generative AI",items=SEO_AI_PAGES.filter(p=>p.family===family),base=`/course-training/${family}/ai`;const html=await renderSeoHtml({title:`${label} Course and Training Pages | ASB Training Hub`,description:`Explore ${items.length} focused ${label} course, certification, career, location and FAQ pages.`,keywords:`${label} course Kerala, ${label} training Kerala`,canonicalPath:base,image:`/images/${family}-ai-course-hero.webp`,visibleHtml:catalogueShell({heading:`${label} Course and Training Guide`,intro:`Practical ${label} learning paths, local course guidance and direct answers.`,items:items.map(p=>({...p,description:`Course guidance for ${p.title}.`})),prefix:base}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:`${label} course pages`,numberOfItems:items.length,itemListElement:items.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}${base}/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
 app.get("/course-training/:family/ai/:slug",async(req,res,next)=>{try{const page=SEO_AI_PAGES.find(p=>p.family===req.params.family&&p.slug===req.params.slug);if(!page)return next();const label=page.family==="agentic"?"Agentic AI":"Generative AI",path=`/course-training/${page.family}/ai/${page.slug}`,description=`${page.title}: practical ${label} learning with guided projects, certification support and flexible course guidance from ASB Training Hub.`,skills=page.family==="agentic"?["AI agent architecture and orchestration","Tool use, memory and workflow design","Evaluation, safety and human oversight","Practical autonomous-agent project"]:["Prompt design and model fundamentals","Text, image and multimodal workflows","Retrieval, evaluation and responsible AI","Practical generative AI project"];const structured=page.question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:page.title,acceptedAnswer:{"@type":"Answer",text:description}}]}:{"@context":"https://schema.org","@type":"Course",name:page.title,description,url:`${SITE_URL}${path}`,teaches:skills,provider:{"@type":"EducationalOrganization",name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]};const html=await renderSeoHtml({title:`${page.title} | ASB Training Hub`,description,keywords:`${page.title}, ${label} course Kerala, practical AI training`,canonicalPath:path,image:`/images/${page.family}-ai-course-hero.webp`,visibleHtml:detailShell({heading:page.title,intro:description,content:`<h2>${page.question?"Course guidance":"Practical course overview"}</h2><p>${escapeHtml(description)} The learning path combines concepts, supervised exercises, responsible implementation and portfolio-ready outcomes.</p>`,sections:[{title:"Skills covered",items:skills},{title:"Learning format",items:["Instructor-led explanations","Guided practical labs","Project reviews and feedback","Career-focused portfolio support"]}],links:[{href:`/course-training/${page.family}/ai`,label:`All ${label} pages`},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:`${label} pages`,path:`/course-training/${page.family}/ai`},{name:page.title,path}]),structured]});res.type("html").send(html)}catch(e){next(e)}});
 
-app.get("/course-training/:family",async(req,res,next)=>{try{if(!["logistics","warehouse"].includes(req.params.family))return next();const items=SEO_LOGISTICS_PAGES.filter(p=>p.family===req.params.family),label=req.params.family==="logistics"?"Logistics and Supply Chain Management":"Warehouse and Inventory Management",base=`/course-training/${req.params.family}`,image=req.params.family==="logistics"?"/images/logistics-supply-chain-course-hero.webp":"/images/warehouse-inventory-course-hero.webp";const html=await renderSeoHtml({title:`${label} Course Pages | ASB Training Hub`,description:`Explore ${items.length} focused ${label} course, career, admission, fee and location pages.`,keywords:`${label} course Kerala, logistics training`,canonicalPath:base,image,visibleHtml:catalogueShell({heading:`${label} Course Guide`,intro:"Practical course, career and admission guidance for logistics learners.",items:items.map(p=>({...p,description:`Course guidance for ${p.title}.`})),prefix:base}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:`${label} course pages`,numberOfItems:items.length,itemListElement:items.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}${base}/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
-app.get("/course-training/:family/:slug",async(req,res,next)=>{try{const page=SEO_LOGISTICS_PAGES.find(p=>p.family===req.params.family&&p.slug===req.params.slug);if(!page)return next();const path=`/course-training/${page.family}/${page.slug}`,label=page.label,image=page.family==="logistics"?"/images/logistics-supply-chain-course-hero.webp":"/images/warehouse-inventory-course-hero.webp",description=`${page.title}: practical course guidance covering operations, applied projects, career preparation and current admission support from ASB Training Hub${page.location?` for learners in ${page.location}`:""}.`,topics=page.family==="warehouse"?["Receiving, put-away and location control","Inventory accuracy and cycle counting","Picking, packing, dispatch and returns","Warehouse safety and operational reporting"]:["Procurement and supply-chain flow","Warehouse and inventory coordination","Transport and distribution planning","Operational records and performance measures"],structured=page.question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:page.title,acceptedAnswer:{"@type":"Answer",text:description}}]}:{"@context":"https://schema.org","@type":"Course",name:page.title,description,url:`${SITE_URL}${path}`,provider:{"@type":"EducationalOrganization","@id":`${SITE_URL}/#organization`,name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]};const html=await renderSeoHtml({title:`${page.title} | ASB Training Hub`,description,keywords:`${page.title}, ${label} course Kerala, job oriented management training`,canonicalPath:path,image,visibleHtml:detailShell({heading:page.title,intro:description,content:`<h2>Practical course overview</h2><p>${escapeHtml(description)} The full page provides more than 1,200 words of guidance covering foundations, warehouse and inventory operations, transport, documentation, digital skills, projects, safety, career preparation, delivery modes, assessment and admissions.</p><h2>Applied learning</h2><p>Learners connect each concept to operating records, realistic scenarios and a documented improvement project. Current fees, duration, eligibility and batch availability should be confirmed directly before enrolment.</p>`,sections:[{title:"Skills covered",items:topics},{title:"Learning format",items:["Instructor-led operational concepts","Guided exercises and case work","Documented applied project","Career and interview preparation"]}],links:[{href:`/course-training/${page.family}`,label:`All ${label} pages`},{href:"/courses/management",label:"Management courses"},{href:"/contact",label:"Request syllabus and fees"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:label,path:`/course-training/${page.family}`},{name:page.title,path}]),structured]});res.type("html").send(html)}catch(e){next(e)}});
+const logisticsDescription = (page) => {
+  const details = LOGISTICS_FAMILIES[page.family];
+  return `${page.title}: practical ${details.label.toLowerCase()} guidance covering applied operations, projects, career preparation and current admission support${page.location ? ` for learners in ${page.location}` : ""}.`;
+};
+
+const renderLogisticsPage = async (page) => {
+  const details = LOGISTICS_FAMILIES[page.family];
+  const canonicalPath = logisticsPagePath(page);
+  const description = logisticsDescription(page);
+  const image = logisticsPageImage(page);
+  const topics = page.family === "warehouse"
+    ? ["Receiving, put-away and location control", "Inventory accuracy and cycle counting", "Picking, packing, dispatch and returns", "Warehouse safety and operational reporting"]
+    : ["Procurement and supply-chain flow", "Warehouse and inventory coordination", "Transport and distribution planning", "Operational records and performance measures"];
+  const structured = page.question
+    ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: [{ "@type": "Question", name: page.title, acceptedAnswer: { "@type": "Answer", text: description } }] }
+    : { "@context": "https://schema.org", "@type": "Course", name: page.title, description, url: `${SITE_URL}${canonicalPath}`, provider: { "@type": "EducationalOrganization", "@id": `${SITE_URL}/#organization`, name: "ASB Training Hub" }, hasCourseInstance: [{ "@type": "CourseInstance", courseMode: "blended" }] };
+
+  return renderSeoHtml({
+    title: `${page.title} | ASB Training Hub`,
+    description,
+    keywords: `${page.title}, ${details.label} course Kerala, job oriented management training`,
+    canonicalPath,
+    image,
+    visibleHtml: detailShell({
+      heading: page.title,
+      intro: description,
+      content: `<h2>Practical course overview</h2><p>${escapeHtml(description)} The complete browser page provides detailed, search-intent-specific guidance covering operations, projects, safety, career preparation, learning modes, assessment and admissions.</p><h2>Applied learning</h2><p>Learners connect concepts to operating records, realistic scenarios and a documented improvement project. Current fees, duration, eligibility and batch availability should be confirmed before enrolment.</p>`,
+      sections: [
+        { title: "Skills covered", items: topics },
+        { title: "Learning format", items: ["Instructor-led operational concepts", "Guided exercises and case work", "Documented applied project", "Career and interview preparation"] },
+      ],
+      links: [
+        { href: logisticsFamilyPath(page.family), label: `Complete ${details.label} pathway` },
+        { href: "/courses/management", label: "Management courses" },
+        { href: "/contact", label: "Request syllabus and fees" },
+      ],
+    }),
+    jsonLd: [
+      breadcrumbList([{ name: "Home", path: "/" }, { name: details.label, path: logisticsFamilyPath(page.family) }, { name: page.title, path: canonicalPath }]),
+      structured,
+    ],
+  });
+};
+
+app.get("/course-training/:family", async (req, res, next) => {
+  try {
+    const family = logisticsFamilyFromSegment(req.params.family);
+    if (!family) return next();
+    const details = LOGISTICS_FAMILIES[family];
+    const canonicalPath = logisticsFamilyPath(family);
+    if (req.params.family.toLowerCase() === family) return res.redirect(301, canonicalPath);
+    const page = SEO_LOGISTICS_PAGES.find((item) => item.family === family && item.slug === details.primarySlug);
+    if (!page) return next();
+    res.type("html").send(await renderLogisticsPage(page));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/course-training/:family/:slug", async (req, res, next) => {
+  try {
+    const family = logisticsFamilyFromSegment(req.params.family);
+    if (!family) return next();
+    const page = SEO_LOGISTICS_PAGES.find((item) => item.family === family && item.slug === req.params.slug);
+    if (!page) return next();
+    const canonicalPath = logisticsPagePath(page);
+    const requestedFamily = req.params.family.toLowerCase();
+    if (requestedFamily === family || page.slug === LOGISTICS_FAMILIES[family].primarySlug) {
+      return res.redirect(301, canonicalPath);
+    }
+    res.type("html").send(await renderLogisticsPage(page));
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get("/location/:slug", (req, res, next) => {
   const location = LOCATION_PAGES.find((item) => item.slug === req.params.slug);
   if (!location) return next();
