@@ -168,12 +168,27 @@ const submissionLimiter = makeLimiter({
   message: { error: "Too many submissions from this network. Please try again later." },
 });
 
+// Public reads (blog, course and training records) are what search engines hit
+// when they render pages, often from a few shared IPs. At 120/min they were
+// answered 429, the page treated the record as missing and Google indexed it
+// as "noindex". Reads get their own, looser bucket; writes and admin keep the
+// strict one.
+const isPublicRead = (req) =>
+  (req.method === "GET" || req.method === "HEAD") && !req.path.startsWith("/admin");
+
 const apiLimiter = makeLimiter({
   windowMs: 60 * 1000,
   limit: limitFrom("RATE_LIMIT_API", 120),
+  skip: isPublicRead,
 });
 
-app.use("/api/", apiLimiter);
+const publicReadLimiter = makeLimiter({
+  windowMs: 60 * 1000,
+  limit: limitFrom("RATE_LIMIT_API_READ", 1200),
+  skip: (req) => !isPublicRead(req),
+});
+
+app.use("/api/", publicReadLimiter, apiLimiter);
 
 /** Clears every limiter bucket. Used by tests; harmless in production. */
 const resetRateLimits = () => {
