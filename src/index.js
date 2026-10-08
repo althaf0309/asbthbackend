@@ -8,6 +8,7 @@ import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { aiCourseLongHtml, logisticsLongHtml } from "./longContent.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -891,9 +892,9 @@ const LOCATION_TOPICS = [
 const locationDistrictPath = (location) => `/locations/kerala/${location.slug}`;
 const locationTopicPath = (location, topic) => `${locationDistrictPath(location)}/${topic.slug}`;
 const localizedCoursePath = (location, course) => `${locationDistrictPath(location)}/course/${course.slug}`;
-const AI_LANDING_PAGES = [
-  ["generative-ai-course-kerala","Generative AI Course in Kerala"],["agentic-ai-course-kerala","Agentic AI Course in Kerala"],["prompt-engineering-course-kerala","Prompt Engineering Course in Kerala"],["chatgpt-course-kerala","ChatGPT Course in Kerala"],["llm-course-kerala","LLM Course in Kerala"],["rag-course-kerala","RAG Course in Kerala"],["mcp-course-kerala","MCP Course in Kerala"],["ai-agent-development-course-kerala","AI Agent Development Course in Kerala"],["ai-automation-course-kerala","AI Automation Course in Kerala"],["ai-course-for-beginners-kerala","AI Course for Beginners in Kerala"],["ai-course-working-professionals-kerala","AI Course for Working Professionals in Kerala"],["online-ai-course-kerala","Online AI Course in Kerala"],["offline-ai-course-trivandrum","Offline AI Course in Trivandrum"],["ai-course-placement-support-kerala","AI Course with Placement Support in Kerala"],["ai-career-guide-kerala","AI Career Guide for Kerala"],["ai-tools-training-kerala","AI Tools Training in Kerala"],
-].map(([slug,title])=>({slug,title,description:`Explore ${title.toLowerCase()} with practical lessons, guided projects, instructor support and career-focused learning at ASB Training Hub.`}));
+// Exported from asb-ascend/src/data/aiLandingPages.ts so the server renders the
+// same description, modules, projects and FAQs as the React page.
+const AI_LANDING_PAGES = JSON.parse(await readFile(path.join(rootDir, "data", "ai-landing-pages.json"), "utf8"));
 const AI_GUIDES = JSON.parse(await readFile(path.join(rootDir, "data", "ai-guides.json"), "utf8"));
 const KEYWORD_COURSES = AI_GUIDES.filter((guide) => guide.kind === "keyword");
 const SEO_AI_PAGES = JSON.parse(await readFile(path.join(rootDir, "data", "seo-ai-pages.json"), "utf8"));
@@ -904,12 +905,14 @@ const LOGISTICS_FAMILIES = {
     segment: "Diploma-in-Logistics-and-Supply-Chain-Management",
     primarySlug: "diploma-in-logistics-and-supply-chain-management",
     defaultImage: "/images/logistics-supply-chain-course-hero.webp",
+    intro: "Learn how purchasing, inventory, transport, warehousing and customer service connect across a modern supply chain.",
   },
   warehouse: {
     label: "Warehouse and Inventory Management",
     segment: "Diploma-in-warehouse-Management",
     primarySlug: "diploma-in-warehouse-management",
     defaultImage: "/images/warehouse-inventory-course-hero.webp",
+    intro: "Build practical knowledge of receiving, storage, stock accuracy, fulfilment, safety and warehouse operations.",
   },
 };
 const logisticsFamilyFromSegment = (segment = "") => {
@@ -993,7 +996,7 @@ const stripHtml = (value) =>
 const truncateText = (value, max = 160) => {
   const cleaned = stripHtml(value);
   if (cleaned.length <= max) return cleaned;
-  return `${cleaned.slice(0, max - 1).replace(/\s+\S*$/, "")}â€¦`;
+  return `${cleaned.slice(0, max - 1).replace(/\s+\S*$/, "")}…`;
 };
 
 const absoluteAssetUrl = (value) => {
@@ -1055,7 +1058,7 @@ const renderSeoHtml = async ({
   const imageUrl = absoluteAssetUrl(image);
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
-  const safeKeywords = escapeHtml(keywords || "");
+  void keywords;
   const safeCanonical = escapeHtml(canonical);
   const safeImage = escapeHtml(imageUrl);
 
@@ -1063,7 +1066,9 @@ const renderSeoHtml = async ({
 
   html = upsertHeadTag(html, /<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
   html = upsertHeadTag(html, /<meta\s+name=["']description["'][^>]*>/i, `<meta name="description" content="${safeDescription}">`);
-  html = upsertHeadTag(html, /<meta\s+name=["']keywords["'][^>]*>/i, `<meta name="keywords" content="${safeKeywords}">`);
+  // Search engines ignore meta keywords and the tag publishes target terms to
+  // competitors, so it is stripped; `keywords` is still accepted from callers.
+  html = html.replace(/\s*<meta\s+name=["']keywords["'][^>]*>/gi, "");
   html = upsertHeadTag(
     html,
     /<meta\s+name=["']robots["'][^>]*>/i,
@@ -1113,15 +1118,16 @@ const catalogueShell = ({ heading, intro, items, prefix }) =>
     intro,
     body: `<section aria-label="${escapeHtml(heading)}"><ul>${items
       .map(
-        (item) => `<li><article><h2><a href="${prefix}/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description || item.excerpt || item.overview || "")}</p>${item.duration ? `<p>${escapeHtml(item.duration)} Â· ${escapeHtml(item.mode || "")}</p>` : ""}</article></li>`,
+        (item) => `<li><article><h2><a href="${prefix}/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></h2><p>${escapeHtml(item.description || item.excerpt || item.overview || "")}</p>${item.duration ? `<p>${escapeHtml(item.duration)} · ${escapeHtml(item.mode || "")}</p>` : ""}</article></li>`,
       )
       .join("")}</ul></section>`,
   });
 
-const detailShell = ({ heading, intro, content = "", sections = [], faqs = [] }) =>
+const detailShell = ({ heading, intro, content = "", sections = [], faqs = [], links = [] }) =>
   pageShell({
     heading,
     intro,
+    links,
     body: [
       content,
       ...sections
@@ -1213,13 +1219,13 @@ app.get("/llms.txt", async (_req, res, next) => {
       const items = courses.filter((item) => item.category === category);
       if (!items.length) return "";
       const label = items[0].categoryLabel || category;
-      return `### ${label}\n\n${items.map((item) => `- ${item.title} â€” ${item.duration}, ${item.mode}: ${SITE_URL}/course/${item.slug}`).join("\n")}`;
+      return `### ${label}\n\n${items.map((item) => `- ${item.title} — ${item.duration}, ${item.mode}: ${SITE_URL}/course/${item.slug}`).join("\n")}`;
     }).filter(Boolean).join("\n\n");
     const trainingSections = TRAINING_CATEGORIES.map((category) => {
       const items = training.filter((item) => item.category === category);
       if (!items.length) return "";
       const label = items[0].categoryLabel || category;
-      return `### ${label}\n\n${items.map((item) => `- ${item.title} â€” ${item.duration}, ${item.mode}: ${SITE_URL}/training/${item.slug}`).join("\n")}`;
+      return `### ${label}\n\n${items.map((item) => `- ${item.title} — ${item.duration}, ${item.mode}: ${SITE_URL}/training/${item.slug}`).join("\n")}`;
     }).filter(Boolean).join("\n\n");
     const recentPosts = blogs
       .sort((a, b) => String(b.updatedAt || b.createdAt || "").localeCompare(String(a.updatedAt || a.createdAt || "")))
@@ -1250,7 +1256,7 @@ ${trainingSections}
 
 ## Course locations (${LOCATION_PAGES.length})
 
-${LOCATION_PAGES.map((location) => `- ${location.title} â€” ${location.delivery}: ${SITE_URL}${locationDistrictPath(location)}\n${LOCATION_TOPICS.map((topic) => `  - ${topic.name}: ${SITE_URL}${locationTopicPath(location, topic)}`).join("\n")}`).join("\n")}
+${LOCATION_PAGES.map((location) => `- ${location.title} — ${location.delivery}: ${SITE_URL}${locationDistrictPath(location)}\n${LOCATION_TOPICS.map((topic) => `  - ${topic.name}: ${SITE_URL}${locationTopicPath(location, topic)}`).join("\n")}`).join("\n")}
 
 ## Recent articles
 
@@ -1353,25 +1359,104 @@ const ORGANIZATION_SCHEMA = {
   ],
 };
 
+
+// Text shown by the React homepage and About page (Index.tsx, About.tsx). The
+// server sends the same content so crawlers that do not run JavaScript, and
+// visitors on a slow connection, see the real page instead of an empty shell.
+const HOME_CATEGORIES = [
+  { id: "erp", label: "ERP Modules", description: "Enterprise Resource Planning — finance, supply chain, HR, manufacturing and beyond" },
+  { id: "programming", label: "Programming Languages", description: "Master modern programming languages and full-stack development" },
+  { id: "ai", label: "AI Trainings", description: "Artificial Intelligence, Machine Learning, Deep Learning & Generative AI" },
+  { id: "management", label: "Management Courses", description: "Professional diploma programs in logistics, HR, finance & IT management" },
+  { id: "internship", label: "Internship Programs", description: "Industry-ready training programs with guaranteed internship experience" },
+];
+const HOME_WHY_CHOOSE = [
+  ["Industry-Expert Trainers", "Learn from professionals with 10+ years of real-world experience in top companies."],
+  ["Placement Support", "Dedicated placement cell with 200+ hiring partners and career counseling."],
+  ["Practical Learning", "Hands-on projects, live case studies, and real-world simulations — not just theory."],
+  ["Recognized Certifications", "Industry-recognized certificates that add weight to your resume."],
+  ["Career Growth Focus", "Structured career roadmaps, mock interviews, and resume building workshops."],
+  ["Flexible Learning", "Online and offline modes with weekend batches for working professionals."],
+];
+const HOME_FAQS = [
+  { q: "What makes ASB Training Hub different from other institutes?", a: "We focus on practical, job-oriented training with industry-expert trainers, real projects, internship support, and dedicated placement assistance. Our curriculum is constantly updated to match industry demands." },
+  { q: "Do you offer online classes?", a: "Yes! We offer both online and offline modes. Our online classes are live and interactive with the same quality as in-person sessions." },
+  { q: "Is there any placement guarantee?", a: "We provide dedicated placement support including resume building, mock interviews, and connections with 200+ hiring partners. While we don't guarantee placement, our track record speaks for itself." },
+  { q: "Can working professionals join?", a: "Absolutely! We have weekend and evening batches designed specifically for working professionals looking to upskill." },
+];
+const ABOUT_TIMELINE = [
+  ["2018", "Founded", "ASB Training Hub established in Trivandrum with a vision for career-focused education."],
+  ["2019", "ERP Programs Launched", "Introduced comprehensive ERP training programs with industry-certified trainers."],
+  ["2020", "Online Platform", "Expanded to online learning, reaching students across Kerala and beyond."],
+  ["2021", "AI & Programming", "Added cutting-edge AI, Machine Learning, and full-stack programming courses."],
+  ["2022", "Internship Programs", "Launched internship partnerships with 100+ companies for hands-on experience."],
+  ["2023", "5000+ Alumni", "Crossed 5000 trained students with 85%+ placement rate."],
+  ["2024", "Expansion", "Expanded course catalog to 50+ programs including Agentic AI and GenAI."],
+];
+
+const htmlSection = (heading, inner) => `<section><h2>${escapeHtml(heading)}</h2>${inner}</section>`;
+const htmlParagraphs = (...paragraphs) => paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("");
+const htmlLinkList = (links) => `<ul>${links.map((l) => `<li><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a>${l.note ? ` — ${escapeHtml(l.note)}` : ""}</li>`).join("")}</ul>`;
+
+const renderHomeBody = async () => {
+  const courses = (await readCourses()).filter((c) => c.published !== false);
+  const categories = HOME_CATEGORIES.map((category) => {
+    const items = courses.filter((c) => c.category === category.id);
+    return `<section><h3><a href="/courses/${category.id}">${escapeHtml(category.label)}</a></h3><p>${escapeHtml(category.description)}</p>${items.length ? htmlLinkList(items.map((c) => ({ href: `/course/${c.slug}`, label: c.title, note: [c.duration, c.mode].filter(Boolean).join(", ") }))) : ""}</section>`;
+  }).join("");
+  return [
+    htmlSection("Featured Course Categories", `<p>Choose from 50+ industry-focused courses designed to launch or accelerate your career.</p>${categories}`),
+    htmlSection("Why Choose ASB Training Hub?", `<ul>${HOME_WHY_CHOOSE.map(([t, d]) => `<li><strong>${escapeHtml(t)}</strong>: ${escapeHtml(d)}</li>`).join("")}</ul>`),
+    htmlSection("Internship + Placement Support", htmlParagraphs("Get hands-on industry experience with our internship programs. We partner with 200+ companies to ensure your career takes off.")),
+    htmlSection("Specialised learning paths", htmlLinkList([
+      { href: "/ai-courses", label: "AI courses in Kerala", note: "Generative AI, Agentic AI, LLM, RAG and MCP learning paths" },
+      { href: logisticsFamilyPath("logistics"), label: "Diploma in Logistics and Supply Chain Management" },
+      { href: logisticsFamilyPath("warehouse"), label: "Diploma in Warehouse Management" },
+      { href: "/training", label: "Corporate training, workshops and bootcamps" },
+      { href: "/locations/kerala", label: "Course locations across Kerala" },
+      { href: "/blog", label: "Career guides and course articles" },
+    ])),
+    htmlSection("Frequently Asked Questions", HOME_FAQS.map((f) => `<h3>${escapeHtml(f.q)}</h3><p>${escapeHtml(f.a)}</p>`).join("")),
+    htmlSection("Ready to Transform Your Career?", htmlParagraphs("Fill out the inquiry form and our team will get back to you within 24 hours. Or simply WhatsApp us for instant support.")),
+  ].join("");
+};
+
+const ABOUT_BODY = [
+  htmlSection("From a Vision to Kerala's Leading Training Hub", htmlParagraphs(
+    "ASB Training Hub was founded with a simple belief — quality education should be practical, industry-relevant, and career-focused. Located near Technopark in Kazhakootam, we bring together top industry professionals as trainers, cutting-edge curriculum, and a supportive learning environment.",
+    "Our programs span ERP, Programming, AI, Management, and Internship tracks — all designed with one goal: making our students job-ready from day one.",
+  )),
+  htmlSection("Our Mission", htmlParagraphs("To provide world-class, practical training that transforms students into industry-ready professionals through expert mentorship, hands-on projects, and guaranteed career support.")),
+  htmlSection("Our Vision", htmlParagraphs("To become India's most trusted career training institute, known for producing skilled professionals who drive innovation across industries globally.")),
+  htmlSection("The ASB Training Hub Story", `<ol>${ABOUT_TIMELINE.map(([year, title, desc]) => `<li><strong>${year} — ${escapeHtml(title)}</strong>: ${escapeHtml(desc)}</li>`).join("")}</ol>`),
+  htmlSection("Join ASB Training Hub Today", htmlParagraphs("Take the first step toward a rewarding career. Talk to our advisors or apply now.")),
+].join("");
+
 const STATIC_PAGES = {
   "/": {
-    title: "ASB Training Hub | ERP, ERP, AI & Programming Courses in Trivandrum",
+    title: "ASB Training Hub | ERP, AI & Programming Courses in Trivandrum",
     description: "Job-oriented ERP, AI, programming, management and internship courses near Technopark, Trivandrum, with practical training and placement support.",
-    heading: "Career-focused training in Trivandrum",
-    intro: "Build practical skills through instructor-led ERP, programming, AI, management and internship programmes.",
+    heading: "Transform Your Career with Industry-Focused Training",
+    intro: "Best Training Institute in Trivandrum, Kerala. Build practical skills through instructor-led ERP, programming, AI, management and internship programmes.",
+    body: renderHomeBody,
     links: [
       { href: "/courses", label: "Browse all courses" },
       { href: "/training", label: "Explore training programmes" },
       { href: "/apply", label: "Apply for admission" },
       { href: "/contact", label: "Contact ASB Training Hub" },
     ],
-    jsonLd: ORGANIZATION_SCHEMA,
+    jsonLd: [ORGANIZATION_SCHEMA, {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: HOME_FAQS.map((faq) => ({ "@type": "Question", name: faq.q, acceptedAnswer: { "@type": "Answer", text: faq.a } })),
+    }],
   },
   "/about": {
     title: "About ASB Training Hub | Career Training Institute in Trivandrum",
     description: "Learn about ASB Training Hub, a career-focused institute near Technopark offering practical ERP, programming, AI, management and internship programmes.",
-    heading: "About ASB Training Hub",
-    intro: "ASB Training Hub connects practical, industry-focused learning with career preparation in Trivandrum, Kerala.",
+    heading: "Empowering Careers Through Practical Training",
+    intro: "We are Trivandrum's premier training institute, dedicated to bridging the gap between education and industry through expert-led, job-oriented programs.",
+    body: ABOUT_BODY,
   },
   "/locations/kerala": {
     title: "AI Course Locations in Kerala | ASB Training Hub",
@@ -1445,7 +1530,7 @@ app.get(Object.keys(STATIC_PAGES), async (req, res, next) => {
     const visibleHtml = pageShell({
       heading: page.heading,
       intro: page.intro,
-      body: page.body || "",
+      body: typeof page.body === "function" ? await page.body() : page.body || "",
       links: page.links || [
         { href: "/courses", label: "Courses" },
         { href: "/training", label: "Training" },
@@ -1477,14 +1562,53 @@ app.get(Object.keys(STATIC_PAGES), async (req, res, next) => {
 
 app.get("/locations", (_req, res) => res.redirect(301, "/locations/kerala"));
 app.get("/ai-courses", async (_req,res,next)=>{try{const html=await renderSeoHtml({title:"AI Courses in Kerala | Complete Learning Paths",description:"Explore Generative AI, Agentic AI, prompt engineering, LLM, RAG, MCP, automation and career-focused AI courses in Kerala.",keywords:"AI courses Kerala, Generative AI, Agentic AI, prompt engineering, LLM, RAG, MCP",canonicalPath:"/ai-courses",image:"/images/ai-course-hub.webp",visibleHtml:catalogueShell({heading:"AI Courses and Career Paths in Kerala",intro:"Choose a focused pathway for AI development, automation, professional upskilling or career preparation.",items:AI_LANDING_PAGES,prefix:"/ai-courses"}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:"AI courses in Kerala",itemListElement:AI_LANDING_PAGES.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}/ai-courses/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
-app.get("/ai-courses/:slug",async(req,res,next)=>{try{const page=AI_LANDING_PAGES.find(p=>p.slug===req.params.slug);if(!page)return next();const path=`/ai-courses/${page.slug}`;const html=await renderSeoHtml({title:`${page.title} | ASB Training Hub`,description:page.description,keywords:`${page.title}, AI training Kerala, job-oriented AI course`,canonicalPath:path,image:"/images/ai-course-hub.webp",visibleHtml:detailShell({heading:page.title,intro:page.description,content:`<h2>Practical learning for real AI work</h2><p>This focused pathway combines clear instruction, guided practice, portfolio projects and feedback. Learners can discuss prerequisites, fees, schedules and delivery options before enrolling.</p><h2>Career-focused course support</h2><p>Build demonstrable skills through assignments and applied projects, with guidance for portfolio presentation and interviews.</p>`,sections:[{title:"Learning approach",items:["Instructor-led concepts and demonstrations","Guided practical exercises","Portfolio-ready project work","Feedback and career preparation"]}],links:[{href:"/ai-courses",label:"All AI learning paths"},{href:"/courses/ai",label:"Browse AI courses"},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:"AI courses",path:"/ai-courses"},{name:page.title,path}]),{"@context":"https://schema.org","@type":"Course",name:page.title,description:page.description,url:`${SITE_URL}${path}`,provider:{"@type":"EducationalOrganization","@id":`${SITE_URL}/#organization`,name:"ASB Training Hub"}}]});res.type("html").send(html)}catch(e){next(e)}});
+app.get("/ai-courses/:slug", async (req, res, next) => {
+  try {
+    const page = AI_LANDING_PAGES.find((p) => p.slug === req.params.slug);
+    if (!page) return next();
+    const path = `/ai-courses/${page.slug}`;
+    const related = AI_LANDING_PAGES.filter((p) => p.slug !== page.slug).slice(0, 4);
+    const html = await renderSeoHtml({
+      title: `${page.title} | ASB Training Hub`,
+      description: page.description,
+      canonicalPath: path,
+      image: "/images/ai-course-hub.webp",
+      visibleHtml: detailShell({
+        heading: page.title,
+        intro: page.description,
+        content: `<p>${escapeHtml(page.eyebrow)}</p><h2>A practical learning path</h2><p>${escapeHtml(page.intro)}</p>`,
+        sections: [
+          { title: "What the programme covers", items: page.modules },
+          { title: "Portfolio projects", items: page.projects },
+          { title: "Who should join", items: page.audience },
+        ],
+        faqs: page.faqs,
+        links: [
+          ...related.map((p) => ({ href: `/ai-courses/${p.slug}`, label: p.title })),
+          { href: "/ai-courses", label: "All AI learning paths" },
+          { href: "/contact", label: "Request course details" },
+        ],
+      }),
+      jsonLd: [
+        breadcrumbList([{ name: "Home", path: "/" }, { name: "AI courses", path: "/ai-courses" }, { name: page.title, path }]),
+        { "@context": "https://schema.org", "@type": "Course", name: page.title, description: page.description, url: `${SITE_URL}${path}`, teaches: page.modules, provider: { "@type": "EducationalOrganization", "@id": `${SITE_URL}/#organization`, name: "ASB Training Hub" }, hasCourseInstance: [{ "@type": "CourseInstance", courseMode: "blended" }] },
+        { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: page.faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+      ],
+    });
+    res.type("html").send(html);
+  } catch (e) {
+    next(e);
+  }
+});
 app.get("/ai-guides",async(_req,res,next)=>{try{const html=await renderSeoHtml({title:"AI Learning Guides and FAQs | ASB Training Hub",description:"Browse 162 AI keyword guides and direct answers covering Generative AI, Agentic AI, tools, careers and training.",keywords:"AI guides, AI FAQs, AI courses Kerala",canonicalPath:"/ai-guides",image:"/images/ai-course-hub.webp",visibleHtml:catalogueShell({heading:"AI Keywords, Guides and FAQs",intro:"Complete learning library covering AI course searches, technologies and frequently asked questions.",items:AI_GUIDES,prefix:"/ai-guides"}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:"AI learning guides",numberOfItems:AI_GUIDES.length,itemListElement:AI_GUIDES.map((g,i)=>({"@type":"ListItem",position:i+1,name:g.title,url:`${SITE_URL}/ai-guides/${g.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
 app.get("/ai-guides/:slug",async(req,res,next)=>{try{const g=AI_GUIDES.find(x=>x.slug===req.params.slug);if(!g)return next();const path=`/ai-guides/${g.slug}`,question=g.kind==="question",answer=question?`${g.title.replace(/\?$/,"")} depends on the learner's starting point, goals and selected programme. Compare syllabus depth, practical projects, trainer support, delivery mode and transparent career support before enrolling.`:`${g.title} is best learned through foundations, guided practice and complete projects that demonstrate application, evaluation and career relevance.`;const html=await renderSeoHtml({title:`${g.title.replace(/\?$/,"")} | ASB Training Hub`,description:g.description,keywords:`${g.title}, AI course Kerala, ASB Training Hub`,canonicalPath:path,image:"/images/ai-course-hub.webp",visibleHtml:detailShell({heading:g.title,intro:g.description,content:`<h2>${question?"Direct answer":`Understanding ${escapeHtml(g.title)}`}</h2><p>${escapeHtml(answer)}</p><h2>What to evaluate</h2><p>Review learning outcomes, prerequisites, practical exercises, trainer feedback, delivery mode and project quality. Build a complete project and document the problem, decisions, evaluation and result.</p>`,sections:[{title:"A practical learning approach",items:["Start with the required foundations","Practise with guided exercises","Build a complete portfolio project","Review results and improve"]}],links:[{href:"/ai-guides",label:"All AI guides and FAQs"},{href:`/ai-courses/${g.parent}`,label:"Related complete learning path"},{href:"/contact",label:"Request course guidance"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:"AI guides",path:"/ai-guides"},{name:g.title,path}]),question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:g.title,acceptedAnswer:{"@type":"Answer",text:answer}}]}:{"@context":"https://schema.org","@type":"TechArticle",headline:g.title,description:g.description,author:{"@type":"Organization",name:"ASB Training Hub"}}]});res.type("html").send(html)}catch(e){next(e)}});
 app.get("/keyword-courses",async(_req,res,next)=>{try{const html=await renderSeoHtml({title:"Complete AI Keyword Course Catalogue | ASB Training Hub",description:"Explore 126 separate course pages covering AI training, certification, tools, automation and career-focused learning.",keywords:"AI course catalogue Kerala, Generative AI courses, Agentic AI courses",canonicalPath:"/keyword-courses",image:"/images/ai-course-hub.webp",visibleHtml:catalogueShell({heading:"AI Keyword Course Catalogue",intro:"Separate course-format pages based on every non-question keyword in the complete AI list.",items:KEYWORD_COURSES,prefix:"/keyword-courses"}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:"AI keyword course catalogue",numberOfItems:KEYWORD_COURSES.length,itemListElement:KEYWORD_COURSES.map((c,i)=>({"@type":"ListItem",position:i+1,name:c.title,url:`${SITE_URL}/keyword-courses/${c.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
 app.get("/keyword-courses/:slug",async(req,res,next)=>{try{const c=KEYWORD_COURSES.find(x=>x.slug===req.params.slug);if(!c)return next();const path=`/keyword-courses/${c.slug}`,modules=[`Foundations of ${c.title}`,`Practical tools and workflows for ${c.title}`,"Applied exercises and guided implementation","Project development, evaluation and presentation"];const html=await renderSeoHtml({title:`${c.title} Course | ASB Training Hub`,description:c.description,keywords:`${c.title}, ${c.title} course Kerala, AI training`,canonicalPath:path,image:"/images/ai-course-hub.webp",visibleHtml:detailShell({heading:c.title,intro:c.description,content:`<h2>Course overview</h2><p>This focused course develops a practical understanding of ${escapeHtml(c.title)}. Learning progresses from foundations through guided exercises to an applied project, with feedback connecting the topic to realistic workflows and career goals.</p><h2>Practical projects</h2><p>Learners complete a guided workflow, an application prototype and a documented portfolio capstone.</p>`,sections:[{title:"Course modules",items:modules},{title:"Who can join",items:["Students and graduates","Developers and technology professionals","Working professionals and business teams","Career changers seeking practical AI skills"]}],links:[{href:"/keyword-courses",label:"All keyword course pages"},{href:`/ai-courses/${c.parent}`,label:"Related complete AI pathway"},{href:"/contact",label:"Request syllabus and fees"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:"Keyword courses",path:"/keyword-courses"},{name:c.title,path}]),{"@context":"https://schema.org","@type":"Course",name:c.title,description:c.description,url:`${SITE_URL}${path}`,teaches:modules,provider:{"@type":"EducationalOrganization","@id":`${SITE_URL}/#organization`,name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]}]});res.type("html").send(html)}catch(e){next(e)}});
 
+// Place names the React page recognises in a keyword title (SeoAiCourses.tsx).
+const SEO_AI_PLACES = ["Thiruvananthapuram","Trivandrum","Kazhakootam","Kazhakkottam","Technopark","Kollam","Pathanamthitta","Alappuzha","Alleppey","Kottayam","Idukki","Kochi","Ernakulam","Kakkanad","Thrissur","Palakkad","Malappuram","Kozhikode","Calicut","Wayanad","Kannur","Kasaragod","Kerala"];
 app.get("/course-training/:family/ai",async(req,res,next)=>{try{const family=req.params.family;if(!["agentic","generative"].includes(family))return next();const label=family==="agentic"?"Agentic AI":"Generative AI",items=SEO_AI_PAGES.filter(p=>p.family===family),base=`/course-training/${family}/ai`;const html=await renderSeoHtml({title:`${label} Course and Training Pages | ASB Training Hub`,description:`Explore ${items.length} focused ${label} course, certification, career, location and FAQ pages.`,keywords:`${label} course Kerala, ${label} training Kerala`,canonicalPath:base,image:`/images/${family}-ai-course-hero.webp`,visibleHtml:catalogueShell({heading:`${label} Course and Training Guide`,intro:`Practical ${label} learning paths, local course guidance and direct answers.`,items:items.map(p=>({...p,description:`Course guidance for ${p.title}.`})),prefix:base}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:`${label} course pages`,numberOfItems:items.length,itemListElement:items.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}${base}/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
-app.get("/course-training/:family/ai/:slug",async(req,res,next)=>{try{const page=SEO_AI_PAGES.find(p=>p.family===req.params.family&&p.slug===req.params.slug);if(!page)return next();const label=page.family==="agentic"?"Agentic AI":"Generative AI",path=`/course-training/${page.family}/ai/${page.slug}`,description=`${page.title}: practical ${label} learning with guided projects, certification support and flexible course guidance from ASB Training Hub.`,skills=page.family==="agentic"?["AI agent architecture and orchestration","Tool use, memory and workflow design","Evaluation, safety and human oversight","Practical autonomous-agent project"]:["Prompt design and model fundamentals","Text, image and multimodal workflows","Retrieval, evaluation and responsible AI","Practical generative AI project"];const structured=page.question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:page.title,acceptedAnswer:{"@type":"Answer",text:description}}]}:{"@context":"https://schema.org","@type":"Course",name:page.title,description,url:`${SITE_URL}${path}`,teaches:skills,provider:{"@type":"EducationalOrganization",name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]};const html=await renderSeoHtml({title:`${page.title} | ASB Training Hub`,description,keywords:`${page.title}, ${label} course Kerala, practical AI training`,canonicalPath:path,image:`/images/${page.family}-ai-course-hero.webp`,visibleHtml:detailShell({heading:page.title,intro:description,content:`<h2>${page.question?"Course guidance":"Practical course overview"}</h2><p>${escapeHtml(description)} The learning path combines concepts, supervised exercises, responsible implementation and portfolio-ready outcomes.</p>`,sections:[{title:"Skills covered",items:skills},{title:"Learning format",items:["Instructor-led explanations","Guided practical labs","Project reviews and feedback","Career-focused portfolio support"]}],links:[{href:`/course-training/${page.family}/ai`,label:`All ${label} pages`},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:`${label} pages`,path:`/course-training/${page.family}/ai`},{name:page.title,path}]),structured]});res.type("html").send(html)}catch(e){next(e)}});
+app.get("/course-training/:family/ai/:slug",async(req,res,next)=>{try{const page=SEO_AI_PAGES.find(p=>p.family===req.params.family&&p.slug===req.params.slug);if(!page)return next();const label=page.family==="agentic"?"Agentic AI":"Generative AI",path=`/course-training/${page.family}/ai/${page.slug}`,description=`${page.title}: practical ${label} learning with guided projects, certification support and flexible course guidance from ASB Training Hub.`,skills=page.family==="agentic"?["AI agent architecture and orchestration","Tool use, memory and workflow design","Evaluation, safety and human oversight","Practical autonomous-agent project"]:["Prompt design and model fundamentals","Text, image and multimodal workflows","Retrieval, evaluation and responsible AI","Practical generative AI project"];const structured=page.question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:page.title,acceptedAnswer:{"@type":"Answer",text:description}}]}:{"@context":"https://schema.org","@type":"Course",name:page.title,description,url:`${SITE_URL}${path}`,teaches:skills,provider:{"@type":"EducationalOrganization",name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]};const html=await renderSeoHtml({title:`${page.title} | ASB Training Hub`,description,keywords:`${page.title}, ${label} course Kerala, practical AI training`,canonicalPath:path,image:`/images/${page.family}-ai-course-hero.webp`,visibleHtml:detailShell({heading:page.title,intro:description,content:`<h2>${page.question?"Course guidance":"Practical course overview"}</h2><p>${escapeHtml(description)} The learning path combines concepts, supervised exercises, responsible implementation and portfolio-ready outcomes.</p>${aiCourseLongHtml({title:page.title,label,place:SEO_AI_PLACES.find(x=>page.title.toLowerCase().includes(x.toLowerCase()))})}`,sections:[{title:"Skills covered",items:skills},{title:"Learning format",items:["Instructor-led explanations","Guided practical labs","Project reviews and feedback","Career-focused portfolio support"]}],links:[{href:`/course-training/${page.family}/ai`,label:`All ${label} pages`},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:`${label} pages`,path:`/course-training/${page.family}/ai`},{name:page.title,path}]),structured]});res.type("html").send(html)}catch(e){next(e)}});
 
 const logisticsDescription = (page) => {
   const details = LOGISTICS_FAMILIES[page.family];
@@ -1512,7 +1636,7 @@ const renderLogisticsPage = async (page) => {
     visibleHtml: detailShell({
       heading: page.title,
       intro: description,
-      content: `<h2>Practical course overview</h2><p>${escapeHtml(description)} The complete browser page provides detailed, search-intent-specific guidance covering operations, projects, safety, career preparation, learning modes, assessment and admissions.</p><h2>Applied learning</h2><p>Learners connect concepts to operating records, realistic scenarios and a documented improvement project. Current fees, duration, eligibility and batch availability should be confirmed before enrolment.</p>`,
+      content: `<h2>${page.question ? "A clear, practical answer" : "Course overview"}</h2><p>${escapeHtml(`${details.intro} This guide addresses ${page.title} with realistic learning outcomes, operational examples and enrolment checks.`)}</p>${logisticsLongHtml(page)}`,
       sections: [
         { title: "Skills covered", items: topics },
         { title: "Learning format", items: ["Instructor-led operational concepts", "Guided exercises and case work", "Documented applied project", "Career and interview preparation"] },
@@ -1584,10 +1708,26 @@ app.get("/course-training/:family", async (req, res, next) => {
   }
 });
 
+// Keyword pages that were renamed or moved to the other family. Keyed
+// `family/slug`; mirrors movedLogisticsPages in the frontend's logisticsSeo.ts.
+const MOVED_LOGISTICS_PAGES = {
+  "warehouse/sap-warehouse-management-coursediploma-in-warehouse-management": { family: "warehouse", slug: "sap-warehouse-management-course" },
+  "logistics/warehouse-executive-course": { family: "warehouse", slug: "warehouse-executive-course" },
+  "logistics/inventory-executive-course": { family: "warehouse", slug: "inventory-executive-course" },
+  "logistics/warehouse-jobs-in-kerala": { family: "warehouse", slug: "warehouse-jobs-in-kerala" },
+  "logistics/inventory-executive-jobs": { family: "warehouse", slug: "inventory-executive-jobs" },
+  "logistics/practical-warehouse-management-training-in-kerala": { family: "warehouse", slug: "practical-warehouse-management-training-in-kerala" },
+  "warehouse/logistics-course-kerala": { family: "logistics", slug: "logistics-course-kerala" },
+  "warehouse/logistics-diploma-kerala": { family: "logistics", slug: "logistics-diploma-kerala" },
+  "warehouse/supply-chain-course-kerala": { family: "logistics", slug: "supply-chain-course-kerala" },
+};
+
 app.get("/course-training/:family/:slug", async (req, res, next) => {
   try {
     const family = logisticsFamilyFromSegment(req.params.family);
     if (!family) return next();
+    const moved = MOVED_LOGISTICS_PAGES[`${family}/${req.params.slug}`];
+    if (moved) return res.redirect(301, `${logisticsFamilyPath(moved.family)}/${moved.slug}`);
     const page = SEO_LOGISTICS_PAGES.find((item) => item.family === family && item.slug === req.params.slug);
     if (!page) return next();
     const canonicalPath = logisticsPagePath(page);
@@ -1759,7 +1899,7 @@ app.get("/blog", async (_req, res, next) => {
     const blogs = (await readBlogs()).filter((blog) => blog.published !== false);
     const html = await renderSeoHtml({
       title: "Blog | ASB Training Hub",
-      description: "Career insights, ERP, ERP, AI, programming, logistics, and internship resources from ASB Training Hub.",
+      description: "Career insights, ERP, AI, programming, logistics, and internship resources from ASB Training Hub.",
       keywords: "ASB Training Hub blog, ERP training Kerala, ERP courses Kerala, AI training Kerala, logistics courses Kerala, career training blog",
       canonicalPath: "/blog",
       type: "website",

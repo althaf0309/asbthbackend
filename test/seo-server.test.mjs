@@ -386,7 +386,8 @@ describe("GEO: generative engine surfaces", () => {
   it("serves static routes with visible HTML and returns a real noindex 404", async () => {
     const about = await api.get("/about");
     assert.equal(about.status, 200);
-    assert.match(String(about.body), /<h1>About ASB Training Hub<\/h1>/i);
+    assert.match(String(about.body), /<h1>Empowering Careers Through Practical Training<\/h1>/i);
+    assert.match(String(about.body), /Our Mission/);
     assert.match(String(about.body), /canonical" href="https:\/\/www\.asbtraininghub\.com\/about/i);
 
     const missing = await api.get("/definitely-not-a-real-page");
@@ -452,6 +453,56 @@ describe("GEO: generative engine surfaces", () => {
     for (const post of posts) {
       assert.match(post.slug, /^[a-z0-9-]+$/, `non-canonical slug: ${post.slug}`);
       assert.ok(post.slug.length <= 70, `slug too long: ${post.slug}`);
+    }
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * Raw HTML completeness: what a crawler sees without running JavaScript
+ * ------------------------------------------------------------------ */
+const visibleWords = (html) =>
+  (String(html).split(/<body[^>]*>/i)[1] || "")
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<noscript[\s\S]*?<\/noscript>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .split(/\s+/)
+    .filter(Boolean).length;
+
+describe("raw HTML completeness", () => {
+  it("homepage ships its heading, course links and FAQ without JavaScript", async () => {
+    const res = await api.get("/");
+    const html = String(res.body);
+    assert.equal(res.status, 200);
+    assert.match(html, /<h1>Transform Your Career with Industry-Focused Training<\/h1>/);
+    assert.match(html, /href="\/course\/[a-z0-9-]+"/);
+    assert.match(html, /"@type":"FAQPage"/);
+    assert.ok(visibleWords(html) >= 300, `homepage has only ${visibleWords(html)} words`);
+  });
+
+  it("keyword landing pages ship their full long-form content", async () => {
+    for (const [path, min] of [
+      ["/course-training/Diploma-in-warehouse-Management/warehouse-course-in-kochi", 1200],
+      ["/course-training/Diploma-in-Logistics-and-Supply-Chain-Management", 1200],
+      ["/course-training/agentic/ai/agentic-ai-course-kerala", 1000],
+    ]) {
+      const res = await api.get(path);
+      assert.equal(res.status, 200, path);
+      assert.match(String(res.body), new RegExp(`canonical" href="https://www\.asbtraininghub\.com${path}"`), path);
+      assert.ok(visibleWords(res.body) >= min, `${path} has only ${visibleWords(res.body)} words`);
+    }
+  });
+
+  it("redirects moved keyword pages permanently to their new family", async () => {
+    const res = await fetch(`${api.base}/course-training/Diploma-in-Logistics-and-Supply-Chain-Management/warehouse-executive-course`, { redirect: "manual" });
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.get("location"), "/course-training/Diploma-in-warehouse-Management/warehouse-executive-course");
+  });
+
+  it("never ships meta keywords, the duplicated ERP title or mis-encoded characters", async () => {
+    for (const path of ["/", "/about", "/courses", "/ai-courses", "/course/human-resource-management"]) {
+      const html = String((await api.get(path)).body);
+      assert.doesNotMatch(html, /<meta\s+name=["']keywords["']/i, path);
+      assert.doesNotMatch(html, /ERP, ERP/, path);
+      assert.doesNotMatch(html, /â€|Â·/, path);
     }
   });
 });

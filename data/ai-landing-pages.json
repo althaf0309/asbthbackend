@@ -1,0 +1,474 @@
+[
+  {
+    "slug": "generative-ai-course-kerala",
+    "title": "Generative AI Course in Kerala",
+    "eyebrow": "Create with modern AI",
+    "description": "Learn Generative AI, prompt engineering, RAG and AI application development through practical projects in Kerala.",
+    "intro": "This practical generative ai course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Generative AI foundations",
+      "Prompt design and evaluation",
+      "LLM application development",
+      "RAG and responsible AI"
+    ],
+    "projects": [
+      "Domain knowledge assistant",
+      "AI content workflow",
+      "RAG question-answering app"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "Can beginners learn Generative AI?",
+        "a": "Yes. Beginners can start with guided foundations before progressing to application development."
+      },
+      {
+        "q": "Does Generative AI require coding?",
+        "a": "Basic coding helps for developer projects, while several workflow and prompting topics are accessible without advanced programming."
+      }
+    ]
+  },
+  {
+    "slug": "agentic-ai-course-kerala",
+    "title": "Agentic AI Course in Kerala",
+    "eyebrow": "Build capable AI agents",
+    "description": "Study AI agents, tool use, memory, planning and multi-agent workflows with project-based training.",
+    "intro": "This practical agentic ai course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Agent architecture and planning",
+      "Tools and function calling",
+      "Memory and guardrails",
+      "Multi-agent orchestration"
+    ],
+    "projects": [
+      "Research agent",
+      "Customer-support agent",
+      "Multi-agent business workflow"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "What is Agentic AI?",
+        "a": "Agentic AI describes systems that can plan steps, use tools and act toward a defined goal with appropriate controls."
+      },
+      {
+        "q": "What are the prerequisites?",
+        "a": "Basic computer knowledge is enough for an introductory path; Python is useful for advanced development."
+      }
+    ]
+  },
+  {
+    "slug": "prompt-engineering-course-kerala",
+    "title": "Prompt Engineering Course in Kerala",
+    "eyebrow": "Communicate with AI systems",
+    "description": "Learn systematic prompting, evaluation, reusable templates and responsible workflows for leading AI tools.",
+    "intro": "This practical prompt engineering course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Prompt patterns",
+      "Context and structured outputs",
+      "Evaluation and iteration",
+      "Agent prompts and safety"
+    ],
+    "projects": [
+      "Prompt library",
+      "Business document assistant",
+      "Evaluated support workflow"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "Is coding required?",
+        "a": "No. Core prompt engineering can be learned without coding, while API projects use basic development skills."
+      }
+    ]
+  },
+  {
+    "slug": "chatgpt-course-kerala",
+    "title": "ChatGPT Course in Kerala",
+    "eyebrow": "Use ChatGPT productively",
+    "description": "Develop practical ChatGPT skills for research, writing, analysis, automation and responsible professional use.",
+    "intro": "This practical chatgpt course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "ChatGPT foundations",
+      "Research and verification",
+      "Reusable work workflows",
+      "Custom assistants and APIs"
+    ],
+    "projects": [
+      "Research workflow",
+      "Content quality system",
+      "Team knowledge assistant"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "Who should learn ChatGPT?",
+        "a": "Students, professionals, educators, creators and business teams can use the course to improve everyday work."
+      }
+    ]
+  },
+  {
+    "slug": "llm-course-kerala",
+    "title": "LLM Course in Kerala",
+    "eyebrow": "Understand language models",
+    "description": "Learn how large language models work and how to design, evaluate and deploy useful LLM applications.",
+    "intro": "This practical llm course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "LLM foundations",
+      "Tokens, embeddings and context",
+      "Application patterns",
+      "Evaluation and deployment"
+    ],
+    "projects": [
+      "LLM-powered assistant",
+      "Structured extraction pipeline",
+      "Model evaluation dashboard"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "What is an LLM?",
+        "a": "A large language model learns patterns from text and can generate, classify and transform language for many applications."
+      }
+    ]
+  },
+  {
+    "slug": "rag-course-kerala",
+    "title": "RAG Course in Kerala",
+    "eyebrow": "Ground AI in trusted knowledge",
+    "description": "Build retrieval-augmented generation systems that search private knowledge and produce grounded answers.",
+    "intro": "This practical rag course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Embeddings and vector search",
+      "Chunking and retrieval",
+      "Grounded generation",
+      "RAG evaluation"
+    ],
+    "projects": [
+      "Document assistant",
+      "Policy search system",
+      "Cited knowledge bot"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "Why use RAG?",
+        "a": "RAG gives an AI application relevant source material at answer time, improving grounding and allowing private knowledge use."
+      }
+    ]
+  },
+  {
+    "slug": "mcp-course-kerala",
+    "title": "MCP Course in Kerala",
+    "eyebrow": "Connect AI to tools and data",
+    "description": "Learn Model Context Protocol concepts and build controlled connections between AI applications, tools and data sources.",
+    "intro": "This practical mcp course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "MCP architecture",
+      "Servers, clients and resources",
+      "Tool integration",
+      "Security and testing"
+    ],
+    "projects": [
+      "Local MCP server",
+      "Data connector",
+      "Tool-enabled assistant"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "What is MCP?",
+        "a": "Model Context Protocol is a standard approach for connecting AI applications with tools, resources and external systems."
+      }
+    ]
+  },
+  {
+    "slug": "ai-agent-development-course-kerala",
+    "title": "AI Agent Development Course in Kerala",
+    "eyebrow": "Engineer autonomous workflows",
+    "description": "Design AI agents that plan, call tools, maintain state and collaborate under clear human controls.",
+    "intro": "This practical ai agent development course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Agent loops and state",
+      "Tool integration",
+      "Multi-agent patterns",
+      "Observability and guardrails"
+    ],
+    "projects": [
+      "Sales research agent",
+      "Operations assistant",
+      "Multi-agent coordinator"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "How can I become an AI agent developer?",
+        "a": "Learn Python and APIs, then practise tool calling, state, retrieval, evaluation and safe deployment through complete projects."
+      }
+    ]
+  },
+  {
+    "slug": "ai-automation-course-kerala",
+    "title": "AI Automation Course in Kerala",
+    "eyebrow": "Automate useful business work",
+    "description": "Combine AI models, APIs and workflow tools to automate repeatable business processes with oversight.",
+    "intro": "This practical ai automation course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Workflow mapping",
+      "APIs and webhooks",
+      "AI decision steps",
+      "Monitoring and exception handling"
+    ],
+    "projects": [
+      "Lead-routing workflow",
+      "Document processing automation",
+      "Customer service workflow"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "Is this suitable for business teams?",
+        "a": "Yes. The course covers workflow design as well as technical implementation, so mixed business and technology teams can participate."
+      }
+    ]
+  },
+  {
+    "slug": "ai-course-for-beginners-kerala",
+    "title": "AI Course for Beginners in Kerala",
+    "eyebrow": "Start with strong foundations",
+    "description": "A structured introduction to AI concepts, tools, Python foundations and guided beginner projects.",
+    "intro": "This practical ai course for beginners in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "AI and machine-learning basics",
+      "Python foundations",
+      "Generative AI tools",
+      "First portfolio project"
+    ],
+    "projects": [
+      "AI study assistant",
+      "Simple prediction project",
+      "Prompt-based productivity tool"
+    ],
+    "audience": [
+      "Students and recent graduates",
+      "Career changers",
+      "Professionals new to AI"
+    ],
+    "faqs": [
+      {
+        "q": "Can I join without coding experience?",
+        "a": "Yes. The pathway begins with foundations and introduces coding progressively where it supports practical work."
+      }
+    ]
+  },
+  {
+    "slug": "ai-course-working-professionals-kerala",
+    "title": "AI Course for Working Professionals in Kerala",
+    "eyebrow": "Upskill around your schedule",
+    "description": "Practical AI learning for professionals seeking flexible batches, relevant projects and workplace applications.",
+    "intro": "This practical ai course for working professionals in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "AI productivity",
+      "Role-specific automation",
+      "Data and LLM workflows",
+      "Applied capstone"
+    ],
+    "projects": [
+      "Workplace copilot",
+      "Reporting automation",
+      "Role-specific AI prototype"
+    ],
+    "audience": [
+      "Working professionals",
+      "Managers and team leaders",
+      "Entrepreneurs"
+    ],
+    "faqs": [
+      {
+        "q": "Are weekend batches available?",
+        "a": "Batch schedules vary. Contact admissions for current weekend, online and hybrid options."
+      }
+    ]
+  },
+  {
+    "slug": "online-ai-course-kerala",
+    "title": "Online AI Course in Kerala",
+    "eyebrow": "Learn live from anywhere",
+    "description": "Join instructor-led online AI training with practical exercises, project reviews and doubt-clearing support.",
+    "intro": "This practical online ai course in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Live concepts and demonstrations",
+      "Guided lab sessions",
+      "Project reviews",
+      "Career preparation"
+    ],
+    "projects": [
+      "Instructor-reviewed capstone",
+      "Team automation workflow",
+      "Portfolio AI application"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "Are online classes live?",
+        "a": "Yes. Available online batches are instructor-led, with scheduled interaction and project support."
+      }
+    ]
+  },
+  {
+    "slug": "offline-ai-course-trivandrum",
+    "title": "Offline AI Course in Trivandrum",
+    "eyebrow": "Classroom learning near Technopark",
+    "description": "Attend practical AI classes at ASB Training Hub near Technopark Phase 1 in Kazhakootam, Trivandrum.",
+    "intro": "This practical offline ai course in trivandrum learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Classroom instruction",
+      "Hands-on labs",
+      "Trainer feedback",
+      "Portfolio preparation"
+    ],
+    "projects": [
+      "Classroom capstone",
+      "AI automation prototype",
+      "Career portfolio"
+    ],
+    "audience": [
+      "Learners near Trivandrum",
+      "Students who prefer classroom support",
+      "Professionals around Technopark"
+    ],
+    "faqs": [
+      {
+        "q": "Where is the classroom?",
+        "a": "ASB Training Hub is at 105-2, The Atomic, near Technopark Phase 1, Kazhakootam, Trivandrum."
+      }
+    ]
+  },
+  {
+    "slug": "ai-course-placement-support-kerala",
+    "title": "AI Course with Placement Support in Kerala",
+    "eyebrow": "Prepare for AI careers",
+    "description": "Combine practical AI training with portfolio, resume, interview and eligible referral support.",
+    "intro": "This practical ai course with placement support in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Job-relevant AI skills",
+      "Portfolio development",
+      "Resume and interview preparation",
+      "Career planning"
+    ],
+    "projects": [
+      "Deployable AI application",
+      "Industry-style automation",
+      "Documented capstone"
+    ],
+    "audience": [
+      "Graduates seeking AI roles",
+      "Career changers",
+      "Developers moving into AI"
+    ],
+    "faqs": [
+      {
+        "q": "Is placement guaranteed?",
+        "a": "No. ASB provides placement support such as preparation and eligible referrals; employment outcomes depend on skills, openings and interviews."
+      }
+    ]
+  },
+  {
+    "slug": "ai-career-guide-kerala",
+    "title": "AI Career Guide for Kerala",
+    "eyebrow": "Plan an evidence-based AI career",
+    "description": "Explore AI roles, skill paths, portfolios and preparation for Generative AI and Agentic AI careers.",
+    "intro": "This practical ai career guide for kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "AI career pathways",
+      "Skill-gap planning",
+      "Portfolio strategy",
+      "Interview preparation"
+    ],
+    "projects": [
+      "Career roadmap",
+      "Role-specific portfolio plan",
+      "Interview evidence pack"
+    ],
+    "audience": [
+      "Students exploring AI",
+      "Professionals changing careers",
+      "Developers choosing a specialization"
+    ],
+    "faqs": [
+      {
+        "q": "What jobs follow an AI course?",
+        "a": "Depending on prior experience and demonstrated skills, learners may target AI developer, automation specialist, prompt engineer, data or AI product roles."
+      }
+    ]
+  },
+  {
+    "slug": "ai-tools-training-kerala",
+    "title": "AI Tools Training in Kerala",
+    "eyebrow": "Build with the modern AI stack",
+    "description": "Practise popular AI development, agent and automation tools through connected projects rather than isolated demos.",
+    "intro": "This practical ai tools training in kerala learning path connects clear concepts with guided exercises, portfolio work and instructor feedback. Learners can discuss the right starting level, schedule and delivery mode with ASB Training Hub before enrolling.",
+    "modules": [
+      "Python and AI APIs",
+      "LangChain and LangGraph",
+      "CrewAI and AutoGen",
+      "n8n and model integrations"
+    ],
+    "projects": [
+      "Multi-model assistant",
+      "Agent workflow",
+      "Automated research pipeline"
+    ],
+    "audience": [
+      "Graduates building employable AI skills",
+      "Developers and technology professionals",
+      "Founders and business teams adopting AI"
+    ],
+    "faqs": [
+      {
+        "q": "Which tools are included?",
+        "a": "Coverage can include Python, model APIs, LangChain, LangGraph, CrewAI, AutoGen and n8n depending on the selected track."
+      }
+    ]
+  }
+]

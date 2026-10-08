@@ -514,15 +514,6 @@
   },
   {
     "family": "logistics",
-    "slug": "warehouse-executive-course",
-    "title": "Warehouse executive course",
-    "label": "Logistics and Supply Chain Management",
-    "intent": "course",
-    "location": "",
-    "question": false
-  },
-  {
-    "family": "logistics",
     "slug": "supply-chain-executive-course",
     "title": "Supply chain executive course",
     "label": "Logistics and Supply Chain Management",
@@ -534,15 +525,6 @@
     "family": "logistics",
     "slug": "procurement-executive-course",
     "title": "Procurement executive course",
-    "label": "Logistics and Supply Chain Management",
-    "intent": "course",
-    "location": "",
-    "question": false
-  },
-  {
-    "family": "logistics",
-    "slug": "inventory-executive-course",
-    "title": "Inventory executive course",
     "label": "Logistics and Supply Chain Management",
     "intent": "course",
     "location": "",
@@ -1108,15 +1090,6 @@
   },
   {
     "family": "logistics",
-    "slug": "warehouse-jobs-in-kerala",
-    "title": "Warehouse jobs in Kerala",
-    "label": "Logistics and Supply Chain Management",
-    "intent": "career",
-    "location": "Kerala",
-    "question": false
-  },
-  {
-    "family": "logistics",
     "slug": "jobs-after-logistics-course",
     "title": "Jobs after logistics course",
     "label": "Logistics and Supply Chain Management",
@@ -1182,15 +1155,6 @@
     "family": "logistics",
     "slug": "procurement-executive-jobs",
     "title": "Procurement executive jobs",
-    "label": "Logistics and Supply Chain Management",
-    "intent": "career",
-    "location": "",
-    "question": false
-  },
-  {
-    "family": "logistics",
-    "slug": "inventory-executive-jobs",
-    "title": "Inventory executive jobs",
     "label": "Logistics and Supply Chain Management",
     "intent": "career",
     "location": "",
@@ -1297,15 +1261,6 @@
   },
   {
     "family": "logistics",
-    "slug": "does-a-logistics-course-include-warehouse-management",
-    "title": "Does a logistics course include warehouse management?",
-    "label": "Logistics and Supply Chain Management",
-    "intent": "question",
-    "location": "",
-    "question": true
-  },
-  {
-    "family": "logistics",
     "slug": "what-is-the-difference-between-logistics-and-supply-chain-management",
     "title": "What is the difference between logistics and supply chain management?",
     "label": "Logistics and Supply Chain Management",
@@ -1362,15 +1317,6 @@
     "family": "logistics",
     "slug": "logistics-course-for-graduates-in-kerala",
     "title": "Logistics course for graduates in Kerala",
-    "label": "Logistics and Supply Chain Management",
-    "intent": "course",
-    "location": "Kerala",
-    "question": false
-  },
-  {
-    "family": "logistics",
-    "slug": "practical-warehouse-management-training-in-kerala",
-    "title": "Practical warehouse management training in Kerala",
     "label": "Logistics and Supply Chain Management",
     "intent": "course",
     "location": "Kerala",
@@ -5832,6 +5778,87 @@
     "question": false
   },
   {
+    "family": "logistics",
+    "slug": "logistics-course-kerala",
+    "title": "Logistics course Kerala",
+    "label": "Logistics and Supply Chain Management",
+    "intent": "course",
+    "location": "",
+    "question": false
+  },
+  {
+    "family": "logistics",
+    "slug": "logistics-diploma-kerala",
+    "title": "Logistics diploma Kerala",
+    "label": "Logistics and Supply Chain Management",
+    "intent": "course",
+    "location": "",
+    "question": false
+  },
+  {
+    "family": "logistics",
+    "slug": "supply-chain-course-kerala",
+    "title": "Supply chain course Kerala",
+    "label": "Logistics and Supply Chain Management",
+    "intent": "course",
+    "location": "",
+    "question": false
+  },
+  {
+    "family": "logistics",
+    "slug": "does-a-logistics-course-include-warehouse-management",
+    "title": "Does a logistics course include warehouse management?",
+    "label": "Logistics and Supply Chain Management",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "warehouse",
+    "slug": "warehouse-executive-course",
+    "title": "Warehouse executive course",
+    "label": "Warehouse and Inventory Management",
+    "intent": "course",
+    "location": "",
+    "question": false
+  },
+  {
+    "family": "warehouse",
+    "slug": "inventory-executive-course",
+    "title": "Inventory executive course",
+    "label": "Warehouse and Inventory Management",
+    "intent": "course",
+    "location": "",
+    "question": false
+  },
+  {
+    "family": "warehouse",
+    "slug": "warehouse-jobs-in-kerala",
+    "title": "Warehouse jobs in Kerala",
+    "label": "Warehouse and Inventory Management",
+    "intent": "career",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "warehouse",
+    "slug": "inventory-executive-jobs",
+    "title": "Inventory executive jobs",
+    "label": "Warehouse and Inventory Management",
+    "intent": "career",
+    "location": "",
+    "question": false
+  },
+  {
+    "family": "warehouse",
+    "slug": "practical-warehouse-management-training-in-kerala",
+    "title": "Practical warehouse management training in Kerala",
+    "label": "Warehouse and Inventory Management",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
     "family": "warehouse",
     "slug": "diploma-in-warehouse-management",
     "title": "Diploma in warehouse management",
@@ -6157,8 +6184,8 @@
   },
   {
     "family": "warehouse",
-    "slug": "sap-warehouse-management-coursediploma-in-warehouse-management",
-    "title": "SAP warehouse management coursediploma in warehouse management",
+    "slug": "sap-warehouse-management-course",
+    "title": "SAP warehouse management course",
     "label": "Warehouse and Inventory Management",
     "intent": "course",
     "location": "",
@@ -6789,33 +6816,6 @@
     "family": "warehouse",
     "slug": "store-management-course-kerala",
     "title": "Store management course Kerala",
-    "label": "Warehouse and Inventory Management",
-    "intent": "course",
-    "location": "",
-    "question": false
-  },
-  {
-    "family": "warehouse",
-    "slug": "logistics-course-kerala",
-    "title": "Logistics course Kerala",
-    "label": "Warehouse and Inventory Management",
-    "intent": "course",
-    "location": "",
-    "question": false
-  },
-  {
-    "family": "warehouse",
-    "slug": "logistics-diploma-kerala",
-    "title": "Logistics diploma Kerala",
-    "label": "Warehouse and Inventory Management",
-    "intent": "course",
-    "location": "",
-    "question": false
-  },
-  {
-    "family": "warehouse",
-    "slug": "supply-chain-course-kerala",
-    "title": "Supply chain course Kerala",
     "label": "Warehouse and Inventory Management",
     "intent": "course",
     "location": "",
