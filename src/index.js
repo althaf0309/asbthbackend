@@ -94,6 +94,9 @@ app.use(
           "'unsafe-inline'",
           "https://www.googletagmanager.com",
           "https://challenges.cloudflare.com",
+          // Microsoft Clarity: the tag loader and the recorder script it pulls in.
+          "https://www.clarity.ms",
+          "https://scripts.clarity.ms",
         ],
         // Fonts are self-hosted now, so no third-party font origins are needed.
         styleSrc: ["'self'", "'unsafe-inline'"],
@@ -102,8 +105,15 @@ app.use(
         connectSrc: [
           "'self'",
           "https://www.google-analytics.com",
+          // GA4 also sends hits to regional collectors such as region1.
+          "https://*.google-analytics.com",
+          "https://*.analytics.google.com",
+          "https://www.googletagmanager.com",
           "https://api.web3forms.com",
           "https://challenges.cloudflare.com",
+          // Microsoft Clarity uploads recordings to *.clarity.ms and c.bing.com.
+          "https://*.clarity.ms",
+          "https://c.bing.com",
         ],
         frameSrc: [
           "https://www.googletagmanager.com",
