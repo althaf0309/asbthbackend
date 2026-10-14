@@ -506,3 +506,34 @@ describe("raw HTML completeness", () => {
     }
   });
 });
+
+describe("internal links for keyword pages", () => {
+  const linksIn = (html) => new Set([...String(html).matchAll(/<a [^>]*href="(\/[^"#]*)"/g)].map((m) => m[1]));
+
+  it("links every logistics and AI keyword page from its family's primary page or hub", async () => {
+    const linked = new Set();
+    for (const path of [
+      "/course-training/Diploma-in-Logistics-and-Supply-Chain-Management",
+      "/course-training/Diploma-in-warehouse-Management",
+      "/course-training/agentic/ai",
+      "/course-training/generative/ai",
+    ]) for (const href of linksIn((await api.get(path)).body)) linked.add(href);
+
+    const sitemap = String((await api.get("/sitemap.xml")).body);
+    const keywordPaths = [...sitemap.matchAll(/<loc>https:\/\/www\.asbtraininghub\.com(\/course-training\/[^<]+)<\/loc>/g)]
+      .map((m) => m[1])
+      .filter((p) => p.split("/").length > 3 && !/^\/course-training\/(agentic|generative)\/ai$/.test(p));
+    const orphans = keywordPaths.filter((p) => !linked.has(p) && !/^\/course-training\/[^/]+$/.test(p));
+    assert.ok(keywordPaths.length > 2000, `only ${keywordPaths.length} keyword pages in sitemap`);
+    assert.deepEqual(orphans.slice(0, 5), [], `${orphans.length} keyword pages have no crawlable link`);
+  });
+
+  it("gives each keyword page related links and the sitemap accurate lastmod dates", async () => {
+    const page = await api.get("/course-training/Diploma-in-warehouse-Management/warehouse-course-in-kochi");
+    assert.ok(linksIn(page.body).size >= 8, `only ${linksIn(page.body).size} links`);
+    const sitemap = String((await api.get("/sitemap.xml")).body);
+    const urls = (sitemap.match(/<url>/g) || []).length;
+    const dated = (sitemap.match(/<lastmod>/g) || []).length;
+    assert.equal(dated, urls, `${urls - dated} sitemap URLs have no lastmod`);
+  });
+});

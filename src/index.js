@@ -949,6 +949,10 @@ const logisticsPageImage = (page) => {
   return LOGISTICS_FAMILIES[page.family].defaultImage;
 };
 
+// Last date the generated SEO page content changed. Google trusts lastmod only
+// when it is accurate, so bump this whenever these templates or data change.
+const GENERATED_CONTENT_UPDATED = "2026-10-14";
+
 const staticSitemapRoutes = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
   { loc: "/about", priority: "0.8", changefreq: "monthly" },
@@ -979,7 +983,7 @@ const staticSitemapRoutes = [
     { loc: locationDistrictPath(location), priority: "0.85", changefreq: "monthly" },
     ...LOCATION_TOPICS.map((topic) => ({ loc: locationTopicPath(location, topic), priority: "0.8", changefreq: "monthly" })),
   ]),
-];
+].map((route) => ({ lastmod: GENERATED_CONTENT_UPDATED, ...route }));
 
 const escapeXml = (value) =>
   String(value)
@@ -1163,7 +1167,7 @@ const readCourseSitemapRoutes = async () => {
     loc: `${prefix}/${c.slug}`,
     priority,
     changefreq: "monthly",
-    lastmod: c.updatedAt ? c.updatedAt.slice(0, 10) : undefined,
+    lastmod: (c.updatedAt || c.createdAt || '').slice(0, 10) || undefined,
   });
 
   const published = (items) => items.filter((c) => c.published !== false && c.slug);
@@ -1174,7 +1178,7 @@ const readCourseSitemapRoutes = async () => {
     loc: localizedCoursePath(location, course),
     priority: "0.75",
     changefreq: "monthly",
-    lastmod: course.updatedAt ? course.updatedAt.slice(0, 10) : undefined,
+    lastmod: (course.updatedAt || course.createdAt || '').slice(0, 10) || undefined,
   })));
   const publishedTraining = published(await readTraining());
   const training = publishedTraining.map(entry("/training", "0.8"));
@@ -1184,6 +1188,12 @@ const readCourseSitemapRoutes = async () => {
       loc: `/training/category/${category}`,
       priority: "0.8",
       changefreq: "weekly",
+      // A category page changes when any programme in it changes.
+      lastmod: publishedTraining
+        .filter((item) => item.category === category)
+        .map((item) => (item.updatedAt || item.createdAt || "").slice(0, 10))
+        .sort()
+        .pop() || undefined,
     }));
 
   return [...courses, ...localizedCourses, ...trainingCategories, ...training];
@@ -1199,7 +1209,7 @@ app.get("/sitemap.xml", async (_req, res, next) => {
         loc: `/blog/${b.slug}`,
         priority: "0.65",
         changefreq: "monthly",
-        lastmod: b.updatedAt ? b.updatedAt.slice(0, 10) : undefined,
+        lastmod: (b.updatedAt || b.createdAt || '').slice(0, 10) || undefined,
       }));
 
     const allRoutes = [...staticSitemapRoutes, ...courseRoutes, ...blogRoutes];
@@ -1620,11 +1630,32 @@ app.get("/keyword-courses/:slug",async(req,res,next)=>{try{const c=KEYWORD_COURS
 // Place names the React page recognises in a keyword title (SeoAiCourses.tsx).
 const SEO_AI_PLACES = ["Thiruvananthapuram","Trivandrum","Kazhakootam","Kazhakkottam","Technopark","Kollam","Pathanamthitta","Alappuzha","Alleppey","Kottayam","Idukki","Kochi","Ernakulam","Kakkanad","Thrissur","Palakkad","Malappuram","Kozhikode","Calicut","Wayanad","Kannur","Kasaragod","Kerala"];
 app.get("/course-training/:family/ai",async(req,res,next)=>{try{const family=req.params.family;if(!["agentic","generative"].includes(family))return next();const label=family==="agentic"?"Agentic AI":"Generative AI",items=SEO_AI_PAGES.filter(p=>p.family===family),base=`/course-training/${family}/ai`;const html=await renderSeoHtml({title:`${label} Course and Training Pages | ASB Training Hub`,description:`Explore ${items.length} focused ${label} course, certification, career, location and FAQ pages.`,keywords:`${label} course Kerala, ${label} training Kerala`,canonicalPath:base,image:`/images/${family}-ai-course-hero.webp`,visibleHtml:catalogueShell({heading:`${label} Course and Training Guide`,intro:`Practical ${label} learning paths, local course guidance and direct answers.`,items:items.map(p=>({...p,description:`Course guidance for ${p.title}.`})),prefix:base}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:`${label} course pages`,numberOfItems:items.length,itemListElement:items.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}${base}/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
-app.get("/course-training/:family/ai/:slug",async(req,res,next)=>{try{const page=SEO_AI_PAGES.find(p=>p.family===req.params.family&&p.slug===req.params.slug);if(!page)return next();const label=page.family==="agentic"?"Agentic AI":"Generative AI",path=`/course-training/${page.family}/ai/${page.slug}`,description=`${page.title}: practical ${label} learning with guided projects, certification support and flexible course guidance from ASB Training Hub.`,skills=page.family==="agentic"?["AI agent architecture and orchestration","Tool use, memory and workflow design","Evaluation, safety and human oversight","Practical autonomous-agent project"]:["Prompt design and model fundamentals","Text, image and multimodal workflows","Retrieval, evaluation and responsible AI","Practical generative AI project"];const structured=page.question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:page.title,acceptedAnswer:{"@type":"Answer",text:description}}]}:{"@context":"https://schema.org","@type":"Course",name:page.title,description,url:`${SITE_URL}${path}`,teaches:skills,provider:{"@type":"EducationalOrganization",name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]};const html=await renderSeoHtml({title:`${page.title} | ASB Training Hub`,description,keywords:`${page.title}, ${label} course Kerala, practical AI training`,canonicalPath:path,image:`/images/${page.family}-ai-course-hero.webp`,visibleHtml:detailShell({heading:page.title,intro:description,content:`<h2>${page.question?"Course guidance":"Practical course overview"}</h2><p>${escapeHtml(description)} The learning path combines concepts, supervised exercises, responsible implementation and portfolio-ready outcomes.</p>${aiCourseLongHtml({title:page.title,label,place:SEO_AI_PLACES.find(x=>page.title.toLowerCase().includes(x.toLowerCase()))})}`,sections:[{title:"Skills covered",items:skills},{title:"Learning format",items:["Instructor-led explanations","Guided practical labs","Project reviews and feedback","Career-focused portfolio support"]}],links:[{href:`/course-training/${page.family}/ai`,label:`All ${label} pages`},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:`${label} pages`,path:`/course-training/${page.family}/ai`},{name:page.title,path}]),structured]});res.type("html").send(html)}catch(e){next(e)}});
+app.get("/course-training/:family/ai/:slug",async(req,res,next)=>{try{const page=SEO_AI_PAGES.find(p=>p.family===req.params.family&&p.slug===req.params.slug);if(!page)return next();const label=page.family==="agentic"?"Agentic AI":"Generative AI",aiPlace=SEO_AI_PLACES.find(x=>page.title.toLowerCase().includes(x.toLowerCase())),path=`/course-training/${page.family}/ai/${page.slug}`,description=`${page.title}: practical ${label} learning with guided projects, certification support and flexible course guidance from ASB Training Hub.`,skills=page.family==="agentic"?["AI agent architecture and orchestration","Tool use, memory and workflow design","Evaluation, safety and human oversight","Practical autonomous-agent project"]:["Prompt design and model fundamentals","Text, image and multimodal workflows","Retrieval, evaluation and responsible AI","Practical generative AI project"];const structured=page.question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:page.title,acceptedAnswer:{"@type":"Answer",text:description}}]}:{"@context":"https://schema.org","@type":"Course",name:page.title,description,url:`${SITE_URL}${path}`,teaches:skills,provider:{"@type":"EducationalOrganization",name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]};const html=await renderSeoHtml({title:`${page.title} | ASB Training Hub`,description,keywords:`${page.title}, ${label} course Kerala, practical AI training`,canonicalPath:path,image:`/images/${page.family}-ai-course-hero.webp`,visibleHtml:detailShell({heading:page.title,intro:description,content:`<h2>${page.question?"Course guidance":"Practical course overview"}</h2><p>${escapeHtml(description)} The learning path combines concepts, supervised exercises, responsible implementation and portfolio-ready outcomes.</p>${aiCourseLongHtml({title:page.title,label,place:aiPlace})}`,sections:[{title:"Skills covered",items:skills},{title:"Learning format",items:["Instructor-led explanations","Guided practical labs","Project reviews and feedback","Career-focused portfolio support"]}],links:[...SEO_AI_PAGES.filter(p=>p.family===page.family&&p.slug!==page.slug&&(aiPlace?p.title.includes(aiPlace):true)).slice(0,6).map(p=>({href:`/course-training/${p.family}/ai/${p.slug}`,label:p.title})),{href:`/course-training/${page.family}/ai`,label:`All ${label} pages`},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:`${label} pages`,path:`/course-training/${page.family}/ai`},{name:page.title,path}]),structured]});res.type("html").send(html)}catch(e){next(e)}});
 
 const logisticsDescription = (page) => {
   const details = LOGISTICS_FAMILIES[page.family];
   return `${page.title}: practical ${details.label.toLowerCase()} guidance covering applied operations, projects, career preparation and current admission support${page.location ? ` for learners in ${page.location}` : ""}.`;
+};
+
+// Every keyword page needs crawlable links pointing at it, or Google only
+// finds it through the sitemap and leaves it "Discovered - currently not
+// indexed". Mirrors SeoLogisticsCourses.tsx: eight related pages (same town,
+// otherwise same search intent), and the primary diploma page lists them all.
+const logisticsPageLinks = (page) => {
+  const details = LOGISTICS_FAMILIES[page.family];
+  const family = SEO_LOGISTICS_PAGES.filter((item) => item.family === page.family && item.slug !== page.slug);
+  const isPrimary = page.slug === details.primarySlug;
+  const related = isPrimary
+    ? family
+    : family.filter((item) => (page.location ? item.location === page.location : item.intent === page.intent)).slice(0, 8);
+  const primary = SEO_LOGISTICS_PAGES.find((item) => item.family === page.family && item.slug === details.primarySlug);
+  return [
+    ...related.map((item) => ({ href: logisticsPagePath(item), label: item.title })),
+    ...(isPrimary || !primary ? [] : [{ href: logisticsPagePath(primary), label: primary.title }]),
+    { href: `/course-training/${page.family}`, label: `${details.label} learning guides` },
+    { href: "/courses/management", label: "Management courses" },
+    { href: "/contact", label: "Request syllabus and fees" },
+  ];
 };
 
 const renderLogisticsPage = async (page) => {
@@ -1653,11 +1684,7 @@ const renderLogisticsPage = async (page) => {
         { title: "Skills covered", items: topics },
         { title: "Learning format", items: ["Instructor-led operational concepts", "Guided exercises and case work", "Documented applied project", "Career and interview preparation"] },
       ],
-      links: [
-        { href: logisticsFamilyPath(page.family), label: `Complete ${details.label} pathway` },
-        { href: "/courses/management", label: "Management courses" },
-        { href: "/contact", label: "Request syllabus and fees" },
-      ],
+      links: logisticsPageLinks(page),
     }),
     jsonLd: [
       breadcrumbList([{ name: "Home", path: "/" }, { name: details.label, path: logisticsFamilyPath(page.family) }, { name: page.title, path: canonicalPath }]),
@@ -1688,7 +1715,7 @@ const renderLogisticsHub = async (family) => {
       "Compare learning options through practical exercises, process evidence, operational measures, career objectives and transparent course information.",
       "Use the focused guides to explore fees, admissions, online study, certification, internships, careers and location-specific logistics searches.",
     ];
-  const links = pages.slice(0, 36).map((page) => `<li><a href="${escapeHtml(logisticsPagePath(page))}">${escapeHtml(page.title)}</a></li>`).join("");
+  const links = pages.map((page) => `<li><a href="${escapeHtml(logisticsPagePath(page))}">${escapeHtml(page.title)}</a></li>`).join("");
   return renderSeoHtml({
     title: `${title} | ASB Training Hub`, description, keywords: `${details.label} guides, operations careers Kerala, course comparison`, canonicalPath,
     image: details.defaultImage,
