@@ -1578,6 +1578,16 @@ const STATIC_PAGES = {
 
 app.get(Object.keys(STATIC_PAGES), async (req, res, next) => {
   try {
+    // Express routes are case-insensitive and ignore a trailing slash, so
+    // "/About" or "/about/" reach this handler without an exact key; looking
+    // them up directly crashed with "reading 'heading'". Send them to the one
+    // canonical URL instead.
+    const canonicalKey = Object.keys(STATIC_PAGES).find((key) => key === (req.path.replace(/\/+$/, "") || "/").toLowerCase());
+    if (!canonicalKey) return next();
+    if (canonicalKey !== req.path) {
+      const query = req.originalUrl.slice(req.path.length);
+      return res.redirect(301, `${canonicalKey}${query}`);
+    }
     const page = STATIC_PAGES[req.path];
     const visibleHtml = pageShell({
       heading: page.heading,

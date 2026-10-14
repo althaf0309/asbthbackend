@@ -537,3 +537,15 @@ describe("internal links for keyword pages", () => {
     assert.equal(dated, urls, `${urls - dated} sitemap URLs have no lastmod`);
   });
 });
+
+describe("static page URL variants", () => {
+  it("redirects case and trailing-slash variants to the canonical URL instead of crashing", async () => {
+    for (const [from, to] of [["/About", "/about"], ["/about/", "/about"], ["/FAQ?ref=x", "/faq?ref=x"]]) {
+      const res = await fetch(`${api.base}${from}`, { redirect: "manual" });
+      assert.equal(res.status, 301, from);
+      assert.equal(res.headers.get("location"), to, from);
+    }
+    assert.equal((await api.get("/about")).status, 200);
+  });
+});
+
