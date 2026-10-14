@@ -770,6 +770,23 @@ const silentlyRejectSubmission = (req, res, reason) => {
   return res.status(201).json({ ok: true });
 };
 
+// Turnstile failures are not proof of a bot: the visitor may not have finished
+// the check, an extension may block it, or Cloudflare may be unreachable. Until
+// 2026-10 these were silently discarded and real enquiries were lost while the
+// visitor saw a thank-you message. Only the honeypot and the automated-pattern
+// score (which no person trips) are still dropped; everything else is stored
+// for the admin as "unverified" and is not emailed, so bots still never receive
+// the notification key.
+const HELD_SCREENING_REASONS = new Set(["missing-turnstile", "invalid-turnstile", "turnstile-unavailable"]);
+
+const rejectOrHoldSubmission = async (req, res, type, fields, screening) => {
+  if (!HELD_SCREENING_REASONS.has(screening.reason)) return silentlyRejectSubmission(req, res, screening.reason);
+  console.warn(`Public form held as unverified (${screening.reason}) from ${req.ip}`);
+  const submission = { ...submissionMeta(req, "unverified"), ...fields, screeningReason: screening.reason };
+  const stored = await storeIfNew(type, submission);
+  return res.status(201).json({ ok: true, id: stored.id });
+};
+
 /* ------------------------------------------------------------------ *
  * Inbox notification
  *
@@ -3163,7 +3180,7 @@ app.post("/api/inquiries", submissionLimiter, async (req, res, next) => {
     }
 
     const screening = await screenSubmission(req, fields);
-    if (!screening.ok) return silentlyRejectSubmission(req, res, screening.reason);
+    if (!screening.ok) return rejectOrHoldSubmission(req, res, "inquiry", fields, screening);
 
     const inquiry = { ...submissionMeta(req, screening.verification), ...fields };
     const stored = await storeIfNew("inquiry", inquiry);
@@ -3197,7 +3214,7 @@ app.post("/api/applications", submissionLimiter, async (req, res, next) => {
     }
 
     const screening = await screenSubmission(req, fields);
-    if (!screening.ok) return silentlyRejectSubmission(req, res, screening.reason);
+    if (!screening.ok) return rejectOrHoldSubmission(req, res, "application", fields, screening);
 
     const application = { ...submissionMeta(req, screening.verification), ...fields };
     const stored = await storeIfNew("application", application);
@@ -3221,7 +3238,7 @@ app.post("/api/newsletters", submissionLimiter, async (req, res, next) => {
     }
 
     const screening = await screenSubmission(req, fields);
-    if (!screening.ok) return silentlyRejectSubmission(req, res, screening.reason);
+    if (!screening.ok) return rejectOrHoldSubmission(req, res, "newsletter", fields, screening);
 
     const subscription = { ...submissionMeta(req, screening.verification), ...fields };
     const stored = await storeIfNew("newsletter", subscription);
