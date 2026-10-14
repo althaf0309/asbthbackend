@@ -129,7 +129,9 @@ app.use(
     },
     crossOriginEmbedderPolicy: false,
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-    hsts: IS_PRODUCTION ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
+    // nginx sends Strict-Transport-Security for every response, static files
+    // included; sending it here too produced a duplicate header.
+    hsts: false,
   }),
 );
 
