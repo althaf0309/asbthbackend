@@ -268,7 +268,18 @@ const writeJsonAtomic = async (filePath, value) => {
   const tempPath = `${filePath}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
   try {
     await writeFile(tempPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-    await rename(tempPath, filePath);
+    // Windows refuses to replace a file another request has open for reading
+    // (EPERM/EBUSY/EACCES); the lock clears within milliseconds, so retry
+    // briefly instead of losing the write. POSIX rename never hits this.
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await rename(tempPath, filePath);
+        break;
+      } catch (error) {
+        if (attempt >= 8 || !["EPERM", "EBUSY", "EACCES"].includes(error.code)) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 15 * (attempt + 1)));
+      }
+    }
   } catch (error) {
     await unlink(tempPath).catch(() => undefined);
     throw error;
@@ -1052,6 +1063,8 @@ const breadcrumbList = (trail) => ({
 
 const readFrontendIndex = async () => {
   const candidates = [
+    // Lets the end-to-end suite render pages from its own test build.
+    ...(process.env.FRONTEND_INDEX ? [path.resolve(process.env.FRONTEND_INDEX)] : []),
     path.resolve(rootDir, "../frontend/dist/index.html"),
     path.resolve(rootDir, "../asb-ascend/dist/index.html"),
     path.resolve(rootDir, "../../frontend/dist/index.html"),
