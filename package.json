@@ -6,18 +6,20 @@
   "scripts": {
     "dev": "node src/index.js",
     "start": "node src/index.js",
-    "test": "node --test test/api.test.mjs test/courses.test.mjs test/training.test.mjs test/security.test.mjs test/seo-server.test.mjs test/form-screening.test.mjs",
+    "test": "node --test test/api.test.mjs test/courses.test.mjs test/training.test.mjs test/security.test.mjs test/seo-server.test.mjs test/form-screening.test.mjs test/analytics.test.mjs",
     "test:security": "node --test test/security.test.mjs",
-    "test:seo": "node --test test/seo-server.test.mjs test/form-screening.test.mjs",
+    "test:seo": "node --test test/seo-server.test.mjs test/form-screening.test.mjs test/analytics.test.mjs",
     "test:courses": "node --test test/courses.test.mjs",
     "migrate:courses": "node scripts/migrate-courses.mjs"
   },
   "dependencies": {
+    "@ip-location-db/dbip-city-mmdb": "^2.3.2026060513",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
+    "maxmind": "^5.0.7",
     "sanitize-html": "^2.17.7"
   }
 }

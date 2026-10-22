@@ -9,6 +9,7 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { aiCourseLongHtml, logisticsLongHtml } from "./longContent.js";
+import { describeDevice, formatLocation, isBotUserAgent, lookupLocation } from "./geo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -328,8 +329,9 @@ const ANALYTICS_RETENTION_DAYS = Math.max(
   Number(process.env.ANALYTICS_RETENTION_DAYS) || 90,
 );
 
-const recordAnalytics = (event) => analyticsLock(async () => {
+const recordAnalytics = (event, isDuplicate) => analyticsLock(async () => {
   const events = await readAnalytics();
+  if (isDuplicate?.(events, event)) return { duplicate: true };
   events.push(event);
 
   const cutoff = Date.now() - ANALYTICS_RETENTION_DAYS * 86400 * 1000;
@@ -344,6 +346,7 @@ const recordAnalytics = (event) => analyticsLock(async () => {
   }
 
   await writeJsonAtomic(analyticsFile, kept);
+  return { duplicate: false };
 });
 
 const readStore = async () => {
@@ -1328,14 +1331,41 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "asb-backend" });
 });
 
+const ANALYTICS_EVENT_TYPES = new Set(["page_view", "engagement", "form_submit", "direct_contact", "click"]);
+// A second identical click inside this window is a double-tap or a bubbling
+// duplicate, not a second decision by the visitor.
+const CLICK_DUPLICATE_WINDOW_MS = 2000;
+const CONTACT_CHANNELS = new Set(["whatsapp", "phone", "email"]);
+
+const isDuplicateClick = (events, event) => {
+  if (event.eventType !== "click") return false;
+  const since = Date.parse(event.createdAt) - CLICK_DUPLICATE_WINDOW_MS;
+  for (let i = events.length - 1, scanned = 0; i >= 0 && scanned < 300; i -= 1, scanned += 1) {
+    const prior = events[i];
+    if (Date.parse(prior.createdAt) < since) break;
+    if (
+      prior.eventType === "click" &&
+      prior.sessionId === event.sessionId &&
+      prior.path === event.path &&
+      prior.target === event.target &&
+      prior.label === event.label
+    ) return true;
+  }
+  return false;
+};
+
 app.post("/api/analytics/events", async (req, res, next) => {
   try {
-    const allowed = new Set(["page_view", "engagement", "form_submit", "direct_contact"]);
     const eventType = text(req.body?.eventType, 30);
-    if (!allowed.has(eventType)) return res.status(400).json({ error: "Invalid analytics event." });
-    await recordAnalytics({
+    if (!ANALYTICS_EVENT_TYPES.has(eventType)) return res.status(400).json({ error: "Invalid analytics event." });
+    const userAgent = text(req.get("user-agent"), 500);
+    // Crawlers and monitoring tools run the page's JavaScript too; they are not visitors.
+    if (isBotUserAgent(userAgent)) return res.status(202).json({ ok: true, ignored: "bot" });
+    const geo = await lookupLocation(req.ip);
+    const result = await recordAnalytics({
       id: `${Date.now().toString(36)}-${randomBytes(4).toString("hex")}`,
-      eventType, sessionId: text(req.body?.sessionId, 80), path: text(req.body?.path, 500) || "/",
+      eventType, sessionId: text(req.body?.sessionId, 80), visitorId: text(req.body?.visitorId, 80),
+      path: text(req.body?.path, 500) || "/",
       title: text(req.body?.title, 200), referrer: text(req.body?.referrer, 500),
       searchTerm: text(req.body?.searchTerm, 300), landingKeyword: text(req.body?.landingKeyword, 300),
       campaign: text(req.body?.campaign, 200), source: text(req.body?.source, 100),
@@ -1343,13 +1373,37 @@ app.post("/api/analytics/events", async (req, res, next) => {
       scrollDepth: Math.max(0, Math.min(100, Number(req.body?.scrollDepth) || 0)),
       formType: text(req.body?.formType, 30), email: text(req.body?.email, 254).toLowerCase(),
       channel: text(req.body?.channel, 30), placement: text(req.body?.placement, 80),
-      ip: req.ip, userAgent: text(req.get("user-agent"), 500),
-      country: text(req.get("cf-ipcountry"), 10), region: text(req.get("cf-region"), 100), city: text(req.get("cf-ipcity"), 100),
+      label: text(req.body?.label, 120), target: text(req.body?.target, 300),
+      ip: req.ip, userAgent, ...describeDevice(userAgent),
+      country: geo.country || text(req.get("cf-ipcountry"), 10),
+      countryCode: geo.countryCode,
+      region: geo.region || text(req.get("cf-region"), 100),
+      city: geo.city || text(req.get("cf-ipcity"), 100),
       createdAt: new Date().toISOString(),
-    });
-    res.status(202).json({ ok: true });
+    }, isDuplicateClick);
+    res.status(202).json({ ok: true, duplicate: result.duplicate });
   } catch (error) { next(error); }
 });
+
+/** Older rows were stored before IP location and click tracking existed; fill them in. */
+const enrichAnalyticsEvents = async (events) => {
+  const locations = new Map();
+  for (const event of events) {
+    if (!event.city && !event.country && event.ip && !locations.has(event.ip)) {
+      locations.set(event.ip, await lookupLocation(event.ip));
+    }
+  }
+  return events.map((event) => {
+    const geo = !event.city && !event.country && event.ip ? locations.get(event.ip) : null;
+    const device = event.device ? {} : describeDevice(event.userAgent);
+    const enriched = { ...event, ...device, ...(geo ? { city: geo.city, region: geo.region, country: geo.country, countryCode: geo.countryCode } : {}) };
+    // Before generic click tracking, the WhatsApp button sent a "direct_contact" event.
+    if (event.eventType === "direct_contact") {
+      return { ...enriched, eventType: "click", channel: event.channel || "whatsapp", label: event.label || "WhatsApp button", target: event.target || "WhatsApp" };
+    }
+    return enriched;
+  }).filter((event) => !isBotUserAgent(event.userAgent));
+};
 
 app.get("/api/admin/analytics", requireAdmin, async (req, res, next) => {
   try {
@@ -1362,17 +1416,104 @@ app.get("/api/admin/analytics", requireAdmin, async (req, res, next) => {
     const from = parseDay(text(req.query.from, 10)) || new Date(now.getTime() - 29 * 86400000);
     const to = parseDay(text(req.query.to, 10), true) || now;
     if (from > to) return res.status(400).json({ error: "Invalid analytics date range." });
-    const events = (await readAnalytics()).filter((event) => {
+    const events = await enrichAnalyticsEvents((await readAnalytics()).filter((event) => {
       const created = new Date(event.createdAt);
       return created >= from && created <= to;
-    });
+    }));
+
+    const visitorOf = (event) => event.visitorId || event.sessionId || event.ip || "unknown";
+    const locationOf = (event) => formatLocation(event);
     const sessions = new Set(events.map((event) => event.sessionId).filter(Boolean));
+    const visitors = new Set(events.map(visitorOf));
     const views = events.filter((event) => event.eventType === "page_view");
     const submissions = events.filter((event) => event.eventType === "form_submit");
-    const contacts = events.filter((event) => event.eventType === "direct_contact");
-    const group = (items, key) => Object.entries(items.reduce((acc, item) => { const value = item[key] || "Unknown"; acc[value] = (acc[value] || 0) + 1; return acc; }, {})).sort((a,b) => b[1] - a[1]);
-    const keywordEvents = views.map((event) => ({ ...event, keyword: event.searchTerm || event.landingKeyword || "Unknown" }));
-    res.json({ range: { from: from.toISOString(), to: to.toISOString() }, summary: { pageViews: views.length, sessions: sessions.size, formSubmissions: submissions.length, directContacts: contacts.length, averageScrollDepth: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.scrollDepth,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)), averageDurationSeconds: Math.round(events.filter(e=>e.eventType==="engagement").reduce((sum,e)=>sum+e.durationSeconds,0) / Math.max(1, events.filter(e=>e.eventType==="engagement").length)) }, topPages: group(views,"path").slice(0,25), keywords: group(keywordEvents,"keyword").slice(0,50), sources: group(views,"source").slice(0,25), locations: group(views,"city").slice(0,25), submissions: submissions.slice(-100).reverse(), recentEvents: events.slice(-250).reverse() });
+    const clicks = events.filter((event) => event.eventType === "click");
+    const contactClicks = clicks.filter((event) => CONTACT_CHANNELS.has(event.channel));
+    const engagement = events.filter((event) => event.eventType === "engagement");
+    const average = (key) => Math.round(engagement.reduce((sum, e) => sum + (e[key] || 0), 0) / Math.max(1, engagement.length));
+    const group = (items, key) => Object.entries(items.reduce((acc, item) => { const value = (typeof key === "function" ? key(item) : item[key]) || "Unknown"; acc[value] = (acc[value] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1]);
+
+    // Totals plus distinct visitors, so repeat clicks by one person are visible
+    // but do not inflate how many people acted.
+    const tally = (items, keyOf) => {
+      const rows = new Map();
+      for (const item of items) {
+        const key = keyOf(item);
+        const row = rows.get(key) || { key, total: 0, visitors: new Set(), last: "" };
+        row.total += 1;
+        row.visitors.add(visitorOf(item));
+        if (item.createdAt > row.last) row.last = item.createdAt;
+        rows.set(key, row);
+      }
+      return [...rows.values()]
+        .map(({ visitors: v, ...row }) => ({ ...row, unique: v.size, repeats: row.total - v.size }))
+        .sort((a, b) => b.total - a.total);
+    };
+
+    const channels = tally(clicks, (e) => e.channel || "other").map(({ key, ...row }) => ({ channel: key, ...row }));
+    const topClicks = tally(clicks, (e) => JSON.stringify([e.channel || "other", e.label || "", e.target || ""]))
+      .slice(0, 40)
+      .map(({ key, ...row }) => { const [channel, label, target] = JSON.parse(key); return { channel, label, target, ...row }; });
+
+    const locationRows = new Map();
+    for (const event of events) {
+      const location = locationOf(event);
+      const row = locationRows.get(location) || { location, visitors: new Set(), pageViews: 0, contactClicks: 0, formSubmissions: 0 };
+      row.visitors.add(visitorOf(event));
+      if (event.eventType === "page_view") row.pageViews += 1;
+      if (event.eventType === "click" && CONTACT_CHANNELS.has(event.channel)) row.contactClicks += 1;
+      if (event.eventType === "form_submit") row.formSubmissions += 1;
+      locationRows.set(location, row);
+    }
+    const locations = [...locationRows.values()]
+      .map(({ visitors: v, ...row }) => ({ ...row, visitors: v.size }))
+      .sort((a, b) => b.visitors - a.visitors || b.pageViews - a.pageViews)
+      .slice(0, 50);
+
+    // Every click in time order, numbered per visitor and target so the admin
+    // can tell a first click from the same person tapping again.
+    const seen = new Map();
+    const clickLog = [...clicks]
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .map((e) => {
+        const key = `${visitorOf(e)}|${e.channel}|${e.target}`;
+        const repeat = (seen.get(key) || 0) + 1;
+        seen.set(key, repeat);
+        return {
+          id: e.id, createdAt: e.createdAt, path: e.path, title: e.title, label: e.label, target: e.target,
+          channel: e.channel || "other", placement: e.placement, location: locationOf(e),
+          device: e.device, os: e.os, browser: e.browser, visitor: visitorOf(e).slice(0, 8), repeat, ip: e.ip,
+        };
+      })
+      .reverse()
+      .slice(0, 500);
+
+    res.json({
+      range: { from: from.toISOString(), to: to.toISOString() },
+      summary: {
+        pageViews: views.length,
+        sessions: sessions.size,
+        visitors: visitors.size,
+        formSubmissions: submissions.length,
+        clicks: clicks.length,
+        uniqueClickers: new Set(clicks.map(visitorOf)).size,
+        contactClicks: contactClicks.length,
+        contactVisitors: new Set(contactClicks.map(visitorOf)).size,
+        directContacts: contactClicks.length,
+        averageScrollDepth: average("scrollDepth"),
+        averageDurationSeconds: average("durationSeconds"),
+      },
+      channels,
+      topClicks,
+      locations,
+      clickLog,
+      devices: group(views, "device"),
+      topPages: group(views, "path").slice(0, 25),
+      keywords: group(views.map((e) => ({ ...e, keyword: e.searchTerm || e.landingKeyword })), "keyword").slice(0, 50),
+      sources: group(views, "source").slice(0, 25),
+      submissions: submissions.slice(-100).reverse(),
+      recentEvents: events.slice(-250).reverse(),
+    });
   } catch (error) { next(error); }
 });
 
