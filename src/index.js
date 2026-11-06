@@ -99,6 +99,9 @@ app.use(
           // Microsoft Clarity: the tag loader and the recorder script it pulls in.
           "https://www.clarity.ms",
           "https://scripts.clarity.ms",
+          // Google Ads tag (AW-11392456126) delivered through Tag Manager.
+          "https://googleads.g.doubleclick.net",
+          "https://www.googleadservices.com",
         ],
         // Fonts are self-hosted now, so no third-party font origins are needed.
         styleSrc: ["'self'", "'unsafe-inline'"],
@@ -116,9 +119,15 @@ app.use(
           // Microsoft Clarity uploads recordings to *.clarity.ms and c.bing.com.
           "https://*.clarity.ms",
           "https://c.bing.com",
+          // Google Ads conversion and remarketing hits.
+          "https://www.google.com",
+          "https://ad.doubleclick.net",
+          "https://googleads.g.doubleclick.net",
+          "https://www.googleadservices.com",
         ],
         frameSrc: [
           "https://www.googletagmanager.com",
+          "https://td.doubleclick.net",
           "https://www.google.com",
           "https://challenges.cloudflare.com",
         ],

@@ -7,16 +7,25 @@
  * used to rely on were always empty.
  *
  * Each database (IPv4 ~63 MB, IPv6 ~71 MB) is loaded the first time an
- * address of that family is seen, and stays in memory after that.
+ * address of that family is seen. A small server must not run out of memory
+ * for a report detail, so a database is only loaded while the machine has room
+ * and is released again after a quiet spell. A visit recorded without a
+ * location is filled in from its IP when the report is next built.
  */
 import { createRequire } from "node:module";
 import net from "node:net";
+import os from "node:os";
 import maxmind from "maxmind";
 
 const require = createRequire(import.meta.url);
 const readers = { 4: null, 6: null };
+const idleTimers = { 4: null, 6: null };
 const cache = new Map();
 const CACHE_LIMIT = 5000;
+const DATABASE_MB = { 4: 70, 6: 80 };
+const IDLE_RELEASE_MS = 15 * 60 * 1000;
+// Free memory to leave for the app and nginx after a database has loaded.
+const minFreeMb = () => Number(process.env.GEO_MIN_FREE_MB) || 150;
 
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 const countryName = (code) => {
@@ -27,8 +36,16 @@ const countryName = (code) => {
   }
 };
 
+const releaseWhenIdle = (family) => {
+  clearTimeout(idleTimers[family]);
+  idleTimers[family] = setTimeout(() => { readers[family] = null; }, IDLE_RELEASE_MS);
+  idleTimers[family].unref();
+};
+
 const readerFor = (family) => {
+  releaseWhenIdle(family);
   if (!readers[family]) {
+    if (os.freemem() / 1048576 < DATABASE_MB[family] + minFreeMb()) return null;
     const file = require.resolve(`@ip-location-db/dbip-city-mmdb/dbip-city-ipv${family}.mmdb`);
     readers[family] = maxmind.open(file).catch((error) => {
       readers[family] = null;
@@ -53,7 +70,9 @@ export const lookupLocation = async (rawIp) => {
 
   let location = empty;
   try {
-    const record = (await readerFor(family)).get(ip);
+    const reader = await readerFor(family);
+    if (!reader) return empty;
+    const record = reader.get(ip);
     if (record) {
       location = {
         city: record.city || "",

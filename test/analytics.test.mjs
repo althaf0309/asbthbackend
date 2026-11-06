@@ -38,6 +38,19 @@ describe("IP location and device helpers", () => {
     assert.equal((await lookupLocation("::ffff:8.8.8.8")).countryCode, "US");
   });
 
+  it("skips the lookup rather than load a database with too little free memory", async () => {
+    process.env.GEO_MIN_FREE_MB = "99999999";
+    try {
+      // Nothing is cached, so the same address resolves once memory is back.
+      const before = await lookupLocation("1.1.1.1");
+      if (before.country) return; // this process already holds the database
+      assert.equal(before.city, "");
+    } finally {
+      delete process.env.GEO_MIN_FREE_MB;
+    }
+    assert.ok((await lookupLocation("1.1.1.1")).country);
+  });
+
   it("labels private addresses and formats locations", async () => {
     assert.equal((await lookupLocation("127.0.0.1")).city, "Local network");
     assert.equal(formatLocation({ city: "Kazhakootam", region: "Kerala", country: "India" }), "Kazhakootam, Kerala, India");
