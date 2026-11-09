@@ -6,7 +6,7 @@ import { after, before, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { bootstrapEnv, cleanup, startServer } from "./helpers.mjs";
-import { courseAnswers, courseFacts, keywordAnswers } from "../src/answers.js";
+import { courseAnswers, courseFacts, courseSeo, keywordAnswers, keywordSeo } from "../src/answers.js";
 
 const json = async (name) => JSON.parse(await readFile(new URL(`../data/${name}`, import.meta.url), "utf8"));
 const PHONE = "+91 87147 73304";
@@ -86,6 +86,46 @@ describe("quotable answers", () => {
     assert.equal(mode("Kerala"), course.mode);
     const kochi = keywordAnswers({ title: "x", intent: "course" }, course, "Kochi")[0].a;
     assert.match(kochi, /learners in Kochi join through live-online batches/);
+  });
+});
+
+describe("search result snippets", () => {
+  const seoFor = (page) => keywordSeo(page, page.family === "agentic" || page.family === "generative" ? courseFor(`${page.family}-ai`) : logisticsCourse(page), page.location || "");
+
+  it("fit in the search result and carry no broken ending on every keyword page", () => {
+    for (const page of [...logisticsPages, ...aiPages]) {
+      const { title, description } = seoFor(page);
+      assert.ok(description.length <= 155, `${page.slug}: ${description.length}`);
+      assert.ok(title.length <= 90, `${page.slug}: ${title.length}`);
+      assert.doesNotMatch(`${title} ${description}`, /undefined|null|…/, page.slug);
+    }
+  });
+
+  it("open with the searched words on nearly every page, so descriptions differ", () => {
+    const pages = [...logisticsPages, ...aiPages];
+    const unique = new Set(pages.map((page) => seoFor(page).description)).size;
+    assert.ok(unique / pages.length > 0.95, `${unique} of ${pages.length} unique`);
+    const page = logisticsPages.find((p) => p.slug === "warehouse-course-in-kochi");
+    assert.match(seoFor(page).title, /^Warehouse Course in Kochi/);
+    assert.match(seoFor(page).description, /^Warehouse Course in Kochi: .*Live online from Kochi/);
+  });
+
+  it("repair course titles that were stored cut off", () => {
+    const { title } = courseSeo({ ...courseFor("human-resource-management"), metaTitle: "Diploma in Human Resource Management Course in Trivandrum | ASB\u2026" });
+    assert.equal(title, "Diploma in Human Resource Management in Trivandrum | ASB");
+    for (const course of courses) {
+      const seo = courseSeo(course);
+      assert.ok(seo.description.length <= 170, `${course.slug}: ${seo.description.length}`);
+      assert.doesNotMatch(seo.title, /…/, course.slug);
+    }
+  });
+
+  it("are what the server sends and what the React pages receive", async () => {
+    const page = logisticsPages.find((p) => p.slug === "warehouse-course-in-kochi");
+    const html = String((await api.get("/course-training/Diploma-in-warehouse-Management/warehouse-course-in-kochi")).body);
+    assert.ok(html.includes(`<title>${seoFor(page).title}</title>`));
+    const res = await api.get("/api/answers/keyword/warehouse/warehouse-course-in-kochi");
+    assert.equal(res.body.seo.title, seoFor(page).title);
   });
 });
 

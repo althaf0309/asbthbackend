@@ -167,6 +167,93 @@ export const keywordAnswers = (page, course, place = "") => {
   });
 };
 
+// ---- Search result snippets ------------------------------------------------
+// The title and description are the whole advert in a results page. Both are
+// built from the same record, kept within what Google displays, and open with
+// the words the person searched, which Google shows in bold.
+const TITLE_LIMIT = 60;
+const DESCRIPTION_LIMIT = 155;
+const SMALL_WORDS = new Set(["a", "an", "and", "at", "after", "for", "in", "near", "of", "or", "the", "to", "with"]);
+
+const titleCase = (text) =>
+  String(text).split(" ").map((word, index) => {
+    if (/[A-Z0-9]/.test(word.slice(1)) || /[0-9]/.test(word)) return word;
+    if (index > 0 && SMALL_WORDS.has(word.toLowerCase())) return word.toLowerCase();
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }).join(" ");
+
+const firstThatFits = (options, limit) => options.find((option) => option.length <= limit) || options[options.length - 1];
+const courseKind = (course) => (/diploma/i.test(course.title) ? "Diploma" : "Training");
+const monthsLabel = (course) => String(course.duration).replace(/months?/i, "Month");
+
+const attendanceShort = (course, place) => {
+  if (isSpecificPlace(place) && !isCampusArea(place)) return hasOnline(course) ? `Live online from ${place}.` : "Classes near Technopark, Trivandrum.";
+  return hasOnline(course) ? "Online or near Technopark, Trivandrum." : "Classes near Technopark, Trivandrum.";
+};
+
+const snippetLead = {
+  fees: (c) => `get the current fee, schedule and next batch for the ${monthsLabel(c).toLowerCase()} ${courseKind(c).toLowerCase()}.`,
+  afterSchool: (c) => `check eligibility for the ${monthsLabel(c).toLowerCase()} ${courseKind(c).toLowerCase()} with ASB admissions.`,
+  placement: (c) => `${monthsLabel(c).toLowerCase()} course with resume help, interview practice and job referrals.`,
+  jobs: (c) => `prepare for roles like ${listOf(c.careers, 2)} in ${span(c)}.`,
+  internship: (c) => `${monthsLabel(c).toLowerCase()} course built around applied projects. Ask about internships.`,
+  certificate: (c) => `${monthsLabel(c).toLowerCase()} ${courseKind(c).toLowerCase()} with an ASB certificate and project portfolio.`,
+  admission: (c) => `apply for the next batch of the ${monthsLabel(c).toLowerCase()} ${courseKind(c).toLowerCase()}.`,
+  default: (c) => `learn ${listOf(c.syllabus, 2)} in ${span(c)} at ASB.`,
+};
+
+const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** Title and description for a keyword page's search result. */
+export const keywordSeo = (page, course, place = "") => {
+  const intent = primaryIntent(page);
+  const base = page.question ? page.title.replace(/\?$/, "") : titleCase(page.title);
+  const benefit = /diploma/i.test(base) ? "" : `: ${monthsLabel(course)} ${courseKind(course)}`;
+  const title = firstThatFits([
+    ...(page.question || !benefit ? [] : [`${base}${benefit} | ASB`]),
+    `${base} | ASB Training Hub`,
+    `${base} | ASB`,
+    `${base.replace(/Logistics and Supply Chain Management/i, "Logistics & Supply Chain")} | ASB`,
+  ], TITLE_LIMIT);
+
+  const lead = (snippetLead[intent] || snippetLead.default)(course);
+  const where = attendanceShort(course, place);
+  const opener = page.question ? `${page.title.endsWith("?") ? page.title : `${page.title}?`} ` : `${base}: `;
+  const body = page.question ? capitalise(lead) : lead;
+  const description = firstThatFits([
+    `${opener}${body} ${where} Call ${PHONE}.`,
+    `${opener}${body} ${where}`,
+    `${opener}${body} Call ${PHONE}.`,
+    `${opener}${body}`,
+    // Long keywords: a shorter promise keeps the searched words in the opener.
+    `${opener}${monthsLabel(course)} ${courseKind(course).toLowerCase()}. ${where} Call ${PHONE}.`,
+    `${opener}${monthsLabel(course)} ${courseKind(course).toLowerCase()}. ${where}`,
+    `${capitalise(lead)} ${where} Call ${PHONE}.`,
+    `${capitalise(lead)} ${where}`,
+  ], DESCRIPTION_LIMIT);
+  return { title, description };
+};
+
+/** Title and description for a course's own page. */
+export const courseSeo = (course) => {
+  // Stored titles were clipped mid-word ("| ASB Training…"); rebuild the ending.
+  const base = String(course.metaTitle || `${course.title} Course in Trivandrum`)
+    .replace(/\s*\|\s*ASB.*$/i, "")
+    .replace(/[…\s]+$/, "");
+  const title = firstThatFits([
+    `${base} | ASB Training Hub`,
+    `${base} | ASB`,
+    `${base.replace(/ Course in /i, " in ")} | ASB`,
+  ], TITLE_LIMIT);
+  const summary = course.metaDescription || `${course.description} ${course.duration}, ${modeText(course)}.`;
+  const description = firstThatFits([
+    `${summary} Near Technopark, Trivandrum. Call ${PHONE}.`,
+    `${summary} Call ${PHONE}.`,
+    summary,
+  ], DESCRIPTION_LIMIT);
+  return { title, description };
+};
+
 export const answersHtml = (facts, answers) => `
 <section id="quick-facts"><h2>Quick facts</h2><dl>${facts.map((f) => `<dt>${escapeHtml(f.label)}</dt><dd>${escapeHtml(f.value)}</dd>`).join("")}</dl></section>
 <section id="course-answers"><h2>Common questions</h2>${answers.map((item) => `<h3>${escapeHtml(item.q)}</h3><p class="citable-answer">${escapeHtml(item.a)}</p>`).join("")}</section>`;

@@ -9,7 +9,7 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { aiCourseLongHtml, logisticsLongHtml } from "./longContent.js";
-import { answersHtml, answersJsonLd, courseAnswers, courseFacts, keywordAnswers } from "./answers.js";
+import { answersHtml, answersJsonLd, courseAnswers, courseFacts, courseSeo, keywordAnswers, keywordSeo } from "./answers.js";
 import { describeDevice, formatLocation, isBotUserAgent, lookupLocation } from "./geo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -992,7 +992,7 @@ const logisticsPageImage = (page) => {
 
 // Last date the generated SEO page content changed. Google trusts lastmod only
 // when it is accurate, so bump this whenever these templates or data change.
-const GENERATED_CONTENT_UPDATED = "2026-11-06";
+const GENERATED_CONTENT_UPDATED = "2026-11-09";
 
 const staticSitemapRoutes = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
@@ -1782,7 +1782,11 @@ app.get(Object.keys(STATIC_PAGES), async (req, res, next) => {
 });
 
 app.get("/locations", (_req, res) => res.redirect(301, "/locations/kerala"));
-app.get("/ai-courses", async (_req,res,next)=>{try{const html=await renderSeoHtml({title:"AI Courses in Kerala | Complete Learning Paths",description:"Explore Generative AI, Agentic AI, prompt engineering, LLM, RAG, MCP, automation and career-focused AI courses in Kerala.",keywords:"AI courses Kerala, Generative AI, Agentic AI, prompt engineering, LLM, RAG, MCP",canonicalPath:"/ai-courses",image:"/images/ai-course-hub.webp",visibleHtml:catalogueShell({heading:"AI Courses and Career Paths in Kerala",intro:"Choose a focused pathway for AI development, automation, professional upskilling or career preparation.",items:AI_LANDING_PAGES,prefix:"/ai-courses"}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:"AI courses in Kerala",itemListElement:AI_LANDING_PAGES.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}/ai-courses/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
+const AI_HUB_SEO = {
+  title: "AI Courses in Kerala: Generative & Agentic AI | ASB",
+  description: "AI courses in Kerala: Generative AI, Agentic AI, LLM, RAG and MCP. 3-6 months, online or near Technopark, Trivandrum. Call +91 87147 73304.",
+};
+app.get("/ai-courses", async (_req,res,next)=>{try{const html=await renderSeoHtml({title:AI_HUB_SEO.title,description:AI_HUB_SEO.description,keywords:"AI courses Kerala, Generative AI, Agentic AI, prompt engineering, LLM, RAG, MCP",canonicalPath:"/ai-courses",image:"/images/ai-course-hub.webp",visibleHtml:catalogueShell({heading:"AI Courses and Career Paths in Kerala",intro:"Choose a focused pathway for AI development, automation, professional upskilling or career preparation.",items:AI_LANDING_PAGES,prefix:"/ai-courses"}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:"AI courses in Kerala",itemListElement:AI_LANDING_PAGES.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}/ai-courses/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
 app.get("/ai-courses/:slug", async (req, res, next) => {
   try {
     const page = AI_LANDING_PAGES.find((p) => p.slug === req.params.slug);
@@ -1829,16 +1833,16 @@ app.get("/keyword-courses/:slug",async(req,res,next)=>{try{const c=KEYWORD_COURS
 // Place names the React page recognises in a keyword title (SeoAiCourses.tsx).
 const SEO_AI_PLACES = ["Thiruvananthapuram","Trivandrum","Kazhakootam","Kazhakkottam","Technopark","Kollam","Pathanamthitta","Alappuzha","Alleppey","Kottayam","Idukki","Kochi","Ernakulam","Kakkanad","Thrissur","Palakkad","Malappuram","Kozhikode","Calicut","Wayanad","Kannur","Kasaragod","Kerala"];
 // The same facts and answers the server renders, for the React pages.
-const sendAnswers = (res, facts, answers) => {
+const sendAnswers = (res, facts, answers, seo) => {
   res.setHeader("Cache-Control", "public, max-age=300, must-revalidate");
-  res.json({ facts, answers });
+  res.json({ facts, answers, seo });
 };
 
 app.get("/api/answers/course/:slug", async (req, res, next) => {
   try {
     const course = (await readCourses()).find((c) => c.slug === req.params.slug && c.published !== false);
     if (!course) return res.status(404).json({ error: "Course not found." });
-    sendAnswers(res, courseFacts(course), courseAnswers(course));
+    sendAnswers(res, courseFacts(course), courseAnswers(course), courseSeo(course));
   } catch (error) { next(error); }
 });
 
@@ -1848,7 +1852,7 @@ app.get("/api/answers/keyword/:family/:slug", async (req, res, next) => {
     const page = SEO_LOGISTICS_PAGES.find((item) => item.family === family && item.slug === req.params.slug);
     const course = page && (await keywordCourse(family));
     if (!course) return res.status(404).json({ error: "Page not found." });
-    sendAnswers(res, courseFacts(course, page.location), keywordAnswers(page, course, page.location));
+    sendAnswers(res, courseFacts(course, page.location), keywordAnswers(page, course, page.location), keywordSeo(page, course, page.location));
   } catch (error) { next(error); }
 });
 
@@ -1858,7 +1862,7 @@ app.get("/api/answers/ai/:family/:slug", async (req, res, next) => {
     const course = page && (await keywordCourse(page.family));
     if (!course) return res.status(404).json({ error: "Page not found." });
     const place = SEO_AI_PLACES.find((x) => page.title.toLowerCase().includes(x.toLowerCase()));
-    sendAnswers(res, courseFacts(course, place), keywordAnswers(page, course, place));
+    sendAnswers(res, courseFacts(course, place), keywordAnswers(page, course, place), keywordSeo(page, course, place));
   } catch (error) { next(error); }
 });
 
@@ -1878,7 +1882,7 @@ app.get("/feed.xml", async (_req, res, next) => {
 });
 
 app.get("/course-training/:family/ai",async(req,res,next)=>{try{const family=req.params.family;if(!["agentic","generative"].includes(family))return next();const label=family==="agentic"?"Agentic AI":"Generative AI",items=SEO_AI_PAGES.filter(p=>p.family===family),base=`/course-training/${family}/ai`;const html=await renderSeoHtml({title:`${label} Course and Training Pages | ASB Training Hub`,description:`Explore ${items.length} focused ${label} course, certification, career, location and FAQ pages.`,keywords:`${label} course Kerala, ${label} training Kerala`,canonicalPath:base,image:`/images/${family}-ai-course-hero.webp`,visibleHtml:catalogueShell({heading:`${label} Course and Training Guide`,intro:`Practical ${label} learning paths, local course guidance and direct answers.`,items:items.map(p=>({...p,description:`Course guidance for ${p.title}.`})),prefix:base}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:`${label} course pages`,numberOfItems:items.length,itemListElement:items.map((p,i)=>({"@type":"ListItem",position:i+1,name:p.title,url:`${SITE_URL}${base}/${p.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
-app.get("/course-training/:family/ai/:slug",async(req,res,next)=>{try{const page=SEO_AI_PAGES.find(p=>p.family===req.params.family&&p.slug===req.params.slug);if(!page)return next();const course=await keywordCourse(page.family);const label=page.family==="agentic"?"Agentic AI":"Generative AI",aiPlace=SEO_AI_PLACES.find(x=>page.title.toLowerCase().includes(x.toLowerCase())),path=`/course-training/${page.family}/ai/${page.slug}`,description=`${page.title}: practical ${label} learning with guided projects, certification support and flexible course guidance from ASB Training Hub.`,skills=page.family==="agentic"?["AI agent architecture and orchestration","Tool use, memory and workflow design","Evaluation, safety and human oversight","Practical autonomous-agent project"]:["Prompt design and model fundamentals","Text, image and multimodal workflows","Retrieval, evaluation and responsible AI","Practical generative AI project"];const answers=course?keywordAnswers(page,course,aiPlace):[];const structured=page.question?null:{"@context":"https://schema.org","@type":"Course",name:page.title,description,url:`${SITE_URL}${path}`,teaches:skills,provider:{"@type":"EducationalOrganization",name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]};const html=await renderSeoHtml({title:seoPageTitle(page.title),description,keywords:`${page.title}, ${label} course Kerala, practical AI training`,canonicalPath:path,image:`/images/${page.family}-ai-course-hero.webp`,visibleHtml:detailShell({heading:page.title,intro:description,content:`${course?answersHtml(courseFacts(course,aiPlace),answers):""}<h2>${page.question?"Course guidance":"Practical course overview"}</h2><p>${escapeHtml(description)} The learning path combines concepts, supervised exercises, responsible implementation and portfolio-ready outcomes.</p>${aiCourseLongHtml({title:page.title,label,place:aiPlace})}`,sections:[{title:"Skills covered",items:skills},{title:"Learning format",items:["Instructor-led explanations","Guided practical labs","Project reviews and feedback","Career-focused portfolio support"]}],links:[...SEO_AI_PAGES.filter(p=>p.family===page.family&&p.slug!==page.slug&&(aiPlace?p.title.includes(aiPlace):true)).slice(0,6).map(p=>({href:`/course-training/${p.family}/ai/${p.slug}`,label:p.title})),{href:`/course-training/${page.family}/ai`,label:`All ${label} pages`},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:`${label} pages`,path:`/course-training/${page.family}/ai`},{name:page.title,path}]),...(structured?[structured]:[]),...(answers.length?answersJsonLd(`${SITE_URL}${path}`,answers):[])]});res.type("html").send(html)}catch(e){next(e)}});
+app.get("/course-training/:family/ai/:slug",async(req,res,next)=>{try{const page=SEO_AI_PAGES.find(p=>p.family===req.params.family&&p.slug===req.params.slug);if(!page)return next();const course=await keywordCourse(page.family);const label=page.family==="agentic"?"Agentic AI":"Generative AI",aiPlace=SEO_AI_PLACES.find(x=>page.title.toLowerCase().includes(x.toLowerCase())),path=`/course-training/${page.family}/ai/${page.slug}`,description=`${page.title}: practical ${label} learning with guided projects, certification support and flexible course guidance from ASB Training Hub.`,skills=page.family==="agentic"?["AI agent architecture and orchestration","Tool use, memory and workflow design","Evaluation, safety and human oversight","Practical autonomous-agent project"]:["Prompt design and model fundamentals","Text, image and multimodal workflows","Retrieval, evaluation and responsible AI","Practical generative AI project"];const answers=course?keywordAnswers(page,course,aiPlace):[];const structured=page.question?null:{"@context":"https://schema.org","@type":"Course",name:page.title,description,url:`${SITE_URL}${path}`,teaches:skills,provider:{"@type":"EducationalOrganization",name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]};const seo=course?keywordSeo(page,course,aiPlace):{title:seoPageTitle(page.title),description};const html=await renderSeoHtml({title:seo.title,description:seo.description,keywords:`${page.title}, ${label} course Kerala, practical AI training`,canonicalPath:path,image:`/images/${page.family}-ai-course-hero.webp`,visibleHtml:detailShell({heading:page.title,intro:description,content:`${course?answersHtml(courseFacts(course,aiPlace),answers):""}<h2>${page.question?"Course guidance":"Practical course overview"}</h2><p>${escapeHtml(description)} The learning path combines concepts, supervised exercises, responsible implementation and portfolio-ready outcomes.</p>${aiCourseLongHtml({title:page.title,label,place:aiPlace})}`,sections:[{title:"Skills covered",items:skills},{title:"Learning format",items:["Instructor-led explanations","Guided practical labs","Project reviews and feedback","Career-focused portfolio support"]}],links:[...SEO_AI_PAGES.filter(p=>p.family===page.family&&p.slug!==page.slug&&(aiPlace?p.title.includes(aiPlace):true)).slice(0,6).map(p=>({href:`/course-training/${p.family}/ai/${p.slug}`,label:p.title})),{href:`/course-training/${page.family}/ai`,label:`All ${label} pages`},{href:"/contact",label:"Request course details"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:`${label} pages`,path:`/course-training/${page.family}/ai`},{name:page.title,path}]),...(structured?[structured]:[]),...(answers.length?answersJsonLd(`${SITE_URL}${path}`,answers):[])]});res.type("html").send(html)}catch(e){next(e)}});
 
 const logisticsDescription = (page) => {
   const details = LOGISTICS_FAMILIES[page.family];
@@ -1937,8 +1941,8 @@ const renderLogisticsPage = async (page) => {
     : [{ "@context": "https://schema.org", "@type": "Course", name: page.title, description, url: `${SITE_URL}${canonicalPath}`, educationalCredentialAwarded: course?.certificate, provider: { "@type": "EducationalOrganization", "@id": `${SITE_URL}/#organization`, name: "ASB Training Hub" }, hasCourseInstance: [{ "@type": "CourseInstance", courseMode: "blended", courseWorkload: course?.duration }] }];
 
   return renderSeoHtml({
-    title: seoPageTitle(page.title),
-    description,
+    title: course ? keywordSeo(page, course, page.location).title : seoPageTitle(page.title),
+    description: course ? keywordSeo(page, course, page.location).description : description,
     keywords: `${page.title}, ${details.label} course Kerala, job oriented management training`,
     canonicalPath,
     image,
@@ -2461,8 +2465,8 @@ app.get("/course/:slug", async (req, res, next) => {
     }
     if (!course) return res.status(404).send("Course not found.");
 
-    const description =
-      course.metaDescription || truncateText(course.description || course.overview, 155);
+    const seo = courseSeo(course);
+    const description = seo.description;
     const canonicalPath = `/course/${course.slug}`;
     const image = course.imageUrl || "/site-logo.png";
 
@@ -2517,7 +2521,7 @@ app.get("/course/:slug", async (req, res, next) => {
     jsonLd.push(...answersJsonLd(`${SITE_URL}${canonicalPath}`, answers, course.faqs || []));
 
     const html = await renderSeoHtml({
-      title: course.metaTitle || `${course.title} | ASB Training Hub`,
+      title: seo.title,
       description,
       keywords: course.keywords || `${course.title}, ${course.categoryLabel}, ASB Training Hub`,
       canonicalPath,
