@@ -20,7 +20,7 @@ const CAMPUS = "near Technopark in Kazhakootam, Trivandrum";
 // Places within reach of the campus; everywhere else is served live online,
 // which is what the location pages already state.
 const CAMPUS_AREA = new Set([
-  "trivandrum", "thiruvananthapuram", "kazhakootam", "kazhakkottam", "kazhakoottam", "technopark", "sreekaryam",
+  "trivandrum", "thiruvananthapuram", "kazhakootam", "kazhakkoottam", "kazhakkottam", "kazhakoottam", "technopark", "sreekaryam",
   "ulloor", "pattom", "kesavadasapuram", "kowdiar", "vellayambalam", "palayam", "thampanoor", "east fort",
   "karamana", "poojappura", "nemom", "balaramapuram", "neyyattinkara", "vizhinjam", "kovalam", "varkala",
   "attingal", "venjaramoodu", "nedumangad", "kattakada", "kilimanoor", "parassala", "peroorkada",
@@ -216,6 +216,8 @@ export const keywordSeo = (page, course, place = "") => {
     `${base} | ASB Training Hub`,
     `${base} | ASB`,
     `${base.replace(/Logistics and Supply Chain Management/i, "Logistics & Supply Chain")} | ASB`,
+    // A long keyword keeps every searched word; the brand is what gets dropped.
+    base,
   ], TITLE_LIMIT);
 
   const lead = (snippetLead[intent] || snippetLead.default)(course);

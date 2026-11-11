@@ -9,6 +9,7 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { aiCourseLongHtml, logisticsLongHtml } from "./longContent.js";
+import { PYTHON_HERO, PYTHON_LABEL, PYTHON_PRIMARY_SLUG, PYTHON_SEGMENT, pythonDescription, pythonPageHeroImage, pythonPagePath, pythonPageSections, pythonSkills } from "./pythonContent.js";
 import { aiCourseForTopic, answersHtml, answersJsonLd, courseAnswers, courseFacts, topicAnswers, topicFacts, courseSeo, guidePageSeo, keywordAnswers, keywordCoursePageSeo, keywordSeo, locationCourseName, locationCourseSeo, topicPageDescription, topicPageTitle } from "./answers.js";
 import { describeDevice, formatLocation, isBotUserAgent, lookupLocation } from "./geo.js";
 
@@ -952,6 +953,7 @@ const AI_GUIDES = JSON.parse(await readFile(path.join(rootDir, "data", "ai-guide
 const KEYWORD_COURSES = AI_GUIDES.filter((guide) => guide.kind === "keyword");
 const SEO_AI_PAGES = JSON.parse(await readFile(path.join(rootDir, "data", "seo-ai-pages.json"), "utf8"));
 const SEO_LOGISTICS_PAGES = JSON.parse(await readFile(path.join(rootDir, "data", "seo-logistics-pages.json"), "utf8"));
+const SEO_PYTHON_PAGES = JSON.parse(await readFile(path.join(rootDir, "data", "seo-python-pages.json"), "utf8"));
 const LOGISTICS_FAMILIES = {
   logistics: {
     label: "Logistics and Supply Chain Management",
@@ -1006,6 +1008,7 @@ const staticSitemapRoutes = [
   ...["agentic","generative"].map((family)=>({loc:`/course-training/${family}/ai`,priority:"0.9",changefreq:"weekly"})),
   ...SEO_AI_PAGES.map((page)=>({loc:`/course-training/${page.family}/ai/${page.slug}`,priority:page.question?"0.65":"0.75",changefreq:"monthly"})),
   ...SEO_LOGISTICS_PAGES.map((page)=>({loc:logisticsPagePath(page),priority:page.slug===LOGISTICS_FAMILIES[page.family].primarySlug?"0.9":page.question?"0.65":"0.75",changefreq:page.slug===LOGISTICS_FAMILIES[page.family].primarySlug?"weekly":"monthly"})),
+  ...SEO_PYTHON_PAGES.map((page)=>({loc:pythonPagePath(page),priority:page.slug===PYTHON_PRIMARY_SLUG?"0.9":page.question?"0.65":"0.75",changefreq:page.slug===PYTHON_PRIMARY_SLUG?"weekly":"monthly"})),
   { loc: "/course-training/logistics", priority: "0.85", changefreq: "monthly" },
   { loc: "/course-training/warehouse", priority: "0.85", changefreq: "monthly" },
   { loc: "/keyword-courses", priority: "0.85", changefreq: "monthly" },
@@ -1326,6 +1329,12 @@ ${courseSections}
 ## Training programmes (${training.length})
 
 ${trainingSections}
+
+## Python full stack course guides (${SEO_PYTHON_PAGES.length})
+
+- Python Full Stack course: ${SITE_URL}/course/python-full-stack
+- Python course, fees, internship, career and Kerala location guides: ${SITE_URL}/course-training/${PYTHON_SEGMENT}
+- Learners outside Trivandrum join the Python course through live-online batches; there are no branches in other towns.
 
 ## Course locations (${LOCATION_PAGES.length})
 
@@ -1866,6 +1875,15 @@ app.get("/api/answers/keyword/:family/:slug", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+app.get("/api/answers/python/:slug", async (req, res, next) => {
+  try {
+    const page = SEO_PYTHON_PAGES.find((item) => item.slug === req.params.slug);
+    const course = page && (await keywordCourse("python"));
+    if (!course) return res.status(404).json({ error: "Page not found." });
+    sendAnswers(res, courseFacts(course, page.location), keywordAnswers(page, course, page.location), keywordSeo(page, course, page.location));
+  } catch (error) { next(error); }
+});
+
 app.get("/api/answers/location/:district/:slug", async (req, res, next) => {
   try {
     const location = LOCATION_PAGES.find((item) => item.slug === req.params.district);
@@ -1960,6 +1978,7 @@ const KEYWORD_COURSE_SLUGS = {
   warehouse: "warehouse-management",
   agentic: "agentic-ai",
   generative: "generative-ai",
+  python: "python-full-stack",
 };
 
 const keywordCourse = async (family) =>
@@ -2046,6 +2065,81 @@ const renderLogisticsHub = async (family) => {
     ],
   });
 };
+
+// ---- Python keyword pages: /course-training/python-full-stack/<slug> ----------
+// One page per searched keyword. Each links to eight related pages (same town,
+// otherwise same intent) and the main page links to all of them, so none is an
+// orphan that Google only finds in the sitemap.
+const pythonPageLinks = (page) => {
+  const others = SEO_PYTHON_PAGES.filter((item) => item.slug !== page.slug);
+  const isPrimary = page.slug === PYTHON_PRIMARY_SLUG;
+  const related = isPrimary ? others
+    : others.filter((item) => (page.location && page.location !== "Kerala" ? item.location === page.location : item.intent === page.intent)).slice(0, 8);
+  const fill = related.length >= 4 ? [] : others.filter((item) => item.intent === page.intent && !related.includes(item)).slice(0, 8 - related.length);
+  const primary = SEO_PYTHON_PAGES.find((item) => item.slug === PYTHON_PRIMARY_SLUG);
+  return [
+    ...[...related, ...fill].map((item) => ({ href: pythonPagePath(item), label: item.title })),
+    ...(isPrimary || !primary ? [] : [{ href: pythonPagePath(primary), label: primary.title }]),
+    { href: "/course/python-full-stack", label: "Python Full Stack course details" },
+    { href: "/courses/programming", label: "Programming courses" },
+    { href: "/contact", label: "Request syllabus and fees" },
+  ];
+};
+
+const renderPythonPage = async (page) => {
+  const course = await keywordCourse("python");
+  const answers = course ? keywordAnswers(page, course, page.location) : [];
+  const seo = course ? keywordSeo(page, course, page.location) : { title: seoPageTitle(page.title), description: pythonDescription(page) };
+  const canonicalPath = pythonPagePath(page);
+  const description = pythonDescription(page);
+  const long = pythonPageSections(page).map(({ heading, text }) => `<section><h2>${escapeHtml(heading)}</h2><p>${escapeHtml(text)}</p></section>`).join("");
+  const figure = `<figure><img src="${pythonPageHeroImage(page)}" alt="${escapeHtml(`${page.title} illustration`)}" width="1600" height="900" loading="lazy"></figure>`;
+  const structured = page.question ? [] : [{
+    "@context": "https://schema.org", "@type": "Course", name: page.title, description, url: `${SITE_URL}${canonicalPath}`,
+    teaches: pythonSkills(page), educationalCredentialAwarded: course?.certificate,
+    provider: { "@type": "EducationalOrganization", "@id": `${SITE_URL}/#organization`, name: "ASB Training Hub" },
+    hasCourseInstance: [{ "@type": "CourseInstance", courseMode: "blended", courseWorkload: course?.duration }],
+  }];
+  return renderSeoHtml({
+    title: seo.title,
+    description: seo.description,
+    keywords: `${page.title}, Python full stack course Kerala, Django training`,
+    canonicalPath,
+    image: PYTHON_HERO,
+    visibleHtml: detailShell({
+      heading: page.title,
+      intro: description,
+      content: `${course ? answersHtml(courseFacts(course, page.location), answers) : ""}${figure}${long}`,
+      sections: [
+        { title: "Skills covered", items: pythonSkills(page) },
+        { title: "Learning format", items: ["Instructor-led classes with live coding", "Guided exercises and code reviews", "Internship and capstone project", "Resume and interview preparation"] },
+      ],
+      links: pythonPageLinks(page),
+    }),
+    jsonLd: [
+      breadcrumbList([{ name: "Home", path: "/" }, { name: PYTHON_LABEL, path: `/course-training/${PYTHON_SEGMENT}` }, ...(page.slug === PYTHON_PRIMARY_SLUG ? [] : [{ name: page.title, path: canonicalPath }])]),
+      ...structured,
+      ...(answers.length ? answersJsonLd(`${SITE_URL}${canonicalPath}`, answers) : []),
+    ],
+  });
+};
+
+app.get(`/course-training/${PYTHON_SEGMENT}`, async (_req, res, next) => {
+  try {
+    const page = SEO_PYTHON_PAGES.find((item) => item.slug === PYTHON_PRIMARY_SLUG);
+    if (!page) return next();
+    res.type("html").send(await renderPythonPage(page));
+  } catch (error) { next(error); }
+});
+
+app.get(`/course-training/${PYTHON_SEGMENT}/:slug`, async (req, res, next) => {
+  try {
+    const page = SEO_PYTHON_PAGES.find((item) => item.slug === req.params.slug);
+    if (!page) return next();
+    if (page.slug === PYTHON_PRIMARY_SLUG) return res.redirect(301, pythonPagePath(page));
+    res.type("html").send(await renderPythonPage(page));
+  } catch (error) { next(error); }
+});
 
 app.get("/course-training/:family", async (req, res, next) => {
   try {

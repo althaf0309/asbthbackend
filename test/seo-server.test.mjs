@@ -510,13 +510,14 @@ describe("raw HTML completeness", () => {
 describe("internal links for keyword pages", () => {
   const linksIn = (html) => new Set([...String(html).matchAll(/<a [^>]*href="(\/[^"#]*)"/g)].map((m) => m[1]));
 
-  it("links every logistics and AI keyword page from its family's primary page or hub", async () => {
+  it("links every logistics, Python and AI keyword page from its family's primary page or hub", async () => {
     const linked = new Set();
     for (const path of [
       "/course-training/Diploma-in-Logistics-and-Supply-Chain-Management",
       "/course-training/Diploma-in-warehouse-Management",
       "/course-training/agentic/ai",
       "/course-training/generative/ai",
+      "/course-training/python-full-stack",
     ]) for (const href of linksIn((await api.get(path)).body)) linked.add(href);
 
     const sitemap = String((await api.get("/sitemap.xml")).body);

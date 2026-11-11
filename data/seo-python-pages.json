@@ -1,0 +1,4025 @@
+[
+  {
+    "family": "python",
+    "slug": "python-course-in-kerala",
+    "title": "Python course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-training-institute-in-kerala",
+    "title": "Best Python training institute in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-kerala",
+    "title": "Python programming course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-kerala",
+    "title": "Python full stack development course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-course-in-kerala",
+    "title": "Python Django course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-kerala",
+    "title": "Python course with internship in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-placement-assistance-in-kerala",
+    "title": "Python course with placement assistance in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "placement",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-for-beginners-in-kerala",
+    "title": "Python training for beginners in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "advanced-python-course-in-kerala",
+    "title": "Advanced Python course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-course-in-kerala",
+    "title": "Online Python course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "offline-python-training-in-kerala",
+    "title": "Offline Python training in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-kerala",
+    "title": "Python certification course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-training-in-kerala",
+    "title": "Python developer training in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-after-12th-in-kerala",
+    "title": "Python course after 12th in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "after-school",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-for-graduates-in-kerala",
+    "title": "Python course for graduates in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "graduate",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-practical-training-in-kerala",
+    "title": "Python practical training in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-internship-in-kerala",
+    "title": "Python full stack internship in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-software-development-course-in-kerala",
+    "title": "Python software development course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "job-oriented-python-course-in-kerala",
+    "title": "Job oriented Python course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-kerala",
+    "title": "Python course fees in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-thiruvananthapuram",
+    "title": "Python course in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-thiruvananthapuram",
+    "title": "Python training institute in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-thiruvananthapuram",
+    "title": "Python programming course in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-thiruvananthapuram",
+    "title": "Python full stack development course in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-thiruvananthapuram",
+    "title": "Python Django training in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-thiruvananthapuram",
+    "title": "Python course with internship in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-thiruvananthapuram",
+    "title": "Online Python classes for students in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-thiruvananthapuram",
+    "title": "Python developer course in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-thiruvananthapuram",
+    "title": "Python course fees in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-trivandrum",
+    "title": "Python course in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-trivandrum",
+    "title": "Python training institute in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-trivandrum",
+    "title": "Python programming course in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-trivandrum",
+    "title": "Python full stack development course in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-trivandrum",
+    "title": "Python Django training in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-trivandrum",
+    "title": "Python course with internship in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-trivandrum",
+    "title": "Online Python classes for students in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-trivandrum",
+    "title": "Python certification course in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-trivandrum",
+    "title": "Python developer course in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-trivandrum",
+    "title": "Python course fees in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kazhakkoottam",
+    "title": "Python course in Kazhakkoottam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kazhakkoottam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-technopark",
+    "title": "Python course in Technopark",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Technopark",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-pattom",
+    "title": "Python course in Pattom",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Pattom",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-neyyattinkara",
+    "title": "Python course in Neyyattinkara",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Neyyattinkara",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-attingal",
+    "title": "Python course in Attingal",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Attingal",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-varkala",
+    "title": "Python course in Varkala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Varkala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kollam",
+    "title": "Python course in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-kollam",
+    "title": "Python training institute in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-kollam",
+    "title": "Python programming course in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-kollam",
+    "title": "Python full stack development course in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-kollam",
+    "title": "Python Django training in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-kollam",
+    "title": "Python course with internship in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-kollam",
+    "title": "Online Python classes for students in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-kollam",
+    "title": "Python certification course in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-kollam",
+    "title": "Python developer course in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-kollam",
+    "title": "Python course fees in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-karunagappally",
+    "title": "Python course in Karunagappally",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Karunagappally",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kottarakkara",
+    "title": "Python course in Kottarakkara",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kottarakkara",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-punalur",
+    "title": "Python course in Punalur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Punalur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-chavara",
+    "title": "Python course in Chavara",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Chavara",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-paravur",
+    "title": "Python course in Paravur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Paravur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-pathanamthitta",
+    "title": "Python course in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-pathanamthitta",
+    "title": "Python training institute in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-pathanamthitta",
+    "title": "Python programming course in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-pathanamthitta",
+    "title": "Python full stack development course in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-pathanamthitta",
+    "title": "Python Django training in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-pathanamthitta",
+    "title": "Python course with internship in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-pathanamthitta",
+    "title": "Online Python classes for students in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-pathanamthitta",
+    "title": "Python certification course in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-pathanamthitta",
+    "title": "Python developer course in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-pathanamthitta",
+    "title": "Python course fees in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-adoor",
+    "title": "Python course in Adoor",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Adoor",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-thiruvalla",
+    "title": "Python course in Thiruvalla",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thiruvalla",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-ranni",
+    "title": "Python course in Ranni",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ranni",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-konni",
+    "title": "Python course in Konni",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Konni",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-pandalam",
+    "title": "Python course in Pandalam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Pandalam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-alappuzha",
+    "title": "Python course in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-alappuzha",
+    "title": "Python training institute in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-alappuzha",
+    "title": "Python programming course in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-alappuzha",
+    "title": "Python full stack development course in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-alappuzha",
+    "title": "Python Django training in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-alappuzha",
+    "title": "Python course with internship in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-alappuzha",
+    "title": "Online Python classes for students in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-alappuzha",
+    "title": "Python certification course in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-alappuzha",
+    "title": "Python developer course in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-alappuzha",
+    "title": "Python course fees in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-cherthala",
+    "title": "Python course in Cherthala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Cherthala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kayamkulam",
+    "title": "Python course in Kayamkulam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kayamkulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-haripad",
+    "title": "Python course in Haripad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Haripad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-mavelikkara",
+    "title": "Python course in Mavelikkara",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Mavelikkara",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-chengannur",
+    "title": "Python course in Chengannur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Chengannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kottayam",
+    "title": "Python course in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-kottayam",
+    "title": "Python training institute in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-kottayam",
+    "title": "Python programming course in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-kottayam",
+    "title": "Python full stack development course in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-kottayam",
+    "title": "Python Django training in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-kottayam",
+    "title": "Python course with internship in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-kottayam",
+    "title": "Online Python classes for students in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-kottayam",
+    "title": "Python certification course in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-kottayam",
+    "title": "Python developer course in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-kottayam",
+    "title": "Python course fees in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-changanassery",
+    "title": "Python course in Changanassery",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Changanassery",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-pala",
+    "title": "Python course in Pala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Pala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-ettumanoor",
+    "title": "Python course in Ettumanoor",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ettumanoor",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kanjirappally",
+    "title": "Python course in Kanjirappally",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kanjirappally",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-vaikom",
+    "title": "Python course in Vaikom",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Vaikom",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-idukki",
+    "title": "Python course in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-idukki",
+    "title": "Python training institute in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-idukki",
+    "title": "Python programming course in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-idukki",
+    "title": "Python full stack development course in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-idukki",
+    "title": "Python Django training in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-idukki",
+    "title": "Python course with internship in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-idukki",
+    "title": "Online Python classes for students in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-idukki",
+    "title": "Python certification course in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-idukki",
+    "title": "Python developer course in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-idukki",
+    "title": "Python course fees in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-thodupuzha",
+    "title": "Python course in Thodupuzha",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thodupuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-munnar",
+    "title": "Python course in Munnar",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Munnar",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kattappana",
+    "title": "Python course in Kattappana",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kattappana",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-adimali",
+    "title": "Python course in Adimali",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Adimali",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-nedumkandam",
+    "title": "Python course in Nedumkandam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Nedumkandam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-ernakulam",
+    "title": "Python course in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-ernakulam",
+    "title": "Python training institute in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-ernakulam",
+    "title": "Python programming course in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-ernakulam",
+    "title": "Python full stack development course in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-ernakulam",
+    "title": "Python Django training in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-ernakulam",
+    "title": "Python course with internship in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-ernakulam",
+    "title": "Online Python classes for students in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-ernakulam",
+    "title": "Python certification course in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-ernakulam",
+    "title": "Python developer course in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-ernakulam",
+    "title": "Python course fees in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kochi",
+    "title": "Python course in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-kochi",
+    "title": "Python training institute in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-kochi",
+    "title": "Python programming course in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-kochi",
+    "title": "Python full stack development course in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-kochi",
+    "title": "Python Django training in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-kochi",
+    "title": "Python course with internship in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-kochi",
+    "title": "Online Python classes for students in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-kochi",
+    "title": "Python certification course in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-kochi",
+    "title": "Python developer course in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-kochi",
+    "title": "Python course fees in Kochi",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Kochi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kakkanad",
+    "title": "Python course in Kakkanad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kakkanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-edappally",
+    "title": "Python course in Edappally",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Edappally",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-aluva",
+    "title": "Python course in Aluva",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Aluva",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-angamaly",
+    "title": "Python course in Angamaly",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Angamaly",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-perumbavoor",
+    "title": "Python course in Perumbavoor",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Perumbavoor",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-muvattupuzha",
+    "title": "Python course in Muvattupuzha",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Muvattupuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-thrissur",
+    "title": "Python course in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-thrissur",
+    "title": "Python training institute in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-thrissur",
+    "title": "Python programming course in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-thrissur",
+    "title": "Python full stack development course in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-thrissur",
+    "title": "Python Django training in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-thrissur",
+    "title": "Python course with internship in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-thrissur",
+    "title": "Online Python classes for students in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-thrissur",
+    "title": "Python certification course in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-thrissur",
+    "title": "Python developer course in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-thrissur",
+    "title": "Python course fees in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-chalakudy",
+    "title": "Python course in Chalakudy",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Chalakudy",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-irinjalakuda",
+    "title": "Python course in Irinjalakuda",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Irinjalakuda",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-guruvayur",
+    "title": "Python course in Guruvayur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Guruvayur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kunnamkulam",
+    "title": "Python course in Kunnamkulam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kunnamkulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kodungallur",
+    "title": "Python course in Kodungallur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kodungallur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-palakkad",
+    "title": "Python course in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-palakkad",
+    "title": "Python training institute in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-palakkad",
+    "title": "Python programming course in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-palakkad",
+    "title": "Python full stack development course in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-palakkad",
+    "title": "Python Django training in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-palakkad",
+    "title": "Python course with internship in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-palakkad",
+    "title": "Online Python classes for students in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-palakkad",
+    "title": "Python certification course in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-palakkad",
+    "title": "Python developer course in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-palakkad",
+    "title": "Python course fees in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-ottapalam",
+    "title": "Python course in Ottapalam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ottapalam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-shoranur",
+    "title": "Python course in Shoranur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Shoranur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-mannarkkad",
+    "title": "Python course in Mannarkkad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Mannarkkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-chittur",
+    "title": "Python course in Chittur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Chittur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-pattambi",
+    "title": "Python course in Pattambi",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Pattambi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-malappuram",
+    "title": "Python course in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-malappuram",
+    "title": "Python training institute in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-malappuram",
+    "title": "Python programming course in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-malappuram",
+    "title": "Python full stack development course in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-malappuram",
+    "title": "Python Django training in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-malappuram",
+    "title": "Python course with internship in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-malappuram",
+    "title": "Online Python classes for students in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-malappuram",
+    "title": "Python certification course in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-malappuram",
+    "title": "Python developer course in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-malappuram",
+    "title": "Python course fees in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-manjeri",
+    "title": "Python course in Manjeri",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Manjeri",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-perinthalmanna",
+    "title": "Python course in Perinthalmanna",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Perinthalmanna",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-tirur",
+    "title": "Python course in Tirur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Tirur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kottakkal",
+    "title": "Python course in Kottakkal",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kottakkal",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-nilambur",
+    "title": "Python course in Nilambur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Nilambur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-ponnani",
+    "title": "Python course in Ponnani",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ponnani",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kozhikode",
+    "title": "Python course in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-kozhikode",
+    "title": "Python training institute in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-kozhikode",
+    "title": "Python programming course in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-kozhikode",
+    "title": "Python full stack development course in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-kozhikode",
+    "title": "Python Django training in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-kozhikode",
+    "title": "Python course with internship in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-kozhikode",
+    "title": "Online Python classes for students in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-kozhikode",
+    "title": "Python certification course in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-kozhikode",
+    "title": "Python developer course in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-kozhikode",
+    "title": "Python course fees in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-calicut",
+    "title": "Python course in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-calicut",
+    "title": "Python training institute in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-calicut",
+    "title": "Python programming course in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-calicut",
+    "title": "Python full stack development course in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-calicut",
+    "title": "Python Django training in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-calicut",
+    "title": "Python course with internship in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-calicut",
+    "title": "Online Python classes for students in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-calicut",
+    "title": "Python certification course in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-calicut",
+    "title": "Python developer course in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-calicut",
+    "title": "Python course fees in Calicut",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Calicut",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-vadakara",
+    "title": "Python course in Vadakara",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Vadakara",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-koyilandy",
+    "title": "Python course in Koyilandy",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Koyilandy",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-ramanattukara",
+    "title": "Python course in Ramanattukara",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Ramanattukara",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-feroke",
+    "title": "Python course in Feroke",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Feroke",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-mukkam",
+    "title": "Python course in Mukkam",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Mukkam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-wayanad",
+    "title": "Python course in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-wayanad",
+    "title": "Python training institute in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-wayanad",
+    "title": "Python programming course in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-wayanad",
+    "title": "Python full stack development course in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-wayanad",
+    "title": "Python Django training in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-wayanad",
+    "title": "Python course with internship in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-wayanad",
+    "title": "Online Python classes for students in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-wayanad",
+    "title": "Python certification course in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-wayanad",
+    "title": "Python developer course in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-wayanad",
+    "title": "Python course fees in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kalpetta",
+    "title": "Python course in Kalpetta",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kalpetta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-sulthan-bathery",
+    "title": "Python course in Sulthan Bathery",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Sulthan Bathery",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-mananthavady",
+    "title": "Python course in Mananthavady",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Mananthavady",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-meppadi",
+    "title": "Python course in Meppadi",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Meppadi",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kannur",
+    "title": "Python course in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-kannur",
+    "title": "Python training institute in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-kannur",
+    "title": "Python programming course in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-kannur",
+    "title": "Python full stack development course in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-kannur",
+    "title": "Python Django training in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-kannur",
+    "title": "Python course with internship in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-kannur",
+    "title": "Online Python classes for students in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-kannur",
+    "title": "Python certification course in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-kannur",
+    "title": "Python developer course in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-kannur",
+    "title": "Python course fees in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-thalassery",
+    "title": "Python course in Thalassery",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Thalassery",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-payyanur",
+    "title": "Python course in Payyanur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Payyanur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-taliparamba",
+    "title": "Python course in Taliparamba",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Taliparamba",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-iritty",
+    "title": "Python course in Iritty",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Iritty",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-mattannur",
+    "title": "Python course in Mattannur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Mattannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kasaragod",
+    "title": "Python course in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institute-in-kasaragod",
+    "title": "Python training institute in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-in-kasaragod",
+    "title": "Python programming course in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-course-in-kasaragod",
+    "title": "Python full stack development course in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-django-training-in-kasaragod",
+    "title": "Python Django training in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-internship-in-kasaragod",
+    "title": "Python course with internship in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "online-python-classes-for-students-in-kasaragod",
+    "title": "Online Python classes for students in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-kasaragod",
+    "title": "Python certification course in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-course-in-kasaragod",
+    "title": "Python developer course in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-fees-in-kasaragod",
+    "title": "Python course fees in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "fees",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-kanhangad",
+    "title": "Python course in Kanhangad",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kanhangad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-nileshwaram",
+    "title": "Python course in Nileshwaram",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Nileshwaram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-uppala",
+    "title": "Python course in Uppala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Uppala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-cheruvathur",
+    "title": "Python course in Cheruvathur",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Cheruvathur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-in-bekal",
+    "title": "Python course in Bekal",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Bekal",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-kerala",
+    "title": "Which is the best Python training institute in Kerala?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kerala",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-kerala",
+    "title": "What is the Python course fee in Kerala?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kerala",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "how-long-does-it-take-to-learn-python",
+    "title": "How long does it take to learn Python?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "can-i-learn-python-after-completing-plus-two",
+    "title": "Can I learn Python after completing Plus Two?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "is-python-suitable-for-beginners-without-coding-knowledge",
+    "title": "Is Python suitable for beginners without coding knowledge?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-course-is-best-for-getting-a-job",
+    "title": "Which Python course is best for getting a job?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-full-stack-development-in-kerala",
+    "title": "Where can I learn Python full stack development in Kerala?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kerala",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "does-a-python-course-include-internship-training",
+    "title": "Does a Python course include internship training?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "can-commerce-students-learn-python-programming",
+    "title": "Can commerce students learn Python programming?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-difference-between-python-and-python-full-stack",
+    "title": "What is the difference between Python and Python full stack?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "is-django-included-in-python-full-stack-training",
+    "title": "Is Django included in Python full stack training?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-jobs-can-i-apply-for-after-a-python-course",
+    "title": "What jobs can I apply for after a Python course?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "can-i-learn-python-online-from-kerala",
+    "title": "Can I learn Python online from Kerala?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kerala",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-projects-are-included-in-python-training",
+    "title": "What projects are included in Python training?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "is-python-useful-for-ai-and-machine-learning-careers",
+    "title": "Is Python useful for AI and machine learning careers?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "recommend-a-python-programming-course-in-kerala-for-beginners",
+    "title": "Recommend a Python programming course in Kerala for beginners",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "find-a-python-full-stack-course-in-kerala-with-practical-projects",
+    "title": "Find a Python full stack course in Kerala with practical projects",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "compare-python-training-institutes-in-trivandrum",
+    "title": "Compare Python training institutes in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-options-in-kerala-for-plus-two-students",
+    "title": "Python training options in Kerala for Plus Two students",
+    "label": "Python Full Stack Development",
+    "intent": "after-school",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "where-to-study-python-and-django-in-kerala",
+    "title": "Where to study Python and Django in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kerala",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-course-with-mentor-support-in-kerala",
+    "title": "Python programming course with mentor support in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-learning-pathway-for-freshers-in-kerala",
+    "title": "Best Python learning pathway for freshers in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-internship-based-training-programs-in-kerala",
+    "title": "Python internship based training programs in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-full-stack-development-training-for-graduates-in-kerala",
+    "title": "Python full stack development training for graduates in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "graduate",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-institutes-offering-online-classes-across-kerala",
+    "title": "Python training institutes offering online classes across Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "online",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-syllabus-with-django-rest-api-and-sql",
+    "title": "Python course syllabus with Django REST API and SQL",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-courses-in-kerala-for-career-switchers",
+    "title": "Python courses in Kerala for career switchers",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "learn-python-for-web-development-in-kerala",
+    "title": "Learn Python for web development in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-training-with-real-world-projects",
+    "title": "Python programming training with real world projects",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-developer-career-training-in-trivandrum",
+    "title": "Python developer career training in Trivandrum",
+    "label": "Python Full Stack Development",
+    "intent": "career",
+    "location": "Trivandrum",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-coding-classes-in-kerala",
+    "title": "Python coding classes in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-training-center-in-kerala",
+    "title": "Python programming training center in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "professional-python-training-in-kerala",
+    "title": "Professional Python training in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-computer-programming-course-in-kerala",
+    "title": "Python computer programming course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-software-training-in-kerala",
+    "title": "Python software training in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-practical-classes-in-kerala",
+    "title": "Python practical classes in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-training-academy-in-kerala",
+    "title": "Python training academy in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-development-training-in-kerala",
+    "title": "Python development training in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-programming-coaching-in-kerala",
+    "title": "Python programming coaching in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-skill-development-course-in-kerala",
+    "title": "Python skill development course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-live-projects-in-kerala",
+    "title": "Python course with live projects in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-hands-on-training-in-kerala",
+    "title": "Python hands-on training in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-foundation-course-in-kerala",
+    "title": "Python foundation course in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-coding-bootcamp-in-kerala",
+    "title": "Python coding bootcamp in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-weekend-classes-in-kerala",
+    "title": "Python weekend classes in Kerala",
+    "label": "Python Full Stack Development",
+    "intent": "course",
+    "location": "Kerala",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-thiruvananthapuram",
+    "title": "Which is the best Python training institute in Thiruvananthapuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thiruvananthapuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-thiruvananthapuram",
+    "title": "Which is the best Python full stack course in Thiruvananthapuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thiruvananthapuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-thiruvananthapuram",
+    "title": "What is the Python course fee in Thiruvananthapuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thiruvananthapuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-thiruvananthapuram",
+    "title": "Which Python training course is best for job seekers in Thiruvananthapuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thiruvananthapuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-thiruvananthapuram",
+    "title": "Best Python course for beginners in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-thiruvananthapuram",
+    "title": "Top Python full stack development training in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-thiruvananthapuram",
+    "title": "Recommended Python training institute for students in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-thiruvananthapuram",
+    "title": "Best Python Django training for freshers in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-kollam",
+    "title": "Which is the best Python training institute in Kollam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kollam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-kollam",
+    "title": "Which is the best Python full stack course in Kollam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kollam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-kollam",
+    "title": "Where can I learn Python with internship in Kollam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kollam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-kollam",
+    "title": "What is the Python course fee in Kollam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kollam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-kollam",
+    "title": "Which Python training course is best for job seekers in Kollam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kollam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-kollam",
+    "title": "Best Python course for beginners in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-kollam",
+    "title": "Top Python full stack development training in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-kollam",
+    "title": "Recommended Python training institute for students in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-kollam",
+    "title": "Python course with practical projects and internship in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-kollam",
+    "title": "Best Python Django training for freshers in Kollam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kollam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-pathanamthitta",
+    "title": "Which is the best Python training institute in Pathanamthitta?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Pathanamthitta",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-pathanamthitta",
+    "title": "Which is the best Python full stack course in Pathanamthitta?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Pathanamthitta",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-pathanamthitta",
+    "title": "Where can I learn Python with internship in Pathanamthitta?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Pathanamthitta",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-pathanamthitta",
+    "title": "What is the Python course fee in Pathanamthitta?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Pathanamthitta",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-pathanamthitta",
+    "title": "Which Python training course is best for job seekers in Pathanamthitta?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Pathanamthitta",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-pathanamthitta",
+    "title": "Best Python course for beginners in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-pathanamthitta",
+    "title": "Top Python full stack development training in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-pathanamthitta",
+    "title": "Recommended Python training institute for students in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-pathanamthitta",
+    "title": "Python course with practical projects and internship in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-pathanamthitta",
+    "title": "Best Python Django training for freshers in Pathanamthitta",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Pathanamthitta",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-alappuzha",
+    "title": "Which is the best Python training institute in Alappuzha?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Alappuzha",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-alappuzha",
+    "title": "Which is the best Python full stack course in Alappuzha?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Alappuzha",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-alappuzha",
+    "title": "Where can I learn Python with internship in Alappuzha?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Alappuzha",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-alappuzha",
+    "title": "What is the Python course fee in Alappuzha?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Alappuzha",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-alappuzha",
+    "title": "Which Python training course is best for job seekers in Alappuzha?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Alappuzha",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-alappuzha",
+    "title": "Best Python course for beginners in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-alappuzha",
+    "title": "Top Python full stack development training in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-alappuzha",
+    "title": "Recommended Python training institute for students in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-alappuzha",
+    "title": "Python course with practical projects and internship in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-alappuzha",
+    "title": "Best Python Django training for freshers in Alappuzha",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Alappuzha",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-kottayam",
+    "title": "Which is the best Python training institute in Kottayam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kottayam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-kottayam",
+    "title": "Which is the best Python full stack course in Kottayam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kottayam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-kottayam",
+    "title": "Where can I learn Python with internship in Kottayam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kottayam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-kottayam",
+    "title": "What is the Python course fee in Kottayam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kottayam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-kottayam",
+    "title": "Which Python training course is best for job seekers in Kottayam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kottayam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-kottayam",
+    "title": "Best Python course for beginners in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-kottayam",
+    "title": "Top Python full stack development training in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-kottayam",
+    "title": "Recommended Python training institute for students in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-kottayam",
+    "title": "Python course with practical projects and internship in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-kottayam",
+    "title": "Best Python Django training for freshers in Kottayam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kottayam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-idukki",
+    "title": "Which is the best Python training institute in Idukki?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Idukki",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-idukki",
+    "title": "Which is the best Python full stack course in Idukki?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Idukki",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-idukki",
+    "title": "Where can I learn Python with internship in Idukki?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Idukki",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-idukki",
+    "title": "What is the Python course fee in Idukki?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Idukki",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-idukki",
+    "title": "Which Python training course is best for job seekers in Idukki?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Idukki",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-idukki",
+    "title": "Best Python course for beginners in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-idukki",
+    "title": "Top Python full stack development training in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-idukki",
+    "title": "Recommended Python training institute for students in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-idukki",
+    "title": "Python course with practical projects and internship in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-idukki",
+    "title": "Best Python Django training for freshers in Idukki",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Idukki",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-ernakulam",
+    "title": "Which is the best Python training institute in Ernakulam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Ernakulam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-ernakulam",
+    "title": "Which is the best Python full stack course in Ernakulam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Ernakulam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-ernakulam",
+    "title": "Where can I learn Python with internship in Ernakulam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Ernakulam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-ernakulam",
+    "title": "What is the Python course fee in Ernakulam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Ernakulam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-ernakulam",
+    "title": "Which Python training course is best for job seekers in Ernakulam?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Ernakulam",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-ernakulam",
+    "title": "Best Python course for beginners in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-ernakulam",
+    "title": "Top Python full stack development training in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-ernakulam",
+    "title": "Recommended Python training institute for students in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-ernakulam",
+    "title": "Python course with practical projects and internship in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-ernakulam",
+    "title": "Best Python Django training for freshers in Ernakulam",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Ernakulam",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-thrissur",
+    "title": "Which is the best Python training institute in Thrissur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thrissur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-thrissur",
+    "title": "Which is the best Python full stack course in Thrissur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thrissur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-thrissur",
+    "title": "Where can I learn Python with internship in Thrissur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thrissur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-thrissur",
+    "title": "What is the Python course fee in Thrissur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thrissur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-thrissur",
+    "title": "Which Python training course is best for job seekers in Thrissur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thrissur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-thrissur",
+    "title": "Best Python course for beginners in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-thrissur",
+    "title": "Top Python full stack development training in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-thrissur",
+    "title": "Recommended Python training institute for students in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-thrissur",
+    "title": "Python course with practical projects and internship in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-thrissur",
+    "title": "Best Python Django training for freshers in Thrissur",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Thrissur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-palakkad",
+    "title": "Which is the best Python training institute in Palakkad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Palakkad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-palakkad",
+    "title": "Which is the best Python full stack course in Palakkad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Palakkad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-palakkad",
+    "title": "Where can I learn Python with internship in Palakkad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Palakkad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-palakkad",
+    "title": "What is the Python course fee in Palakkad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Palakkad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-palakkad",
+    "title": "Which Python training course is best for job seekers in Palakkad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Palakkad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-palakkad",
+    "title": "Best Python course for beginners in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-palakkad",
+    "title": "Top Python full stack development training in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-palakkad",
+    "title": "Recommended Python training institute for students in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-palakkad",
+    "title": "Python course with practical projects and internship in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-palakkad",
+    "title": "Best Python Django training for freshers in Palakkad",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Palakkad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-malappuram",
+    "title": "Which is the best Python training institute in Malappuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Malappuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-malappuram",
+    "title": "Which is the best Python full stack course in Malappuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Malappuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-malappuram",
+    "title": "Where can I learn Python with internship in Malappuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Malappuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-malappuram",
+    "title": "What is the Python course fee in Malappuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Malappuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-malappuram",
+    "title": "Which Python training course is best for job seekers in Malappuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Malappuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-malappuram",
+    "title": "Best Python course for beginners in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-malappuram",
+    "title": "Top Python full stack development training in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-malappuram",
+    "title": "Python course with practical projects and internship in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-malappuram",
+    "title": "Best Python Django training for freshers in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-kozhikode",
+    "title": "Which is the best Python training institute in Kozhikode?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kozhikode",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-kozhikode",
+    "title": "Which is the best Python full stack course in Kozhikode?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kozhikode",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-kozhikode",
+    "title": "Where can I learn Python with internship in Kozhikode?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kozhikode",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-kozhikode",
+    "title": "What is the Python course fee in Kozhikode?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kozhikode",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-kozhikode",
+    "title": "Which Python training course is best for job seekers in Kozhikode?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kozhikode",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-kozhikode",
+    "title": "Best Python course for beginners in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-kozhikode",
+    "title": "Top Python full stack development training in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-kozhikode",
+    "title": "Recommended Python training institute for students in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-kozhikode",
+    "title": "Python course with practical projects and internship in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-kozhikode",
+    "title": "Best Python Django training for freshers in Kozhikode",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kozhikode",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-wayanad",
+    "title": "Which is the best Python training institute in Wayanad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Wayanad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-wayanad",
+    "title": "Which is the best Python full stack course in Wayanad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Wayanad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-wayanad",
+    "title": "Where can I learn Python with internship in Wayanad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Wayanad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-wayanad",
+    "title": "What is the Python course fee in Wayanad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Wayanad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-wayanad",
+    "title": "Which Python training course is best for job seekers in Wayanad?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Wayanad",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-wayanad",
+    "title": "Best Python course for beginners in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-wayanad",
+    "title": "Top Python full stack development training in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-wayanad",
+    "title": "Recommended Python training institute for students in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-wayanad",
+    "title": "Python course with practical projects and internship in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-wayanad",
+    "title": "Best Python Django training for freshers in Wayanad",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Wayanad",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-kannur",
+    "title": "Which is the best Python training institute in Kannur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kannur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-kannur",
+    "title": "Which is the best Python full stack course in Kannur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kannur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-kannur",
+    "title": "Where can I learn Python with internship in Kannur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kannur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-kannur",
+    "title": "What is the Python course fee in Kannur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kannur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-kannur",
+    "title": "Which Python training course is best for job seekers in Kannur?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kannur",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-kannur",
+    "title": "Best Python course for beginners in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-kannur",
+    "title": "Top Python full stack development training in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-kannur",
+    "title": "Recommended Python training institute for students in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-kannur",
+    "title": "Python course with practical projects and internship in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-kannur",
+    "title": "Best Python Django training for freshers in Kannur",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kannur",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-training-institute-in-kasaragod",
+    "title": "Which is the best Python training institute in Kasaragod?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kasaragod",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-is-the-best-python-full-stack-course-in-kasaragod",
+    "title": "Which is the best Python full stack course in Kasaragod?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kasaragod",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-kasaragod",
+    "title": "Where can I learn Python with internship in Kasaragod?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kasaragod",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "what-is-the-python-course-fee-in-kasaragod",
+    "title": "What is the Python course fee in Kasaragod?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kasaragod",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "which-python-training-course-is-best-for-job-seekers-in-kasaragod",
+    "title": "Which Python training course is best for job seekers in Kasaragod?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Kasaragod",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "best-python-course-for-beginners-in-kasaragod",
+    "title": "Best Python course for beginners in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "top-python-full-stack-development-training-in-kasaragod",
+    "title": "Top Python full stack development training in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-kasaragod",
+    "title": "Recommended Python training institute for students in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "best-python-django-training-for-freshers-in-kasaragod",
+    "title": "Best Python Django training for freshers in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "comparison",
+    "location": "Kasaragod",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-certification-course-in-thiruvananthapuram",
+    "title": "Python certification course in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "certification",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "where-can-i-learn-python-with-internship-in-thiruvananthapuram",
+    "title": "Where can I learn Python with internship in Thiruvananthapuram?",
+    "label": "Python Full Stack Development",
+    "intent": "question",
+    "location": "Thiruvananthapuram",
+    "question": true
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-thiruvananthapuram",
+    "title": "Python course with practical projects and internship in Thiruvananthapuram",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Thiruvananthapuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "recommended-python-training-institute-for-students-in-malappuram",
+    "title": "Recommended Python training institute for students in Malappuram",
+    "label": "Python Full Stack Development",
+    "intent": "institute",
+    "location": "Malappuram",
+    "question": false
+  },
+  {
+    "family": "python",
+    "slug": "python-course-with-practical-projects-and-internship-in-kasaragod",
+    "title": "Python course with practical projects and internship in Kasaragod",
+    "label": "Python Full Stack Development",
+    "intent": "internship",
+    "location": "Kasaragod",
+    "question": false
+  }
+]
