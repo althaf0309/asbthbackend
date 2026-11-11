@@ -10127,10 +10127,10 @@
   {
     "family": "warehouse",
     "slug": "where-can-i-study-warehouse-management-in-kerala-2",
-    "title": "Where can I study warehouse management in Kerala?",
+    "title": "Where can I study warehouse management in Trivandrum?",
     "label": "Warehouse and Inventory Management",
     "intent": "question",
-    "location": "Kerala",
+    "location": "Trivandrum",
     "question": true
   },
   {
@@ -10163,19 +10163,19 @@
   {
     "family": "warehouse",
     "slug": "can-i-study-warehouse-management-after-graduation-2",
-    "title": "Can I study warehouse management after graduation?",
+    "title": "Can I study warehouse management after graduation in Kerala?",
     "label": "Warehouse and Inventory Management",
     "intent": "question",
-    "location": "",
+    "location": "Kerala",
     "question": true
   },
   {
     "family": "warehouse",
     "slug": "is-warehouse-management-a-good-career-2",
-    "title": "Is warehouse management a good career?",
+    "title": "Is warehouse management a good career in Kerala?",
     "label": "Warehouse and Inventory Management",
     "intent": "question",
-    "location": "",
+    "location": "Kerala",
     "question": true
   },
   {
@@ -10208,28 +10208,28 @@
   {
     "family": "warehouse",
     "slug": "how-to-become-a-warehouse-supervisor-2",
-    "title": "How to become a warehouse supervisor?",
+    "title": "How to become a warehouse supervisor in Trivandrum?",
     "label": "Warehouse and Inventory Management",
     "intent": "question",
-    "location": "",
+    "location": "Trivandrum",
     "question": true
   },
   {
     "family": "warehouse",
     "slug": "how-to-become-a-warehouse-manager-2",
-    "title": "How to become a warehouse manager?",
+    "title": "How to become a warehouse manager in Trivandrum?",
     "label": "Warehouse and Inventory Management",
     "intent": "question",
-    "location": "",
+    "location": "Trivandrum",
     "question": true
   },
   {
     "family": "warehouse",
     "slug": "what-is-wms-in-warehouse-management-2",
-    "title": "What is WMS in warehouse management?",
+    "title": "What is WMS in warehouse management for Kerala jobs?",
     "label": "Warehouse and Inventory Management",
     "intent": "question",
-    "location": "",
+    "location": "Kerala",
     "question": true
   },
   {
@@ -10802,10 +10802,10 @@
   {
     "family": "warehouse",
     "slug": "can-i-study-warehouse-management-after-plus-two-2",
-    "title": "Can I study warehouse management after Plus Two",
+    "title": "Can I study warehouse management after Plus Two in Kerala?",
     "label": "Warehouse and Inventory Management",
     "intent": "question",
-    "location": "",
+    "location": "Kerala",
     "question": true
   },
   {

@@ -6,7 +6,7 @@ import { after, before, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { bootstrapEnv, cleanup, startServer } from "./helpers.mjs";
-import { courseAnswers, courseFacts, courseSeo, guidePageSeo, keywordAnswers, keywordCoursePageSeo, keywordSeo, locationCourseSeo, topicPageDescription } from "../src/answers.js";
+import { aiCourseForTopic, courseAnswers, courseFacts, courseSeo, guidePageSeo, keywordAnswers, keywordCoursePageSeo, keywordSeo, locationCourseSeo, topicPageDescription } from "../src/answers.js";
 
 const json = async (name) => JSON.parse(await readFile(new URL(`../data/${name}`, import.meta.url), "utf8"));
 const PHONE = "+91 87147 73304";
@@ -170,6 +170,39 @@ describe("area pages", () => {
     for (const item of guides.filter((g) => g.kind === "keyword")) {
       assert.notEqual(guidePageSeo(item).title, keywordCoursePageSeo(item).title, item.slug);
       assert.notEqual(guidePageSeo(item).description, keywordCoursePageSeo(item).description, item.slug);
+    }
+  });
+});
+
+describe("topic pages get real content without losing any page", () => {
+  it("answer an AI topic from the course whose syllabus covers it", () => {
+    const pick = (title) => aiCourseForTopic(title, courses).slug;
+    assert.equal(pick("RAG Course"), "generative-ai");
+    assert.equal(pick("Prompt Engineering Course in Kerala"), "generative-ai");
+    assert.equal(pick("MCP Course"), "agentic-ai");
+    assert.equal(pick("Machine Learning Course"), "machine-learning");
+    assert.equal(pick("NLP Training"), "nlp");
+  });
+
+  it("add quick facts to guide, keyword-course, AI landing and district topic pages", async () => {
+    for (const path of ["/ai-guides/rag", "/keyword-courses/rag", "/ai-courses/rag-course-kerala", "/locations/kerala/kochi-ernakulam/erp-sap-courses"]) {
+      const html = String((await api.get(path)).body);
+      assert.match(html, /id="quick-facts"/, path);
+      assert.ok((html.match(/class="citable-answer"/g) || []).length >= 5, path);
+      assert.equal((html.match(/"@type":"FAQPage"/g) || []).length, 1, path);
+    }
+    for (const path of ["topic/guide/rag", "topic/keyword-course/rag", "topic/ai-landing/rag-course-kerala", "district-topic/kochi-ernakulam/erp-sap-courses"]) {
+      assert.equal((await api.get(`/api/answers/${path}`)).status, 200, path);
+    }
+  });
+
+  it("keep every keyword page, with no two titles differing only by punctuation", () => {
+    assert.equal(logisticsPages.length, 1257);
+    const seen = new Set();
+    for (const page of logisticsPages) {
+      const key = `${page.family}|${page.title.toLowerCase().replace(/[?.!]+$/, "")}`;
+      assert.ok(!seen.has(key), `duplicate: ${page.title}`);
+      seen.add(key);
     }
   });
 });

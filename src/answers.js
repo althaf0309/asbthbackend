@@ -320,6 +320,86 @@ export const topicPageDescription = (topic, location) =>
     `${topic.name} in ${location.name}: ${/classroom/i.test(location.delivery) ? "classroom and online" : "live online"} batches with guided projects. Call ${PHONE}.`,
   ], DESCRIPTION_LIMIT);
 
+// ---- Topic pages -------------------------------------------------------------
+// AI guide, keyword-course and AI landing pages name a topic ("RAG Course",
+// "Prompt Engineering"), not a course. They are answered from the ASB course
+// whose syllabus, tools or outcomes actually mention that topic.
+const TOPIC_NOISE = new Set(("course courses training certification certificate kerala india best top online offline with for the and " +
+  "classes class job oriented job-oriented placement placements internship live projects project beginners beginner working professionals " +
+  "weekend professional industry support assistance near me institute program programme advanced basic a an of to what is how can i " +
+  "learn does do which where are career careers jobs salary fees fee duration in from by after").split(" "));
+
+export const aiCourseForTopic = (title, courses) => {
+  const ai = courses.filter((c) => c.category === "ai" && c.published !== false);
+  const text = String(title).toLowerCase();
+  const tokens = text.replace(/[^a-z0-9+ ]/g, " ").split(/\s+/).filter((t) => t.length > 1 && !TOPIC_NOISE.has(t));
+  const haystack = (c) => [c.title, ...(c.syllabus || []), ...(c.tools || []), ...(c.learningOutcomes || [])].join(" ").toLowerCase();
+  const has = (value, t) => new RegExp(`\\b${t.replace(/[+]/g, "\\+")}\\b`).test(value);
+  // A topic in the course's own title outweighs a passing mention in its syllabus.
+  const scored = ai.map((c) => ({ c, score: tokens.reduce((sum, t) => sum + (has(c.title.toLowerCase(), t) ? 3 : has(haystack(c), t) ? 1 : 0), 0) }));
+  const best = scored.sort((a, b) => b.score - a.score)[0];
+  if (best?.score) {
+    const tied = scored.filter((s) => s.score === best.score).map((s) => s.c);
+    const prefer = /agent|mcp|autonom/.test(text) ? "agentic-ai" : /generative|genai|gen ai|llm|prompt|chatgpt|rag/.test(text) ? "generative-ai" : "";
+    return tied.find((c) => c.slug === prefer) || tied[0];
+  }
+  const fallback = /agent|mcp|autonom/.test(text) ? "agentic-ai" : /generative|genai|gen ai|llm|prompt|chatgpt|rag/.test(text) ? "generative-ai" : "artificial-intelligence";
+  return ai.find((c) => c.slug === fallback) || ai[0];
+};
+
+// ---- District topic pages ("ERP Courses in Kochi") ---------------------------
+// These cover a category, so facts and answers describe its courses together.
+const unique = (values) => [...new Set(values.filter(Boolean))];
+
+export const topicFacts = (topic, courses, location) => {
+  const first = courses[0];
+  if (!first) return [];
+  const remote = isSpecificPlace(location.name) && !isCampusArea(location.name);
+  const withInternship = courses.filter((c) => c.internship).length;
+  return [
+    { label: "Courses", value: `${courses.length}: ${listOf(courses.map((c) => c.title), 3)}${courses.length > 3 ? " and more" : ""}` },
+    { label: "Duration", value: unique(courses.map((c) => c.duration)).join(" or ") },
+    { label: "Mode", value: remote ? `Live online from ${location.name}` : unique(courses.map((c) => c.mode)).join(" or ") },
+    { label: "Internship", value: withInternship ? `${withInternship} of ${courses.length} courses include one` : "Ask admissions" },
+    { label: "Campus", value: "Near Technopark, Kazhakootam, Trivandrum" },
+    { label: "Fees", value: `On request: ${PHONE}` },
+  ];
+};
+
+export const topicAnswers = (topic, courses, location) => {
+  if (!courses.length) return [];
+  const first = courses[0];
+  const place = location.name;
+  const names = courses.map((c) => c.title);
+  const durations = unique(courses.map((c) => span(c)));
+  const withInternship = courses.filter((c) => c.internship).map((c) => c.title);
+  const tidy = (a) => a.replace(/\s+/g, " ").trim();
+  return [
+    {
+      q: `Which ${topic.shortName} courses can I join from ${place}?`,
+      a: tidy(`${INSTITUTE} offers ${listOf(names, 4)}${names.length > 4 ? ` and ${names.length - 4} more ${topic.shortName} courses` : ""}. ${attendance(first, place)}. Call or WhatsApp ${PHONE} to choose the right one.`),
+    },
+    {
+      q: `How long are ${topic.shortName} courses at ${INSTITUTE}?`,
+      a: tidy(`${topic.shortName} courses at ${INSTITUTE} run for ${durations.join(" or ")}, depending on the course and batch. Learners from ${place} can ask about weekly hours and the next start date on ${PHONE} before choosing a batch.`),
+    },
+    {
+      q: `Do ${topic.shortName} courses at ${INSTITUTE} include an internship?`,
+      a: tidy(withInternship.length
+        ? `${withInternship.length} of the ${names.length} ${topic.shortName} courses at ${INSTITUTE} include an internship, including ${listOf(withInternship, 2)}. Call ${PHONE} from ${place} to confirm how the internship works for your batch.`
+        : `${topic.shortName} courses at ${INSTITUTE} are built around applied projects. Internship options can change between batches, so learners from ${place} should call ${PHONE} to confirm what is available.`),
+    },
+    {
+      q: `Who can join ${topic.shortName} courses at ${INSTITUTE}?`,
+      a: tidy(`${INSTITUTE} lists requirements such as ${listOf(unique(courses.flatMap((c) => c.prerequisites || [])), 3).toLowerCase()} for its ${topic.shortName} courses. Learners from ${place} can share their background on ${PHONE} to confirm the right starting course.`),
+    },
+    {
+      q: `What is the fee for ${topic.shortName} courses in ${place}?`,
+      a: tidy(`${INSTITUTE} gives the current fee for each ${topic.shortName} course on request, because each course differs in length and content. Call or WhatsApp ${PHONE}, or use the enquiry form, to get the fee and next batch date.`),
+    },
+  ];
+};
+
 export const answersHtml = (facts, answers) => `
 <section id="quick-facts"><h2>Quick facts</h2><dl>${facts.map((f) => `<dt>${escapeHtml(f.label)}</dt><dd>${escapeHtml(f.value)}</dd>`).join("")}</dl></section>
 <section id="course-answers"><h2>Common questions</h2>${answers.map((item) => `<h3>${escapeHtml(item.q)}</h3><p class="citable-answer">${escapeHtml(item.a)}</p>`).join("")}</section>`;
