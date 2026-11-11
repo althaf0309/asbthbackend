@@ -9,7 +9,7 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { aiCourseLongHtml, logisticsLongHtml } from "./longContent.js";
-import { answersHtml, answersJsonLd, courseAnswers, courseFacts, courseSeo, keywordAnswers, keywordSeo } from "./answers.js";
+import { answersHtml, answersJsonLd, courseAnswers, courseFacts, courseSeo, guidePageSeo, keywordAnswers, keywordCoursePageSeo, keywordSeo, locationCourseName, locationCourseSeo, topicPageDescription, topicPageTitle } from "./answers.js";
 import { describeDevice, formatLocation, isBotUserAgent, lookupLocation } from "./geo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -992,7 +992,7 @@ const logisticsPageImage = (page) => {
 
 // Last date the generated SEO page content changed. Google trusts lastmod only
 // when it is accurate, so bump this whenever these templates or data change.
-const GENERATED_CONTENT_UPDATED = "2026-11-09";
+const GENERATED_CONTENT_UPDATED = "2026-11-11";
 
 const staticSitemapRoutes = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
@@ -1826,9 +1826,9 @@ app.get("/ai-courses/:slug", async (req, res, next) => {
   }
 });
 app.get("/ai-guides",async(_req,res,next)=>{try{const html=await renderSeoHtml({title:"AI Learning Guides and FAQs | ASB Training Hub",description:"Browse 162 AI keyword guides and direct answers covering Generative AI, Agentic AI, tools, careers and training.",keywords:"AI guides, AI FAQs, AI courses Kerala",canonicalPath:"/ai-guides",image:"/images/ai-course-hub.webp",visibleHtml:catalogueShell({heading:"AI Keywords, Guides and FAQs",intro:"Complete learning library covering AI course searches, technologies and frequently asked questions.",items:AI_GUIDES,prefix:"/ai-guides"}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:"AI learning guides",numberOfItems:AI_GUIDES.length,itemListElement:AI_GUIDES.map((g,i)=>({"@type":"ListItem",position:i+1,name:g.title,url:`${SITE_URL}/ai-guides/${g.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
-app.get("/ai-guides/:slug",async(req,res,next)=>{try{const g=AI_GUIDES.find(x=>x.slug===req.params.slug);if(!g)return next();const path=`/ai-guides/${g.slug}`,question=g.kind==="question",answer=question?`${g.title.replace(/\?$/,"")} depends on the learner's starting point, goals and selected programme. Compare syllabus depth, practical projects, trainer support, delivery mode and transparent career support before enrolling.`:`${g.title} is best learned through foundations, guided practice and complete projects that demonstrate application, evaluation and career relevance.`;const html=await renderSeoHtml({title:`${g.title.replace(/\?$/,"")} | ASB Training Hub`,description:g.description,keywords:`${g.title}, AI course Kerala, ASB Training Hub`,canonicalPath:path,image:"/images/ai-course-hub.webp",visibleHtml:detailShell({heading:g.title,intro:g.description,content:`<h2>${question?"Direct answer":`Understanding ${escapeHtml(g.title)}`}</h2><p>${escapeHtml(answer)}</p><h2>What to evaluate</h2><p>Review learning outcomes, prerequisites, practical exercises, trainer feedback, delivery mode and project quality. Build a complete project and document the problem, decisions, evaluation and result.</p>`,sections:[{title:"A practical learning approach",items:["Start with the required foundations","Practise with guided exercises","Build a complete portfolio project","Review results and improve"]}],links:[{href:"/ai-guides",label:"All AI guides and FAQs"},{href:`/ai-courses/${g.parent}`,label:"Related complete learning path"},{href:"/contact",label:"Request course guidance"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:"AI guides",path:"/ai-guides"},{name:g.title,path}]),question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:g.title,acceptedAnswer:{"@type":"Answer",text:answer}}]}:{"@context":"https://schema.org","@type":"TechArticle",headline:g.title,description:g.description,author:{"@type":"Organization",name:"ASB Training Hub"}}]});res.type("html").send(html)}catch(e){next(e)}});
+app.get("/ai-guides/:slug",async(req,res,next)=>{try{const g=AI_GUIDES.find(x=>x.slug===req.params.slug);if(!g)return next();const path=`/ai-guides/${g.slug}`,question=g.kind==="question",answer=question?`${g.title.replace(/\?$/,"")} depends on the learner's starting point, goals and selected programme. Compare syllabus depth, practical projects, trainer support, delivery mode and transparent career support before enrolling.`:`${g.title} is best learned through foundations, guided practice and complete projects that demonstrate application, evaluation and career relevance.`;const html=await renderSeoHtml({title:guidePageSeo(g).title,description:guidePageSeo(g).description,keywords:`${g.title}, AI course Kerala, ASB Training Hub`,canonicalPath:path,image:"/images/ai-course-hub.webp",visibleHtml:detailShell({heading:g.title,intro:g.description,content:`<h2>${question?"Direct answer":`Understanding ${escapeHtml(g.title)}`}</h2><p>${escapeHtml(answer)}</p><h2>What to evaluate</h2><p>Review learning outcomes, prerequisites, practical exercises, trainer feedback, delivery mode and project quality. Build a complete project and document the problem, decisions, evaluation and result.</p>`,sections:[{title:"A practical learning approach",items:["Start with the required foundations","Practise with guided exercises","Build a complete portfolio project","Review results and improve"]}],links:[{href:"/ai-guides",label:"All AI guides and FAQs"},{href:`/ai-courses/${g.parent}`,label:"Related complete learning path"},{href:"/contact",label:"Request course guidance"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:"AI guides",path:"/ai-guides"},{name:g.title,path}]),question?{"@context":"https://schema.org","@type":"FAQPage",mainEntity:[{"@type":"Question",name:g.title,acceptedAnswer:{"@type":"Answer",text:answer}}]}:{"@context":"https://schema.org","@type":"TechArticle",headline:g.title,description:g.description,author:{"@type":"Organization",name:"ASB Training Hub"}}]});res.type("html").send(html)}catch(e){next(e)}});
 app.get("/keyword-courses",async(_req,res,next)=>{try{const html=await renderSeoHtml({title:"Complete AI Keyword Course Catalogue | ASB Training Hub",description:"Explore 126 separate course pages covering AI training, certification, tools, automation and career-focused learning.",keywords:"AI course catalogue Kerala, Generative AI courses, Agentic AI courses",canonicalPath:"/keyword-courses",image:"/images/ai-course-hub.webp",visibleHtml:catalogueShell({heading:"AI Keyword Course Catalogue",intro:"Separate course-format pages based on every non-question keyword in the complete AI list.",items:KEYWORD_COURSES,prefix:"/keyword-courses"}),jsonLd:{"@context":"https://schema.org","@type":"ItemList",name:"AI keyword course catalogue",numberOfItems:KEYWORD_COURSES.length,itemListElement:KEYWORD_COURSES.map((c,i)=>({"@type":"ListItem",position:i+1,name:c.title,url:`${SITE_URL}/keyword-courses/${c.slug}`}))}});res.type("html").send(html)}catch(e){next(e)}});
-app.get("/keyword-courses/:slug",async(req,res,next)=>{try{const c=KEYWORD_COURSES.find(x=>x.slug===req.params.slug);if(!c)return next();const path=`/keyword-courses/${c.slug}`,modules=[`Foundations of ${c.title}`,`Practical tools and workflows for ${c.title}`,"Applied exercises and guided implementation","Project development, evaluation and presentation"];const html=await renderSeoHtml({title:`${c.title} Course | ASB Training Hub`,description:c.description,keywords:`${c.title}, ${c.title} course Kerala, AI training`,canonicalPath:path,image:"/images/ai-course-hub.webp",visibleHtml:detailShell({heading:c.title,intro:c.description,content:`<h2>Course overview</h2><p>This focused course develops a practical understanding of ${escapeHtml(c.title)}. Learning progresses from foundations through guided exercises to an applied project, with feedback connecting the topic to realistic workflows and career goals.</p><h2>Practical projects</h2><p>Learners complete a guided workflow, an application prototype and a documented portfolio capstone.</p>`,sections:[{title:"Course modules",items:modules},{title:"Who can join",items:["Students and graduates","Developers and technology professionals","Working professionals and business teams","Career changers seeking practical AI skills"]}],links:[{href:"/keyword-courses",label:"All keyword course pages"},{href:`/ai-courses/${c.parent}`,label:"Related complete AI pathway"},{href:"/contact",label:"Request syllabus and fees"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:"Keyword courses",path:"/keyword-courses"},{name:c.title,path}]),{"@context":"https://schema.org","@type":"Course",name:c.title,description:c.description,url:`${SITE_URL}${path}`,teaches:modules,provider:{"@type":"EducationalOrganization","@id":`${SITE_URL}/#organization`,name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]}]});res.type("html").send(html)}catch(e){next(e)}});
+app.get("/keyword-courses/:slug",async(req,res,next)=>{try{const c=KEYWORD_COURSES.find(x=>x.slug===req.params.slug);if(!c)return next();const path=`/keyword-courses/${c.slug}`,modules=[`Foundations of ${c.title}`,`Practical tools and workflows for ${c.title}`,"Applied exercises and guided implementation","Project development, evaluation and presentation"];const html=await renderSeoHtml({title:keywordCoursePageSeo(c).title,description:keywordCoursePageSeo(c).description,keywords:`${c.title}, ${c.title} course Kerala, AI training`,canonicalPath:path,image:"/images/ai-course-hub.webp",visibleHtml:detailShell({heading:c.title,intro:c.description,content:`<h2>Course overview</h2><p>This focused course develops a practical understanding of ${escapeHtml(c.title)}. Learning progresses from foundations through guided exercises to an applied project, with feedback connecting the topic to realistic workflows and career goals.</p><h2>Practical projects</h2><p>Learners complete a guided workflow, an application prototype and a documented portfolio capstone.</p>`,sections:[{title:"Course modules",items:modules},{title:"Who can join",items:["Students and graduates","Developers and technology professionals","Working professionals and business teams","Career changers seeking practical AI skills"]}],links:[{href:"/keyword-courses",label:"All keyword course pages"},{href:`/ai-courses/${c.parent}`,label:"Related complete AI pathway"},{href:"/contact",label:"Request syllabus and fees"}]}),jsonLd:[breadcrumbList([{name:"Home",path:"/"},{name:"Keyword courses",path:"/keyword-courses"},{name:c.title,path}]),{"@context":"https://schema.org","@type":"Course",name:c.title,description:c.description,url:`${SITE_URL}${path}`,teaches:modules,provider:{"@type":"EducationalOrganization","@id":`${SITE_URL}/#organization`,name:"ASB Training Hub"},hasCourseInstance:[{"@type":"CourseInstance",courseMode:"blended"}]}]});res.type("html").send(html)}catch(e){next(e)}});
 
 // Place names the React page recognises in a keyword title (SeoAiCourses.tsx).
 const SEO_AI_PLACES = ["Thiruvananthapuram","Trivandrum","Kazhakootam","Kazhakkottam","Technopark","Kollam","Pathanamthitta","Alappuzha","Alleppey","Kottayam","Idukki","Kochi","Ernakulam","Kakkanad","Thrissur","Palakkad","Malappuram","Kozhikode","Calicut","Wayanad","Kannur","Kasaragod","Kerala"];
@@ -1853,6 +1853,16 @@ app.get("/api/answers/keyword/:family/:slug", async (req, res, next) => {
     const course = page && (await keywordCourse(family));
     if (!course) return res.status(404).json({ error: "Page not found." });
     sendAnswers(res, courseFacts(course, page.location), keywordAnswers(page, course, page.location), keywordSeo(page, course, page.location));
+  } catch (error) { next(error); }
+});
+
+app.get("/api/answers/location/:district/:slug", async (req, res, next) => {
+  try {
+    const location = LOCATION_PAGES.find((item) => item.slug === req.params.district);
+    const course = location && (await readCourses()).find((item) => item.slug === req.params.slug && item.published !== false);
+    if (!course) return res.status(404).json({ error: "Page not found." });
+    const areaPage = { title: locationCourseName(course, location), intent: "course", question: false };
+    sendAnswers(res, courseFacts(course, location.name), keywordAnswers(areaPage, course, location.name), locationCourseSeo(course, location));
   } catch (error) { next(error); }
 });
 
@@ -2115,18 +2125,21 @@ app.get("/locations/kerala/:district/course/:slug", async (req, res, next) => {
     if (!course) return next();
     const canonicalPath = localizedCoursePath(location, course);
     const local = location.slug === "trivandrum" || location.slug === "kazhakootam-technopark";
-    const title = `${course.title} Course in ${location.name}`;
+    const title = locationCourseName(course, location);
+    const areaPage = { title, intent: "course", question: false };
+    const seo = locationCourseSeo(course, location);
+    const answers = keywordAnswers(areaPage, course, location.name);
     const description = `${course.title} for learners in ${location.name}. ${local ? "Classroom, hybrid and live online options" : "Live instructor-led online training"}, practical projects and career support.`;
     const topic = LOCATION_TOPICS.find((item) => item.category === course.category);
     const image = `/images/locations/${location.slug}.webp`;
     const html = await renderSeoHtml({
-      title: `${title} | ASB Training Hub`, description,
+      title: seo.title, description: seo.description,
       keywords: `${course.title} course in ${location.name}, ${course.title} training ${location.name}, ${course.categoryLabel || course.category} courses ${location.name}`,
       canonicalPath, image,
       visibleHtml: detailShell({
         heading: title,
         intro: `${course.description || description} ${local ? "Ask about classroom, hybrid or live online batches near Technopark." : `Join live online from ${escapeHtml(location.name)} with instructor guidance and project reviews.`}`,
-        content: `<h2>Course overview</h2><p>${escapeHtml(course.overview || course.description)}</p><h2>Learning option for ${escapeHtml(location.name)}</h2><p>${local ? "Classroom, hybrid and live online learning options are available from our centre near Technopark Phase 1." : `Learners in ${escapeHtml(location.name)} attend scheduled live online sessions supported by assignments, feedback and doubt clearing.`}</p>`,
+        content: `${answersHtml(courseFacts(course, location.name), answers)}<h2>Course overview</h2><p>${escapeHtml(course.overview || course.description)}</p><h2>Learning option for ${escapeHtml(location.name)}</h2><p>${local ? "Classroom, hybrid and live online learning options are available from our centre near Technopark Phase 1." : `Learners in ${escapeHtml(location.name)} attend scheduled live online sessions supported by assignments, feedback and doubt clearing.`}</p>`,
         sections: [
           { title: "What you will learn", items: course.learningOutcomes || [] },
           { title: "Syllabus", items: course.syllabus || [] },
@@ -2143,7 +2156,7 @@ app.get("/locations/kerala/:district/course/:slug", async (req, res, next) => {
       jsonLd: [
         breadcrumbList([{ name: "Home", path: "/" }, { name: "Kerala locations", path: "/locations/kerala" }, { name: location.name, path: locationDistrictPath(location) }, { name: course.title, path: canonicalPath }]),
         { "@context": "https://schema.org", "@type": "Course", name: title, description, url: `${SITE_URL}${canonicalPath}`, image: `${SITE_URL}${image}`, teaches: course.learningOutcomes || [], educationalCredentialAwarded: course.certificate, coursePrerequisites: course.prerequisites || [], provider: { "@type": "EducationalOrganization", "@id": `${SITE_URL}/#organization`, name: "ASB Training Hub" }, hasCourseInstance: [{ "@type": "CourseInstance", courseMode: local ? "blended" : "online", courseWorkload: course.duration }] },
-        ...(course.faqs?.length ? [{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: course.faqs.map((faq) => ({ "@type": "Question", name: faq.q, acceptedAnswer: { "@type": "Answer", text: faq.a } })) }] : []),
+        ...answersJsonLd(`${SITE_URL}${canonicalPath}`, answers, course.faqs || []),
       ],
     });
     res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -2161,7 +2174,7 @@ app.get("/locations/kerala/:district/:topic", async (req, res, next) => {
     if (!location || !topic) return next();
     const canonicalPath = locationTopicPath(location, topic);
     const title = `${topic.name} in ${location.name}`;
-    const description = `${topic.summary} Join from ${location.name} through ${location.delivery.toLowerCase()}.`;
+    const description = topicPageDescription(topic, location);
     const localKeywords = location.keywords.split(", ").filter((keyword) => {
       const value = keyword.toLowerCase();
       if (topic.slug === "generative-ai-course") return value.includes("generative") || value.includes("gen ai");
@@ -2178,7 +2191,7 @@ app.get("/locations/kerala/:district/:topic", async (req, res, next) => {
         : categoryCourses;
     const listedCourses = focusedCourses.length ? focusedCourses : categoryCourses;
     const html = await renderSeoHtml({
-      title: `${title} | ASB Training Hub`, description, keywords: keywords.join(", "),
+      title: topicPageTitle(topic, location), description, keywords: keywords.join(", "),
       canonicalPath, image: `/images/locations/${location.slug}.webp`,
       visibleHtml: detailShell({
         heading: title, intro: description,

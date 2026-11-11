@@ -6,7 +6,7 @@ import { after, before, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { bootstrapEnv, cleanup, startServer } from "./helpers.mjs";
-import { courseAnswers, courseFacts, courseSeo, keywordAnswers, keywordSeo } from "../src/answers.js";
+import { courseAnswers, courseFacts, courseSeo, guidePageSeo, keywordAnswers, keywordCoursePageSeo, keywordSeo, locationCourseSeo, topicPageDescription } from "../src/answers.js";
 
 const json = async (name) => JSON.parse(await readFile(new URL(`../data/${name}`, import.meta.url), "utf8"));
 const PHONE = "+91 87147 73304";
@@ -126,6 +126,51 @@ describe("search result snippets", () => {
     assert.ok(html.includes(`<title>${seoFor(page).title}</title>`));
     const res = await api.get("/api/answers/keyword/warehouse/warehouse-course-in-kochi");
     assert.equal(res.body.seo.title, seoFor(page).title);
+  });
+});
+
+describe("area pages", () => {
+  const trivandrum = { slug: "trivandrum", name: "Trivandrum", delivery: "Classroom, hybrid and live online" };
+  const technopark = { slug: "kazhakootam-technopark", name: "Kazhakootam & Technopark", delivery: "Classroom near Technopark, hybrid and live online" };
+  const kochi = { slug: "kochi-ernakulam", name: "Kochi & Ernakulam", delivery: "Live online" };
+
+  it("treat combined campus districts as classroom and remote districts as online", () => {
+    const course = courseFor("java");
+    const mode = (place) => courseFacts(course, place).find((f) => f.label === "Mode").value;
+    assert.equal(mode(technopark.name), course.mode);
+    assert.equal(mode(kochi.name), "Live online from Kochi & Ernakulam");
+  });
+
+  it("give district course pages titles distinct from the main course page", () => {
+    for (const course of courses) {
+      const local = locationCourseSeo(course, trivandrum);
+      assert.notEqual(local.title, courseSeo(course).title, course.slug);
+      assert.doesNotMatch(local.title, /(Training|Course|Internship) Course/, course.slug);
+      assert.ok(local.description.length <= 155, `${course.slug}: ${local.description.length}`);
+    }
+  });
+
+  it("keep topic descriptions inside the result limit", () => {
+    const topic = { name: "Artificial Intelligence Course" };
+    for (const location of [trivandrum, technopark, kochi]) assert.ok(topicPageDescription(topic, location).length <= 155);
+  });
+
+  it("serve district course answers and snippet to the React page", async () => {
+    const res = await api.get("/api/answers/location/kochi-ernakulam/warehouse-management");
+    assert.equal(res.status, 200);
+    assert.equal(res.body.answers.length, 6);
+    assert.match(res.body.seo.title, /Kochi & Ernakulam/);
+    const html = String((await api.get("/locations/kerala/kochi-ernakulam/course/warehouse-management")).body);
+    assert.match(html, /id="quick-facts"/);
+    assert.ok(html.includes(`<title>${res.body.seo.title.replace(/&/g, "&amp;")}</title>`));
+  });
+
+  it("title guides and keyword course pages differently from the same record", async () => {
+    const guides = JSON.parse(await readFile(new URL("../data/ai-guides.json", import.meta.url), "utf8"));
+    for (const item of guides.filter((g) => g.kind === "keyword")) {
+      assert.notEqual(guidePageSeo(item).title, keywordCoursePageSeo(item).title, item.slug);
+      assert.notEqual(guidePageSeo(item).description, keywordCoursePageSeo(item).description, item.slug);
+    }
   });
 });
 

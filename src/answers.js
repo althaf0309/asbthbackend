@@ -36,7 +36,9 @@ const listOf = (items = [], limit = 3) => {
 const span = (course) => String(course.duration).toLowerCase();
 const modeText = (course) => String(course.mode).toLowerCase().replace("&", "and");
 const hasOnline = (course) => /online/i.test(course.mode || "");
-const isCampusArea = (place) => CAMPUS_AREA.has(String(place || "").toLowerCase());
+// District pages combine names ("Kazhakootam & Technopark"), so check each part.
+const isCampusArea = (place) =>
+  String(place || "").toLowerCase().split(/\s*(?:&|,|\band\b)\s*/).some((part) => CAMPUS_AREA.has(part.trim()));
 const isSpecificPlace = (place) => Boolean(place) && place.toLowerCase() !== "kerala";
 
 /** How someone in this place actually attends, without implying a local branch. */
@@ -253,6 +255,70 @@ export const courseSeo = (course) => {
   ], DESCRIPTION_LIMIT);
   return { title, description };
 };
+
+// The same keyword is published as a guide (/ai-guides) and as a course page
+// (/keyword-courses) from one record. Distinct titles and descriptions keep the
+// two from competing for the same search; the React pages use the same rules.
+const COURSE_WORDS = /\b(course|courses|training|certification|program|programme|diploma|bootcamp|class|classes|internship)\b/i;
+
+export const guidePageSeo = (guide) => {
+  if (guide.kind === "question") {
+    const title = guide.title.replace(/\?$/, "");
+    // The same question is also a course page under /course-training; the guide says it is the answer.
+    return { title: firstThatFits([`${title}? Quick Answer | ASB`, `${title}? Answered | ASB`, `${title} | ASB Guide`], TITLE_LIMIT), description: guide.description };
+  }
+  return {
+    title: firstThatFits([`${guide.title} Guide | ASB Training Hub`, `${guide.title} Guide | ASB`], TITLE_LIMIT),
+    description: firstThatFits([
+      `Guide to ${guide.title}: what it covers, who it suits and how to compare courses. From ASB Training Hub, Trivandrum.`,
+      `Guide to ${guide.title}: what it covers, who it suits and how to compare courses.`,
+    ], DESCRIPTION_LIMIT),
+  };
+};
+
+export const keywordCoursePageSeo = (item) => {
+  // "RAG" and "RAG Course" are separate records; only the second says "Course".
+  const options = COURSE_WORDS.test(item.title)
+    ? [`${item.title}: Modules & Projects | ASB`, `${item.title}: Syllabus | ASB`, `${item.title} Syllabus | ASB`]
+    : [`${item.title}: What You Will Learn | ASB`, `${item.title}: Skills & Projects | ASB`, `${item.title} Skills | ASB`];
+  return {
+    title: firstThatFits(options, TITLE_LIMIT),
+    description: item.description,
+  };
+};
+
+/** A course offered in a district: named once, with how classes run there. */
+export const locationCourseName = (course, location) =>
+  `${COURSE_WORDS.test(course.title) ? course.title : `${course.title} Course`} in ${location.name}`;
+
+export const locationCourseSeo = (course, location) => {
+  const name = locationCourseName(course, location);
+  const how = /classroom/i.test(location.delivery) ? "Classroom & Online" : "Live Online";
+  // Worded apart from the keyword page for the same course and place.
+  const where = attendanceShort(course, location.name);
+  const description = firstThatFits([
+    `${name}. ${monthsLabel(course)} ${courseKind(course).toLowerCase()} covering ${listOf(course.syllabus, 2)}. ${where} Call ${PHONE}.`,
+    `${name}. ${monthsLabel(course)} ${courseKind(course).toLowerCase()} covering ${listOf(course.syllabus, 1)}. ${where} Call ${PHONE}.`,
+    `${name}. ${monthsLabel(course)} ${courseKind(course).toLowerCase()}. ${where} Call ${PHONE}.`,
+    `${name}. ${monthsLabel(course)} ${courseKind(course).toLowerCase()}. ${where}`,
+  ], DESCRIPTION_LIMIT);
+  return { title: firstThatFits([`${name}: ${how} | ASB`, `${name} (${how})`, `${name} Batches | ASB`], TITLE_LIMIT), description };
+};
+
+/** District topic pages say how classes run there, which sets them apart from the keyword pages. */
+export const topicPageTitle = (topic, location) => {
+  const how = /classroom/i.test(location.delivery) ? "Classroom & Online" : "Live Online";
+  const base = `${topic.name} in ${location.name}`;
+  return firstThatFits([`${base}: ${how} | ASB`, `${base} (${how})`, `${base} | ASB`], TITLE_LIMIT);
+};
+
+/** District topic pages: one line per topic and district, inside the result limit. */
+export const topicPageDescription = (topic, location) =>
+  firstThatFits([
+    `${topic.name} in ${location.name}: ${location.delivery.toLowerCase()} batches with guided projects and career support. Call ${PHONE}.`,
+    `${topic.name} in ${location.name}: ${location.delivery.toLowerCase()} batches with guided projects and career support.`,
+    `${topic.name} in ${location.name}: ${/classroom/i.test(location.delivery) ? "classroom and online" : "live online"} batches with guided projects. Call ${PHONE}.`,
+  ], DESCRIPTION_LIMIT);
 
 export const answersHtml = (facts, answers) => `
 <section id="quick-facts"><h2>Quick facts</h2><dl>${facts.map((f) => `<dt>${escapeHtml(f.label)}</dt><dd>${escapeHtml(f.value)}</dd>`).join("")}</dl></section>
